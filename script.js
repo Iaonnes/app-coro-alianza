@@ -1,7 +1,7 @@
 // Configuración: reemplaza con tu propio ID de hoja y API Key
-const SHEET_ID = "TU_ID_DE_HOJA"; 
-const API_KEY = "TU_API_KEY";
-const RANGE = "Hoja1!A:E"; // columnas A a E
+const SHEET_ID = "1XHKUEy4_w9zUpEL-9Hadt2p_NcEa6lb1X-sY5xtqttQ"; 
+const API_KEY = "AIzaSyDgffCmk_ijxTTk6BXLCoE5Ghtl6AvHgk0";
+const RANGE = "Hoja1!A1:E100"; // columnas A a E
 
 async function cargarDatos() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
