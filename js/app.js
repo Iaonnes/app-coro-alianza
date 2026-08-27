@@ -96,7 +96,41 @@ async function cargarEsquemas() {
 // ==========================================
 // CANTOS
 // ==========================================
- 
+
+/* async function cargarCantos() {
+
+    try {
+
+        const response = await fetch(URL_API);
+        const data = await response.json();
+
+        console.log("URL:", URL_API);
+        console.log("DATA:", data);
+        console.log("CANTOS:", data.cantos);
+``
+
+        const lista =
+            document.getElementById("listaCantos");
+
+                data.cantos.forEach(canto => {
+
+                    lista.innerHTML += `
+                        <li class="card">
+                            <a href="https://drive.google.com/drive/folders/1wo3zI4_rYH8_HxiYp__dWjxPeDfWamXJ "
+                                🎵 ${canto.url}
+                            </a>
+                            <p>${canto.categoria}</p>
+                        </li>
+                    `;
+
+                }); -->
+
+    } catch(error) {
+
+        console.error("Error cantos:", error);
+
+    }
+} */
 async function cargarCantos() {
 
     try {
@@ -109,18 +143,17 @@ async function cargarCantos() {
 
         lista.innerHTML = "";
 
-            data.cantos.forEach(categoria => {
+        data.cantos.forEach(categoria => {
 
-                lista.innerHTML += `
-                    <div class="card">
-                        <a
-                            href="${categoria.url}" target= "_blank"
-                        </a>
-                         <p>📂 ${categoria.categoria}</p>
-                    </div>
-                `;
+            lista.innerHTML += `
+                <li class="card">
+                    <a href= ${categoria.url}
+                    </a>
+                    <p>📂 ${categoria.categoria}</p>
+                </li>
+            `;
 
-            });
+        });
 
     } catch(error) {
 
