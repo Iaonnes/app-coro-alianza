@@ -1,0 +1,95 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f5f5f5;
+}
+
+header{
+    background:#1976d2;
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+
+nav{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    padding:15px;
+    background:white;
+}
+
+nav button{
+    border:none;
+    padding:10px 20px;
+    background:#1976d2;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+nav button:hover{
+    background:#0f5eb1;
+}
+
+main{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+.seccion{
+    display:none;
+}
+
+.activa{
+    display:block;
+}
+
+.card{
+    max-width: 500px;
+    background: white;
+    padding: 15px;
+    margin: 15px auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.buscador{
+    margin-bottom:15px;
+}
+
+.buscador input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+#listaCantos{
+    list-style:none;
+}
+
+#listaCantos li{
+    background:white;
+    margin-bottom:10px;
+    padding:12px;
+    border-radius:10px;
+}
+
+#listaCantos a{
+    text-decoration:none;
+    color:#1976d2;
+    font-weight:bold;
+}
+#fechaEsquema{
+    font-size: 18px;
+    font-weight: bold;
+    color: #1976d2;
+    margin-bottom: 15px;
+}

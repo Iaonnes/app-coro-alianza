@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ministerio de Música</title>
+
+    <link rel="stylesheet"href="css/style.css"></>
+</head>
+<body>
+
+    <header>
+        <h1>🎵 Ministerio de Música</h1>
+    </header>
+
+    <nav>
+        <button onclick="mostrarSeccion('ensayos')">Ensayos</button>
+        <button onclick="mostrarSeccion('esquemas')">Esquemas</button>
+        <button onclick="mostrarSeccion('cantos')">Cantos</button>
+    </nav>
+
+    <main>
+
+        <!-- ENSAYOS -->
+        <section id="ensayos" class="seccion activa">
+            <h2>Próximos Ensayos</h2>
+
+            <div id="listaEnsayos"></div>
+
+        </section>
+
+        <!-- ESQUEMAS -->
+        <section id="esquemas" class="seccion">
+<h2>Esquema de la Próxima Misa</h2>
+
+<p id="fechaEsquema"></p>
+
+<div id="listaEsquemas"></div>
+        </section>
+
+        <!-- CANTOS -->
+        <section id="cantos" class="seccion">
+            <h2>Biblioteca de Cantos</h2>
+
+            <div class="buscador">
+                <input
+                    type="text"
+                    id="buscarCanto"
+                    placeholder="Buscar canto..."
+                    onkeyup="filtrarCantos()">
+            </div>
+
+            <ul id="listaCantos">
+            </ul>
+
+        </section>
+
+    </main>
+
+    <script src="js/app.js"></script>
+
+</body>
+</html>
