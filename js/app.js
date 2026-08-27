@@ -3,7 +3,7 @@
 // ==========================================
 
 const URL_API =
-"https://script.google.com/macros/s/AKfycbzsdGiPrIZrSBtIrmHyxSuygYHccuCeTC7tn-2DoSCq16QQu88Mv2R5R4TiU-ed6nrE/exec";
+"https://script.google.com/macros/s/AKfycbzVHGG0_VBhMR9N-M-qxlD0PPs9TXX-rzvOaDEAcgOZ12aEpB8Dc4SSihJncwEURW9U/exec";
 
 
 // ==========================================
@@ -42,6 +42,7 @@ async function cargarEnsayos() {
                     <h3>📅 ${item.fecha}</h3>
                     <p>⏰ ${item.hora}</p>
                     <p>📍 ${item.lugar}</p>
+                    <p>📝 ${item.descripcion || ""}</p>
                 </div>
             `;
         });
