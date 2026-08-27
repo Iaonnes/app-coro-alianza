@@ -3,11 +3,9 @@
   "short_name": "AppCorus",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#1976d2",
-  "theme_color": "#1976d2",
   "icons": [
     {
-      "src": "assets/LogoAlianza.png",
+      "src": "assets/AppAlianza.png",
       "sizes": "512x512",
       "type": "image/png"
     }
