@@ -3,7 +3,7 @@
 // ==========================================
 
 const URL_API =
-"https://script.google.com/macros/s/AKfycbzVHGG0_VBhMR9N-M-qxlD0PPs9TXX-rzvOaDEAcgOZ12aEpB8Dc4SSihJncwEURW9U/exec";
+"https://script.google.com/macros/s/AKfycbxVWRznDw17Y-O6Eub8NqSIQjSslaftR2dyARUhFMcjsP0vzRsddJ7053xjJGzNp8U_/exec";
 
 
 // ==========================================
@@ -58,29 +58,90 @@ async function cargarEnsayos() {
 // ESQUEMAS
 // ==========================================
 
+// async function cargarEsquemas() {
+
+    // try {
+
+        // const response = await fetch(URL_API);
+        // const data = await response.json();
+        
+        // console.log(data);
+        
+        
+        
+        // const contenedor =
+            // document.getElementById("listaEsquemas");
+
+        // contenedor.innerHTML = "";
+
+        // data.esquemas.forEach(item => {
+
+            // contenedor.innerHTML += `
+                // <div class="card">
+                    // <h3>${item.momento}</h3>
+                    // <p>🎵 ${item.canto}</p>
+                // </div>
+            // `;
+        // });
+
+    // } catch (error) {
+
+        // console.error("Error esquemas:", error);
+
+        // document.getElementById("listaEsquemas").innerHTML = `
+            // <div class="card">
+                // Error al cargar los esquemas.
+            // </div>
+        // `;
+    // }
+// }
 async function cargarEsquemas() {
 
     try {
 
         const response = await fetch(URL_API);
         const data = await response.json();
-        
-        console.log(data);
-        
+
+        console.log("VERSION NUEVA");
+        console.log(data.esquemas[0]);
+
+
         const contenedor =
             document.getElementById("listaEsquemas");
 
         contenedor.innerHTML = "";
 
+        let encabezadoActual = "";
+
         data.esquemas.forEach(item => {
 
-            contenedor.innerHTML += `
-                <div class="card">
-                    <h3>${item.momento}</h3>
-                    <p>🎵 ${item.canto}</p>
-                </div>
-            `;
-        });
+        const encabezado =
+            
+        `${item.fecha}-${item.hora}-${item.descripcion}`;
+
+    if (encabezado !== encabezadoActual) {
+
+        encabezadoActual = encabezado;
+
+        contenedor.innerHTML += `
+            <h2>Esquema del ${item.fecha} a las ${item.hora}</h2>
+            <p>${item.descripcion}</p>
+
+            <div class="card" id="card-${encabezadoActual}">
+            </div>
+        `;
+    }
+
+    const card =
+        document.getElementById(`card-${encabezadoActual}`);
+
+    card.innerHTML += `
+        <h3>${item.momento}</h3>
+        <p>🎵 ${item.canto}</p>
+        <hr>
+    `;
+
+});
 
     } catch (error) {
 
@@ -93,7 +154,6 @@ async function cargarEsquemas() {
         `;
     }
 }
-
 // ==========================================
 // CANTOS
 // ==========================================
