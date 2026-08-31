@@ -5,40 +5,84 @@
 }
 
 body{
-    font-family:Arial, Helvetica, sans-serif;
-    background:#f5f5f5;
+    font-family:'Poppins',sans-serif;
+    background:#eef3f9;
+    color:#2c3e50;
+    overflow-x:hidden;
 }
 
 header{
-    background:#1976d2;
+    background:linear-gradient(
+        135deg,
+        #1565C0,
+        #1976D2
+    );
+
     color:white;
     text-align:center;
-    padding:20px;
+    padding:25px 15px;
+}
+
+.logo{
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+    margin:0 auto 10px auto;
+}
+
+h1{
+    margin-top:10px;
+    font-size:2rem;
+    font-weight:600;
+}
+
+h2{
+    color:#1565C0;
+    margin-bottom:10px;
+    font-weight:600;
+}
+
+h3{
+    margin-bottom:5px;
+    font-weight:600;
+}
+
+p{
+    line-height:1.5;
 }
 
 nav{
     display:flex;
     justify-content:center;
+    flex-wrap:wrap;
     gap:10px;
     padding:15px;
     background:white;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 nav button{
     border:none;
-    padding:10px 20px;
+    padding:12px 20px;
     background:#1976d2;
     color:white;
-    border-radius:8px;
+    border-radius:14px;
     cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+    transition:.3s;
+    touch-action:manipulation;
 }
 
 nav button:hover{
     background:#0f5eb1;
+    transform:translateY(-2px);
 }
 
 main{
-    max-width:900px;
+    width:min(900px,100%);
     margin:auto;
     padding:20px;
 }
@@ -52,12 +96,39 @@ main{
 }
 
 .card{
-    max-width: 500px;
-    background: white;
-    padding: 15px;
-    margin: 15px auto;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    background:white;
+    padding:20px;
+    margin:15px 0;
+    border-radius:18px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.08);
+
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+}
+
+.card-resumen{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    margin:15px 0;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.10);
+
+    cursor:pointer;
+    transition:.3s;
+}
+
+.card-resumen:hover{
+    transform:translateY(-3px);
+}
+
+.card-resumen h2{
+    margin-bottom:10px;
+    color:#1565C0;
 }
 
 .buscador{
@@ -68,7 +139,8 @@ main{
     width:100%;
     padding:12px;
     border:1px solid #ccc;
-    border-radius:8px;
+    border-radius:12px;
+    font-family:'Poppins',sans-serif;
 }
 
 #listaCantos{
@@ -78,26 +150,89 @@ main{
 #listaCantos li{
     background:white;
     margin-bottom:10px;
-    padding:12px;
-    border-radius:10px;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 #listaCantos a{
     text-decoration:none;
     color:#1976d2;
-    font-weight:bold;
+    font-weight:600;
 }
+
 #fechaEsquema{
-    font-size: 18px;
-    font-weight: bold;
-    color: #1976d2;
-    margin-bottom: 15px;
+    font-size:18px;
+    font-weight:600;
+    color:#1976d2;
+    margin-bottom:15px;
 }
-.logo{
-    width:120px;
-    height:120px;
-    border-radius:50%;
-    object-fit:cover;
-    display:block;
-    margin:0 auto 10px auto;
+
+@media (max-width:768px){
+
+    main{
+        padding:15px;
+    }
+
+    h1{
+        font-size:1.5rem;
+    }
+
+    .logo{
+        width:110px;
+        height:110px;
+    }
+
+    nav button{
+        width:100%;
+        max-width:220px;
+    }
+
+    .card,
+    .card-resumen{
+        padding:15px;
+    }
+
+}
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+
+    background:white;
+
+    box-shadow:0 -2px 10px rgba(0,0,0,.1);
+
+    padding:10px 0;
+
+    z-index:999;
+}
+
+.bottom-nav button{
+    background:none;
+    border:none;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    color:#1565C0;
+
+    font-size:24px;
+
+    cursor:pointer;
+}
+
+.bottom-nav span{
+    font-size:12px;
+    margin-top:4px;
+}
+
+main{
+    padding-bottom:90px;
 }

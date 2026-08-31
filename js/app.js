@@ -19,6 +19,90 @@ function mostrarSeccion(id) {
     document.getElementById(id).classList.add("activa");
 }
 
+
+// ==========================================
+// Resumen de Inicio
+// ==========================================
+
+async function cargarInicio() {
+
+    try {
+
+        const response = await fetch(URL_API);
+        const data = await response.json();
+
+        const resumenMisa =
+            document.getElementById("resumenMisa");
+
+        const resumenEnsayos =
+            document.getElementById("resumenEnsayos");
+
+        resumenMisa.innerHTML = "";
+        resumenEnsayos.innerHTML = "";
+
+        // ==========================
+        // PRÓXIMA MISA
+        // ==========================
+
+        const misas = [];
+
+        data.esquemas.forEach(item => {
+
+            const clave =
+                `${item.fecha}-${item.hora}-${item.descripcion}`;
+
+            if (!misas.some(m => m.clave === clave)) {
+
+                misas.push({
+                    clave,
+                    fecha: item.fecha,
+                    hora: item.hora,
+                    descripcion: item.descripcion
+                });
+
+            }
+
+        });
+
+        if (misas.length > 0) {
+
+            const misa = misas[0];
+
+            resumenMisa.innerHTML = `
+                <div class="card-resumen">
+                    <h2>📖 Próxima Misa</h2>
+                    <p><strong>${misa.fecha}</strong></p>
+                    <p>${misa.hora}</p>
+                    <p>${misa.descripcion}</p>
+                </div>
+            `;
+
+        }
+
+        // ==========================
+        // PRÓXIMOS 2 ENSAYOS
+        // ==========================
+
+        data.ensayos.slice(0, 2).forEach(item => {
+
+            resumenEnsayos.innerHTML += `
+                <div class="card-resumen">
+                    <h2>📅 Próximo Ensayo</h2>
+                    <p><strong>${item.fecha}</strong></p>
+                    <p>${item.hora}</p>
+                    <p>${item.lugar}</p>
+                </div>
+            `;
+
+        });
+
+    } catch(error) {
+
+        console.error("Error inicio:", error);
+
+    }
+
+}
 // ==========================================
 // ENSAYOS
 // ==========================================
@@ -58,43 +142,6 @@ async function cargarEnsayos() {
 // ESQUEMAS
 // ==========================================
 
-// async function cargarEsquemas() {
-
-    // try {
-
-        // const response = await fetch(URL_API);
-        // const data = await response.json();
-        
-        // console.log(data);
-        
-        
-        
-        // const contenedor =
-            // document.getElementById("listaEsquemas");
-
-        // contenedor.innerHTML = "";
-
-        // data.esquemas.forEach(item => {
-
-            // contenedor.innerHTML += `
-                // <div class="card">
-                    // <h3>${item.momento}</h3>
-                    // <p>🎵 ${item.canto}</p>
-                // </div>
-            // `;
-        // });
-
-    // } catch (error) {
-
-        // console.error("Error esquemas:", error);
-
-        // document.getElementById("listaEsquemas").innerHTML = `
-            // <div class="card">
-                // Error al cargar los esquemas.
-            // </div>
-        // `;
-    // }
-// }
 async function cargarEsquemas() {
 
     try {
@@ -158,40 +205,6 @@ async function cargarEsquemas() {
 // CANTOS
 // ==========================================
 
-/* async function cargarCantos() {
-
-    try {
-
-        const response = await fetch(URL_API);
-        const data = await response.json();
-
-        console.log("URL:", URL_API);
-        console.log("DATA:", data);
-        console.log("CANTOS:", data.cantos);
-``
-
-        const lista =
-            document.getElementById("listaCantos");
-
-                data.cantos.forEach(canto => {
-
-                    lista.innerHTML += `
-                        <li class="card">
-                            <a href="https://drive.google.com/drive/folders/1wo3zI4_rYH8_HxiYp__dWjxPeDfWamXJ "
-                                🎵 ${canto.url}
-                            </a>
-                            <p>${canto.categoria}</p>
-                        </li>
-                    `;
-
-                }); -->
-
-    } catch(error) {
-
-        console.error("Error cantos:", error);
-
-    }
-} */
 async function cargarCantos() {
 
     try {
@@ -254,6 +267,7 @@ function filtrarCantos() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    cargarInicio();
     cargarEnsayos();
     cargarEsquemas();
     cargarCantos();

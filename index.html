@@ -1,32 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AppCorus</title>
 
     <link rel="stylesheet"href="css/style.css"/>
-	<link rel="icon" type="image/png" href="assets/LogoAlianza.png"/>
-	<link rel="apple-touch-icon" href="assets/LogoAlianza.png"/>
+	<link rel="icon" type="image/png" href="..assets/LogoAlianza.png"/>
+	<link rel="apple-touch-icon" href="..assets/AppAlianza.png"/>
 	<link rel="manifest" href="Manifest.json" content="#1976d2"/>
+    
 </head>
 <body>
 
     <header>
-        <img src="assets/LogoAlianza.png" class="logo" alt="Logo Alianza" ></img>
-		<h1>🎵 Coro Nueva Alianza con Cristo 🎵</h1>
-	</header>
 
-    <nav>
-        <button onclick="mostrarSeccion('ensayos')">Ensayos</button>
-        <button onclick="mostrarSeccion('esquemas')">Esquemas</button>
-        <button onclick="mostrarSeccion('cantos')">Cantos</button>
-    </nav>
+        <img src="assets/LogoAlianza.png" class="logo"></img>
+
+        <h1>🎵 Coro Nueva Alianza con Cristo 🎵</h1>
+
+    </header>
 
     <main>
 
+        <!-- INICIO -->
+        <section id="inicio" class="seccion activa">
+            
+            <div id="resumenEnsayos"></div>
+            <div id="resumenMisa"></div>
+
+        </section>
+
         <!-- ENSAYOS -->
-        <section id="ensayos" class="seccion activa">
+        <section id="ensayos" class="seccion">
+
             <h2>Próximos Ensayos</h2>
 
             <div id="listaEnsayos"></div>
@@ -35,29 +43,57 @@
 
         <!-- ESQUEMAS -->
         <section id="esquemas" class="seccion">
+
             <div id="listaEsquemas"></div>
+
         </section>
 
         <!-- CANTOS -->
         <section id="cantos" class="seccion">
+
             <h2>Biblioteca de Cantos</h2>
 
             <div class="buscador">
+
                 <input
                     type="text"
                     id="buscarCanto"
                     placeholder="Buscar canto..."
                     onkeyup="filtrarCantos()">
+
             </div>
 
-            <ul id="listaCantos">
-            </ul>
+            <ul id="listaCantos"></ul>
 
         </section>
 
     </main>
 
     <script src="js/app.js"></script>
+    
+    <footer class="bottom-nav">
+
+    <button onclick="mostrarSeccion('inicio')">
+        🏠
+        <span>Inicio</span>
+    </button>
+
+    <button onclick="mostrarSeccion('esquemas')">
+        📖
+        <span>Esquemas</span>
+    </button>
+
+    <button onclick="mostrarSeccion('ensayos')">
+        📅
+        <span>Ensayos</span>
+    </button>
+
+    <button onclick="mostrarSeccion('cantos')">
+        🎵
+        <span>Cantos</span>
+    </button>
+
+</footer>
 
 </body>
 </html>
