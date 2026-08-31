@@ -72,8 +72,8 @@ async function cargarInicio() {
                 <div class="card-resumen">
                     <h2>📖 Próxima Misa</h2>
                     <p><strong>${misa.fecha}</strong></p>
-                    <p>${misa.hora}</p>
-                    <p>${misa.descripcion}</p>
+                    <p>⏰${misa.hora}</p>
+                    <p>📍${misa.descripcion}</p>
                 </div>
             `;
 
@@ -89,8 +89,8 @@ async function cargarInicio() {
                 <div class="card-resumen">
                     <h2>📅 Próximo Ensayo</h2>
                     <p><strong>${item.fecha}</strong></p>
-                    <p>${item.hora}</p>
-                    <p>${item.lugar}</p>
+                    <p>⏰${item.hora}</p>
+                    <p>📍${item.lugar}</p>
                 </div>
             `;
 
