@@ -148,8 +148,7 @@ async function cargarEsquemas() {
 
         const response = await fetch(URL_API);
         const data = await response.json();
-
-        console.log("VERSION NUEVA");
+        
         console.log(data.esquemas[0]);
 
 
