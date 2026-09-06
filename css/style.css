@@ -1,35 +1,30 @@
+/* ==============================
+   RESET
+================================ */
+
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
 }
 
+
+/* ==============================
+   GENERAL
+================================ */
+
 body{
-    font-family:'Poppins',sans-serif;
+    font-family:'Poppins', sans-serif;
     background:#eef3f9;
     color:#2c3e50;
     overflow-x:hidden;
 }
 
-header{
-    background:linear-gradient(
-        135deg,
-        #1565C0,
-        #1976D2
-    );
-
-    color:white;
-    text-align:center;
-    padding:25px 15px;
-}
-
-.logo{
-    width:140px;
-    height:140px;
-    border-radius:50%;
-    object-fit:cover;
-    display:block;
-    margin:0 auto 10px auto;
+main{
+    width:min(900px, 100%);
+    margin:auto;
+    padding:20px;
+    padding-bottom:90px;
 }
 
 h1{
@@ -53,26 +48,72 @@ p{
     line-height:1.5;
 }
 
+
+/* ==============================
+   HEADER
+================================ */
+
+header{
+    background:linear-gradient(
+        135deg,
+        #1565C0,
+        #1976D2
+    );
+
+    color:white;
+    text-align:center;
+    padding:25px 15px;
+}
+
+.logo{
+    width:140px;
+    height:140px;
+
+    border-radius:50%;
+    object-fit:cover;
+
+    display:block;
+    margin:0 auto 10px;
+}
+
+
+/* ==============================
+   NAVEGACIÓN SUPERIOR
+================================ */
+
 nav{
     display:flex;
     justify-content:center;
     flex-wrap:wrap;
+
     gap:10px;
+
     padding:15px;
+
     background:white;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.08);
 }
 
 nav button{
     border:none;
+
     padding:12px 20px;
+
     background:#1976d2;
     color:white;
+
     border-radius:14px;
+
     cursor:pointer;
+
+    font-family:'Poppins', sans-serif;
     font-weight:600;
     font-size:14px;
+
     transition:.3s;
+
     touch-action:manipulation;
 }
 
@@ -81,27 +122,35 @@ nav button:hover{
     transform:translateY(-2px);
 }
 
-main{
-    width:min(900px,100%);
-    margin:auto;
-    padding:20px;
-}
+
+/* ==============================
+   SECCIONES
+================================ */
 
 .seccion{
     display:none;
 }
 
-.activa{
+.seccion.activa{
     display:block;
 }
 
+
+/* ==============================
+   CARDS
+================================ */
+
 .card{
     background:white;
+
     padding:20px;
+
     margin:15px 0;
+
     border-radius:18px;
+
     box-shadow:
-        0 4px 12px rgba(0,0,0,.08);
+        0 3px 10px rgba(0,0,0,.06);
 
     transition:.3s;
 }
@@ -112,13 +161,18 @@ main{
 
 .card-resumen{
     background:white;
+
     border-radius:20px;
+
     padding:20px;
+
     margin:15px 0;
+
     box-shadow:
         0 4px 12px rgba(0,0,0,.10);
 
     cursor:pointer;
+
     transition:.3s;
 }
 
@@ -131,17 +185,36 @@ main{
     color:#1565C0;
 }
 
+
+/* ==============================
+   BUSCADOR DE CANTOS
+================================ */
+
 .buscador{
     margin-bottom:15px;
 }
 
 .buscador input{
     width:100%;
+
     padding:12px;
+
     border:1px solid #ccc;
     border-radius:12px;
-    font-family:'Poppins',sans-serif;
+
+    font-family:'Poppins', sans-serif;
+
+    outline:none;
 }
+
+.buscador input:focus{
+    border-color:#1976d2;
+}
+
+
+/* ==============================
+   LISTA DE CANTOS
+================================ */
 
 #listaCantos{
     list-style:none;
@@ -149,29 +222,350 @@ main{
 
 #listaCantos li{
     background:white;
+
     margin-bottom:10px;
+
     padding:15px;
+
     border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.08);
 }
 
 #listaCantos a{
     text-decoration:none;
+
     color:#1976d2;
+
     font-weight:600;
 }
+
+
+/* ==============================
+   ESQUEMAS
+================================ */
 
 #fechaEsquema{
     font-size:18px;
     font-weight:600;
+
     color:#1976d2;
+
     margin-bottom:15px;
 }
+
+.navegacion-esquema{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:15px;
+
+    margin-bottom:15px;
+}
+
+.navegacion-esquema button{
+    width:36px;
+    height:36px;
+
+    border:none;
+    border-radius:50%;
+
+    background:#1976d2;
+    color:#fff;
+
+    font-size:16px;
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.navegacion-esquema button:hover{
+    background:#0f5eb1;
+
+    transform:scale(1.05);
+}
+
+.titulo-esquema{
+    flex:1;
+    text-align:center;
+}
+
+.titulo-esquema h2{
+    margin:0;
+
+    font-size:2rem;
+
+    color:#1565C0;
+
+    font-weight:700;
+}
+
+.titulo-esquema p{
+    margin-top:5px;
+
+    font-size:1.2rem;
+
+    font-weight:700;
+
+    color:#555;
+}
+
+.descripcion-esquema{
+    text-align:center;
+
+    margin:20px auto;
+
+    padding:15px 20px;
+
+    background:#ffffff;
+
+    border-radius:16px;
+
+    border-left:5px solid #1976d2;
+
+    box-shadow:
+        0 3px 10px rgba(0,0,0,.08);
+
+    font-size:1.1rem;
+    font-weight:700;
+
+    color:#1565C0;
+
+    max-width:500px;
+}
+
+
+/* ==============================
+   CANTOS DEL ESQUEMA
+================================ */
+
+.linea-canto{
+    display:flex;
+    align-items:center;
+
+    padding:14px 0;
+
+    border-bottom:1px solid #e0e0e0;
+}
+
+.linea-canto:last-child{
+    border-bottom:none;
+}
+
+.momento{
+    width:140px;
+
+    font-weight:700;
+
+    color:#1565C0;
+}
+
+.canto{
+    flex:1;
+}
+
+
+/* ==============================
+   CALENDARIO
+================================ */
+
+.titulo-calendario{
+    text-align:center;
+
+    color:#1565C0;
+
+    margin-bottom:20px;
+
+    font-size:1.8rem;
+    font-weight:700;
+}
+
+.titulo-calendario-principal{
+    text-align:center;
+
+    margin-bottom:25px;
+}
+
+.cabecera-calendario{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:15px;
+
+    margin-bottom:30px;
+}
+
+.cabecera-calendario button{
+    width:40px;
+    height:40px;
+
+    border:none;
+    border-radius:50%;
+
+    background:#1976d2;
+    color:white;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.cabecera-calendario button:hover{
+    background:#0f5eb1;
+
+    transform:scale(1.05);
+}
+
+
+/* ==============================
+   GRID DEL CALENDARIO
+================================ */
+
+.calendar-grid{
+    display:grid;
+
+    grid-template-columns:repeat(7, 1fr);
+
+    gap:7px;
+
+    margin-bottom:20px;
+
+    align-items:center;
+}
+
+.calendar-grid > div{
+    text-align:center;
+}
+
+
+/* Todos los espacios del calendario
+   tendrán exactamente la misma altura */
+
+.calendar-day,
+.calendar-empty{
+    height:42px;
+}
+
+
+/* Día normal */
+
+.calendar-day{
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:0;
+
+    border-radius:12px;
+
+    background:#ffffff;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:
+        transform .2s,
+        background-color .2s;
+}
+
+.calendar-day:hover{
+    transform:scale(1.05);
+}
+
+
+/* Espacios vacíos antes/después del mes */
+
+.calendar-empty{
+    visibility:hidden;
+}
+
+
+/* ==============================
+   TIPOS DE EVENTOS
+================================ */
+
+.calendar-misa{
+    background:#fff3cd;
+}
+
+.calendar-ensayo{
+    background:#dbeafe;
+}
+
+.calendar-evento{
+    background:#c8e6c9;
+}
+
+.calendar-presentacion{
+    background:#e1bee7;
+}
+
+
+/* ==============================
+   NAVEGACIÓN INFERIOR
+================================ */
+
+.bottom-nav{
+    position:fixed;
+
+    bottom:0;
+    left:0;
+
+    width:100%;
+
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+
+    background:white;
+
+    box-shadow:
+        0 -2px 10px rgba(0,0,0,.1);
+
+    padding:10px 0;
+
+    z-index:999;
+}
+
+.bottom-nav button{
+    background:none;
+
+    border:none;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    color:#1565C0;
+
+    font-size:24px;
+
+    cursor:pointer;
+}
+
+.bottom-nav span{
+    font-size:12px;
+
+    margin-top:4px;
+}
+
+
+/* ==============================
+   RESPONSIVE
+================================ */
 
 @media (max-width:768px){
 
     main{
         padding:15px;
+        padding-bottom:90px;
     }
 
     h1{
@@ -193,46 +587,39 @@ main{
         padding:15px;
     }
 
-}
-.bottom-nav{
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
+    .titulo-esquema h2{
+        font-size:1.5rem;
+    }
 
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
+    .titulo-esquema p{
+        font-size:1rem;
+    }
 
-    background:white;
+    .linea-canto{
+        flex-direction:column;
+        align-items:flex-start;
+    }
 
-    box-shadow:0 -2px 10px rgba(0,0,0,.1);
+    .momento{
+        width:100%;
+        margin-bottom:5px;
+    }
 
-    padding:10px 0;
 
-    z-index:999;
-}
+    /* CALENDARIO EN CELULAR */
 
-.bottom-nav button{
-    background:none;
-    border:none;
+    .calendar-grid{
+        gap:5px;
+    }
 
-    display:flex;
-    flex-direction:column;
-    align-items:center;
+    .calendar-day,
+    .calendar-empty{
+        height:42px;
+    }
 
-    color:#1565C0;
+    .calendar-day{
+        padding:0;
+        font-size:14px;
+    }
 
-    font-size:24px;
-
-    cursor:pointer;
-}
-
-.bottom-nav span{
-    font-size:12px;
-    margin-top:4px;
-}
-
-main{
-    padding-bottom:90px;
 }
