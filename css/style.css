@@ -560,6 +560,372 @@ nav button:hover{
 /* ==============================
    RESPONSIVE
 ================================ */
+/* ==============================
+   INICIO - DASHBOARD
+================================ */
+
+#inicio{
+    max-width:900px;
+    margin:auto;
+}
+
+
+/* ENCABEZADO */
+
+.inicio-encabezado{
+    margin-bottom:14px;
+}
+
+.inicio-encabezado h2{
+    margin:2px 0 0;
+    color:#1565C0;
+    font-size:1.35rem;
+}
+
+.inicio-fecha-hoy{
+    color:#66788a;
+    text-transform:capitalize;
+    font-size:.9rem;
+}
+
+
+/* ==============================
+   EVENTO DESTACADO
+================================ */
+
+.evento-destacado{
+    background:white;
+
+    border-radius:24px;
+
+    padding:22px;
+
+    box-shadow:
+        0 8px 22px rgba(0,0,0,.10);
+
+    border-left:
+        6px solid #1976d2;
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+
+.evento-destacado-superior{
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:20px;
+}
+
+
+.evento-tipo-badge{
+    font-weight:700;
+
+    font-size:.9rem;
+
+    padding:7px 12px;
+
+    border-radius:999px;
+
+    background:#eef5ff;
+
+    color:#1565C0;
+}
+
+
+.evento-faltante{
+    font-size:.85rem;
+
+    font-weight:600;
+
+    color:#526273;
+
+    background:#f4f6f8;
+
+    padding:7px 11px;
+
+    border-radius:999px;
+}
+
+
+.evento-destacado-contenido{
+    display:flex;
+
+    align-items:center;
+
+    gap:24px;
+}
+
+
+/* FECHA GRANDE */
+
+.evento-fecha-grande{
+    min-width:115px;
+
+    text-align:center;
+
+    border-radius:18px;
+
+    padding:12px;
+
+    background:#f4f8fd;
+}
+
+
+.evento-dia-semana{
+    display:block;
+
+    font-size:.75rem;
+
+    font-weight:700;
+
+    color:#66788a;
+}
+
+
+.evento-fecha-grande strong{
+    display:block;
+
+    font-size:3rem;
+
+    line-height:1;
+
+    color:#1565C0;
+
+    margin:5px 0;
+}
+
+
+.evento-mes{
+    font-size:.72rem;
+
+    font-weight:700;
+
+    color:#526273;
+}
+
+
+/* INFORMACIÓN PRINCIPAL */
+
+.evento-info-principal{
+    flex:1;
+}
+
+
+.evento-info-principal h3{
+    margin-bottom:10px;
+
+    color:#1f2d3d;
+
+    font-size:1.3rem;
+}
+
+
+.evento-info-principal p{
+    margin:5px 0;
+
+    color:#425466;
+}
+
+
+/* ==============================
+   PRÓXIMOS
+================================ */
+
+.inicio-proximamente{
+    margin-top:28px;
+}
+
+
+.inicio-proximamente h3{
+    margin-bottom:12px;
+
+    color:#33475b;
+}
+
+
+.lista-proximos-eventos{
+    background:white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 5px 16px rgba(0,0,0,.07);
+}
+
+
+.evento-proximo{
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+
+    padding:16px 18px;
+
+    border-bottom:
+        1px solid #edf0f3;
+
+    border-left:
+        5px solid #1976d2;
+}
+
+
+.evento-proximo:last-child{
+    border-bottom:none;
+}
+
+
+.evento-proximo-fecha{
+    width:60px;
+
+    flex-shrink:0;
+
+    text-align:center;
+}
+
+
+.evento-proximo-fecha strong{
+    display:block;
+
+    font-size:1.45rem;
+
+    color:#1565C0;
+}
+
+
+.evento-proximo-fecha span{
+    font-size:.75rem;
+
+    font-weight:700;
+
+    color:#66788a;
+}
+
+
+.evento-proximo-info{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:3px;
+
+    min-width:0;
+}
+
+
+.evento-proximo-info strong{
+    color:#26384a;
+}
+
+
+.evento-proximo-info span{
+    color:#425466;
+}
+
+
+.evento-proximo-info small{
+    color:#718096;
+}
+
+
+/* ==============================
+   COLORES DE EVENTOS
+================================ */
+
+.evento-ensayo{
+    border-left-color:#1976d2;
+}
+
+.evento-misa{
+    border-left-color:#d5a400;
+}
+
+.evento-presentacion{
+    border-left-color:#8e44ad;
+}
+
+.evento-especial{
+    border-left-color:#2e9d62;
+}
+
+.evento-otro{
+    border-left-color:#607d8b;
+}
+
+
+/* ==============================
+   BOTÓN CALENDARIO
+================================ */
+
+.inicio-acciones{
+    text-align:center;
+
+    margin-top:22px;
+}
+
+
+.btn-ver-calendario{
+    border:none;
+
+    background:white;
+
+    color:#1565C0;
+
+    font-family:'Poppins', sans-serif;
+
+    font-weight:600;
+
+    padding:12px 20px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 3px 10px rgba(0,0,0,.07);
+}
+
+
+.btn-ver-calendario:hover{
+    transform:
+        translateY(-2px);
+}
+
+
+/* ==============================
+   SIN EVENTOS
+================================ */
+
+.inicio-sin-eventos{
+    text-align:center;
+
+    background:white;
+
+    padding:35px;
+
+    border-radius:22px;
+
+    box-shadow:
+        0 5px 16px rgba(0,0,0,.08);
+}
+
+
+.inicio-sin-eventos-icono{
+    font-size:2.5rem;
+
+    margin-bottom:10px;
+}
 
 @media (max-width:768px){
 
@@ -620,6 +986,664 @@ nav button:hover{
     .calendar-day{
         padding:0;
         font-size:14px;
+    }
+
+}
+/* =========================================================
+   MEJORA VISUAL - ESQUEMAS + CALENDARIO
+========================================================= */
+
+:root{
+    --app-primary:#1565C0;
+    --app-primary-2:#1976D2;
+    --app-bg:#eef3f9;
+    --app-surface:#ffffff;
+    --app-text:#2c3e50;
+    --app-muted:#607086;
+    --app-border:#dfe7f1;
+    --app-shadow:0 10px 24px rgba(21,101,192,.08);
+    --app-shadow-soft:0 6px 18px rgba(0,0,0,.06);
+    --app-radius-xl:24px;
+    --app-radius-lg:18px;
+    --app-radius-md:14px;
+}
+
+/* ==============================
+   SECCIONES MÁS HOMOGÉNEAS
+================================ */
+
+#esquemas,
+#ensayos{
+    padding-top:6px;
+}
+
+/* ==============================
+   BOTONES LATERALES UNIFICADOS
+================================ */
+
+.navegacion-esquema,
+.cabecera-calendario{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:20px;
+}
+
+.navegacion-esquema button,
+.cabecera-calendario button{
+    width:48px;
+    height:48px;
+    flex:0 0 48px;
+    border:none;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--app-primary), var(--app-primary-2));
+    color:#fff;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 6px 14px rgba(25,118,210,.22);
+    transition:.25s;
+}
+
+.navegacion-esquema button:hover,
+.cabecera-calendario button:hover{
+    transform:translateY(-2px) scale(1.03);
+    background:linear-gradient(135deg, #0f5eb1, #1565C0);
+}
+
+.navegacion-esquema button:disabled,
+.cabecera-calendario button:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+/* ==============================
+   TITULOS
+================================ */
+
+.titulo-esquema,
+.titulo-calendario-principal{
+    flex:1;
+    text-align:center;
+}
+
+.titulo-esquema h2,
+.titulo-calendario{
+    margin:0;
+    font-size:clamp(1.9rem, 3vw, 2.5rem);
+    line-height:1.15;
+    font-weight:700;
+    color:var(--app-primary);
+}
+
+.titulo-esquema p,
+.subtitulo-calendario{
+    margin-top:10px;
+    font-size:1.15rem;
+    font-weight:700;
+    color:#4d5b70;
+}
+
+/* ==============================
+   ESQUEMAS
+================================ */
+
+.descripcion-esquema{
+    text-align:center;
+    margin:20px auto 24px;
+    padding:16px 24px;
+    max-width:560px;
+    background:var(--app-surface);
+    border-left:6px solid var(--app-primary);
+    border-radius:20px;
+    box-shadow:var(--app-shadow);
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--app-primary);
+}
+
+#cardEsquema{
+    background:var(--app-surface);
+    border-radius:24px;
+    padding:18px 22px;
+    box-shadow:var(--app-shadow);
+    border:1px solid rgba(21,101,192,.05);
+}
+
+.linea-canto{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    padding:18px 0;
+    border-bottom:1px solid #e6edf5;
+}
+
+.linea-canto:last-child{
+    border-bottom:none;
+}
+
+.momento{
+    min-width:150px;
+    font-weight:700;
+    font-size:1.05rem;
+    color:#34465c;
+}
+
+.canto{
+    flex:1;
+    font-size:1.05rem;
+    color:#516275;
+    line-height:1.5;
+}
+
+.canto-vacio{
+    color:#99a7b5;
+    font-style:italic;
+}
+
+/* ==============================
+   CALENDARIO
+================================ */
+
+.calendario-panel{
+    background:var(--app-surface);
+    border-radius:24px;
+    padding:22px 18px 18px;
+    box-shadow:var(--app-shadow);
+    margin-bottom:22px;
+}
+
+.titulo-calendario-principal{
+    margin-bottom:0;
+}
+
+.calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.calendar-weekday{
+    text-align:center;
+    font-size:.92rem;
+    font-weight:700;
+    color:#6c7b90;
+    padding:8px 0 4px;
+}
+
+.calendar-day,
+.calendar-empty{
+    min-height:56px;
+    border-radius:18px;
+}
+
+.calendar-empty{
+    visibility:hidden;
+}
+
+.calendar-day{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    background:#fff;
+    border:1px solid var(--app-border);
+    font-size:1.05rem;
+    font-weight:700;
+    color:#24384f;
+    cursor:pointer;
+    transition:.22s;
+}
+
+.calendar-day:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--app-shadow-soft);
+}
+
+.calendar-day.has-event::after{
+    content:"";
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--app-primary);
+    position:absolute;
+    bottom:8px;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+.calendar-day.selected{
+    outline:3px solid rgba(21,101,192,.15);
+    box-shadow:0 8px 18px rgba(21,101,192,.15);
+}
+
+/* COLORES POR TIPO */
+
+.calendar-misa{
+    background:#fff3cd;
+}
+
+.calendar-ensayo{
+    background:#dbeafe;
+}
+
+.calendar-evento{
+    background:#d9f2dd;
+}
+
+.calendar-presentacion{
+    background:#f0ddf7;
+}
+
+/* ==============================
+   DETALLE DE FECHA EN CALENDARIO
+================================ */
+
+.card-dia-seleccionado{
+    border-radius:22px;
+    margin-bottom:16px;
+    box-shadow:var(--app-shadow);
+}
+
+.card-dia-seleccionado h2{
+    margin:0 0 4px;
+    color:var(--app-primary);
+    font-size:2rem;
+}
+
+.card-dia-seleccionado p{
+    color:var(--app-muted);
+    font-weight:600;
+}
+
+.card-evento-calendario{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    border-radius:22px;
+    box-shadow:var(--app-shadow);
+    margin-bottom:14px;
+}
+
+.tipo-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    width:fit-content;
+    padding:7px 14px;
+    border-radius:999px;
+    font-size:.95rem;
+    font-weight:700;
+}
+
+.tipo-ensayo-chip{
+    background:#dbeafe;
+    color:#1565C0;
+}
+
+.tipo-misa-chip{
+    background:#fff3cd;
+    color:#9a7300;
+}
+
+.tipo-evento-chip{
+    background:#d9f2dd;
+    color:#2d7d32;
+}
+
+.tipo-presentacion-chip{
+    background:#f0ddf7;
+    color:#8e44ad;
+}
+
+.evento-contenido h3{
+    margin-bottom:8px;
+    font-size:1.2rem;
+    color:#24384f;
+}
+
+.evento-contenido p{
+    margin:4px 0;
+    color:#55667a;
+}
+
+/* ==============================
+   RESPONSIVE
+================================ */
+
+@media (max-width:768px){
+
+    .navegacion-esquema button,
+    .cabecera-calendario button{
+        width:44px;
+        height:44px;
+        flex:0 0 44px;
+    }
+
+    .titulo-esquema h2,
+    .titulo-calendario{
+        font-size:1.7rem;
+    }
+
+    .descripcion-esquema{
+        font-size:1rem;
+        padding:14px 18px;
+    }
+
+    .linea-canto{
+        flex-direction:column;
+        gap:8px;
+        padding:16px 0;
+    }
+
+    .momento{
+        min-width:100%;
+        margin-bottom:2px;
+    }
+
+    .calendar-grid{
+        gap:8px;
+    }
+
+    .calendar-day,
+    .calendar-empty{
+        min-height:48px;
+        border-radius:14px;
+    }
+
+    .calendar-day{
+        font-size:.95rem;
+    }
+
+    .card-dia-seleccionado h2{
+        font-size:1.7rem;
+    }
+}
+/* =========================================================
+   BIBLIOTECA DE CANTOS
+========================================================= */
+
+#cantos{
+    max-width:900px;
+    margin:auto;
+}
+
+
+/* ENCABEZADO */
+
+.cantos-encabezado{
+    text-align:center;
+    margin-bottom:22px;
+}
+
+.cantos-encabezado h2{
+    margin-bottom:6px;
+    font-size:1.8rem;
+    color:#1565C0;
+}
+
+.cantos-encabezado p{
+    color:#6b7b8f;
+    font-size:.95rem;
+}
+
+
+/* BUSCADOR */
+
+.cantos-buscador{
+    position:relative;
+    margin-bottom:20px;
+}
+
+.cantos-buscador input{
+    width:100%;
+
+    padding:
+        14px
+        16px
+        14px
+        46px;
+
+    background:white;
+
+    border:
+        1px solid #dfe7f1;
+
+    border-radius:16px;
+
+    font-size:1rem;
+
+    box-shadow:
+        0 5px 14px
+        rgba(0,0,0,.05);
+
+    transition:.2s;
+}
+
+.cantos-buscador input:focus{
+    border-color:#1976d2;
+
+    box-shadow:
+        0 6px 18px
+        rgba(25,118,210,.12);
+}
+
+.buscador-icono{
+    position:absolute;
+
+    left:16px;
+    top:50%;
+
+    transform:
+        translateY(-50%);
+
+    z-index:2;
+}
+
+
+/* LISTA */
+
+#listaCantos{
+    list-style:none;
+
+    background:white;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 8px 22px
+        rgba(21,101,192,.08);
+}
+
+
+.canto-categoria{
+    margin:0;
+
+    border-bottom:
+        1px solid #e8edf3;
+}
+
+
+.canto-categoria:last-child{
+    border-bottom:none;
+}
+
+
+.canto-categoria a{
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:17px 18px;
+
+    text-decoration:none;
+
+    color:#2c3e50;
+
+    transition:.2s;
+}
+
+
+.canto-categoria a:hover{
+    background:#f6f9fd;
+}
+
+
+/* ICONO */
+
+.canto-categoria-icono{
+    width:44px;
+    height:44px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    background:#eef5ff;
+
+    border-radius:14px;
+
+    font-size:1.25rem;
+}
+
+
+/* INFORMACIÓN */
+
+.canto-categoria-info{
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:3px;
+}
+
+
+.canto-categoria-info strong{
+    font-size:1rem;
+
+    color:#24384f;
+}
+
+
+.canto-categoria-info span{
+    font-size:.82rem;
+
+    color:#7a899b;
+}
+
+
+/* FLECHA */
+
+.canto-categoria-flecha{
+    font-size:1.8rem;
+
+    color:#1976d2;
+
+    line-height:1;
+}
+
+
+/* SIN RESULTADOS */
+
+.cantos-vacio{
+    text-align:center;
+
+    padding:30px;
+
+    color:#718096;
+}
+
+
+@media (max-width:768px){
+
+    .cantos-encabezado h2{
+        font-size:1.5rem;
+    }
+
+    .canto-categoria a{
+        padding:15px;
+    }
+
+    .canto-categoria-icono{
+        width:40px;
+        height:40px;
+    }
+
+}
+/* =========================================================
+   BOTÓN ADMINISTRACIÓN
+========================================================= */
+
+header{
+    position:relative;
+}
+
+.btn-administracion{
+    position:absolute;
+
+    top:18px;
+    right:18px;
+
+    width:46px;
+    height:46px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border:none;
+    border-radius:50%;
+
+    background:rgba(255,255,255,.18);
+
+    color:white;
+
+    font-size:1.25rem;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 5px 14px
+        rgba(0,0,0,.15);
+
+    backdrop-filter:blur(6px);
+
+    z-index:20;
+
+    transition:.2s;
+}
+
+.btn-administracion:hover{
+    background:rgba(255,255,255,.30);
+    transform:scale(1.05);
+}
+
+
+/* MÓVIL */
+
+@media (max-width:768px){
+
+    .btn-administracion{
+        top:12px;
+        right:12px;
+
+        width:42px;
+        height:42px;
+
+        font-size:1.1rem;
     }
 
 }

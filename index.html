@@ -5,20 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AppCorus</title>
-
-    <link rel="stylesheet"href="css/style.css"/>
-	<link rel="icon" type="image/png" href="..assets/LogoAlianza.png"/>
-	<link rel="apple-touch-icon" href="..assets/AppAlianza.png"/>
-	<link rel="manifest" href="Manifest.json" content="#1976d2"/>
+    
+    <link rel="stylesheet" href="css/style.css">
+	<link rel="icon" type="image/png" href="assets/LogoAlianza.png"/>
+	<link rel="apple-touch-icon" href="assets/AppAlianza.png"/>
+	<link rel="manifest" href="Manifest.json">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
 </head>
 <body>
 
     <header>
 
-        <img src="assets/LogoAlianza.png" class="logo"></img>
-
+        <button
+            id="btnAdministracion"
+            class="btn-administracion"
+            onclick="abrirAccesoAdministracion()"
+            aria-label="Administración">
+            ⚙
+        </button>
+        <img
+            src="assets/LogoAlianza.png"
+            class="logo"
+            alt="Logo Coro Nueva Alianza con Cristo">
         <h1>🎵 Coro Nueva Alianza con Cristo 🎵</h1>
+        <h3>"Ofreciendo nuestra juventud a través del canto."</h3>
 
     </header>
 
@@ -26,16 +37,13 @@
 
         <!-- INICIO -->
         <section id="inicio" class="seccion activa">
-            
-            <div id="resumenEnsayos"></div>
-            <div id="resumenMisa"></div>
+
+            <div id="inicioEventos"></div>
 
         </section>
 
         <!-- CALENDARIO -->
         <section id="ensayos" class="seccion">
-
-            <h2 class="titulo-calendario-principal">📅 Calendario</h2>
 
             <div id="calendarioEventos"></div>
             
@@ -51,16 +59,28 @@
         </section>
 
         <!-- CANTOS -->
-        <section id="cantos" class="seccion">
+       <section id="cantos" class="seccion">
 
-            <h2>Biblioteca de Cantos</h2>
+            <div class="cantos-encabezado">
 
-            <div class="buscador">
+                <h2>🎵 Biblioteca de Cantos</h2>
+
+                <p>
+                    Consulta las categorías de cantos del coro
+                </p>
+
+            </div>
+
+            <div class="buscador cantos-buscador">
+
+                <span class="buscador-icono">
+                    🔎
+                </span>
 
                 <input
                     type="text"
                     id="buscarCanto"
-                    placeholder="Buscar canto..."
+                    placeholder="Buscar categoría..."
                     onkeyup="filtrarCantos()">
 
             </div>
@@ -68,6 +88,29 @@
             <ul id="listaCantos"></ul>
 
         </section>
+        
+        <section id="administracion" class="seccion">
+
+    <div class="admin-acceso">
+
+        <div class="admin-icono">
+            🔐
+        </div>
+
+        <h2>Administración</h2>
+
+        <p>
+            Inicia sesión con una cuenta autorizada
+            para administrar AppCorus.
+        </p>
+
+        <div id="googleLoginButton"></div>
+
+        <div id="adminMensaje"></div>
+
+    </div>
+
+</section>
 
     </main>
 
