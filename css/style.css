@@ -1647,3 +1647,296 @@ header{
     }
 
 }
+/* =========================================================
+   PANEL DE ADMINISTRACIÓN
+========================================================= */
+
+#administracion{
+    max-width:900px;
+    margin:auto;
+}
+
+.admin-panel{
+    padding:8px 0 30px;
+}
+
+
+/* PERFIL ADMIN */
+
+.admin-usuario{
+    display:flex;
+    align-items:center;
+    gap:16px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:22px;
+
+    box-shadow:
+        0 8px 22px
+        rgba(21,101,192,.08);
+
+    margin-bottom:26px;
+}
+
+
+.admin-avatar{
+    width:58px;
+    height:58px;
+
+    flex-shrink:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:18px;
+
+    background:#eef5ff;
+
+    font-size:1.7rem;
+}
+
+
+.admin-usuario h2{
+    margin:0 0 3px;
+
+    color:#1565C0;
+
+    font-size:1.45rem;
+}
+
+
+.admin-usuario p{
+    margin:0;
+
+    font-weight:600;
+
+    color:#425466;
+}
+
+
+.admin-usuario small{
+    display:block;
+
+    margin-top:3px;
+
+    color:#7a899b;
+}
+
+
+/* OPCIONES */
+
+.admin-opciones{
+    display:grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:18px;
+}
+
+
+.admin-card{
+    width:100%;
+
+    display:flex;
+    align-items:center;
+
+    gap:16px;
+
+    padding:22px;
+
+    border:none;
+
+    background:white;
+
+    border-radius:22px;
+
+    cursor:pointer;
+
+    text-align:left;
+
+    box-shadow:
+        0 8px 22px
+        rgba(21,101,192,.08);
+
+    transition:.22s;
+}
+
+
+.admin-card:hover{
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 12px 26px
+        rgba(21,101,192,.14);
+}
+
+
+.admin-card-icono{
+    width:52px;
+    height:52px;
+
+    flex-shrink:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:16px;
+
+    background:#eef5ff;
+
+    font-size:1.5rem;
+}
+
+
+.admin-card div{
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:4px;
+}
+
+
+.admin-card strong{
+    font-size:1.1rem;
+
+    color:#24384f;
+}
+
+
+.admin-card small{
+    color:#718096;
+
+    font-size:.85rem;
+}
+
+
+.admin-card > span:last-child{
+    font-size:2rem;
+
+    line-height:1;
+
+    color:#1976d2;
+}
+
+
+/* PANTALLA LOGIN */
+
+.admin-acceso{
+    max-width:520px;
+
+    margin:40px auto;
+
+    text-align:center;
+
+    background:white;
+
+    padding:36px 28px;
+
+    border-radius:24px;
+
+    box-shadow:
+        0 10px 26px
+        rgba(21,101,192,.10);
+}
+
+
+.admin-icono{
+    width:70px;
+    height:70px;
+
+    margin:
+        0 auto 16px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:22px;
+
+    background:#eef5ff;
+
+    font-size:2rem;
+}
+
+
+.admin-acceso h2{
+    margin-bottom:8px;
+
+    color:#1565C0;
+}
+
+
+.admin-acceso p{
+    margin-bottom:22px;
+
+    color:#64748b;
+
+    line-height:1.5;
+}
+
+
+#googleLoginButton{
+    display:flex;
+
+    justify-content:center;
+}
+
+
+.admin-validando{
+    margin-top:18px;
+
+    color:#1565C0;
+
+    font-weight:600;
+}
+
+
+.admin-error{
+    margin-top:18px;
+
+    padding:12px;
+
+    border-radius:12px;
+
+    background:#ffe8e8;
+
+    color:#b42318;
+
+    font-weight:600;
+}
+
+
+/* MÓVIL */
+
+@media (max-width:768px){
+
+    .admin-opciones{
+        grid-template-columns:1fr;
+    }
+
+    .admin-card{
+        padding:18px;
+    }
+
+    .admin-usuario{
+        padding:17px;
+    }
+
+    .admin-acceso{
+        margin:20px auto;
+
+        padding:28px 20px;
+    }
+
+}
