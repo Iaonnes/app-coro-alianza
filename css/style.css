@@ -1940,3 +1940,334 @@ header{
     }
 
 }
+/* =========================================================
+   ADMINISTRACIÓN - EVENTOS
+========================================================= */
+
+.admin-eventos{
+    max-width:900px;
+    margin:0 auto;
+    padding:10px 0 35px;
+}
+
+
+/* CABECERA */
+
+.admin-eventos-cabecera{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+
+    margin-bottom:24px;
+}
+
+
+.admin-eventos-cabecera h2{
+    margin:8px 0 4px;
+    color:#1565C0;
+    font-size:1.7rem;
+}
+
+
+.admin-eventos-cabecera p{
+    margin:0;
+    color:#64748b;
+}
+
+
+.admin-volver{
+    border:none;
+    background:none;
+    padding:0;
+
+    color:#1976d2;
+    font-weight:600;
+    cursor:pointer;
+}
+
+
+.admin-nuevo-evento{
+    border:none;
+    border-radius:14px;
+
+    padding:12px 18px;
+
+    background:#1976d2;
+    color:white;
+
+    font-weight:600;
+    cursor:pointer;
+
+    box-shadow:
+        0 5px 14px
+        rgba(25,118,210,.20);
+}
+
+
+.admin-nuevo-evento:hover{
+    background:#1565C0;
+}
+
+
+/* GRUPOS */
+
+.admin-eventos-subtitulo{
+    margin:0 0 12px;
+
+    color:#334155;
+
+    font-size:1.05rem;
+}
+
+
+.admin-eventos-grupo{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+
+/* TARJETA */
+
+.admin-evento-card{
+    position:relative;
+
+    display:grid;
+    grid-template-columns:70px 1fr auto;
+
+    align-items:center;
+    gap:16px;
+
+    padding:16px 18px;
+
+    background:white;
+
+    border-radius:18px;
+
+    border-left:5px solid #1976d2;
+
+    box-shadow:
+        0 6px 18px
+        rgba(15,23,42,.07);
+}
+
+
+.admin-evento-card.evento-misa{
+    border-left-color:#e3b341;
+}
+
+
+.admin-evento-card.evento-ensayo{
+    border-left-color:#1976d2;
+}
+
+
+.admin-evento-card.evento-presentacion{
+    border-left-color:#8e44ad;
+}
+
+
+.admin-evento-card.evento-especial{
+    border-left-color:#43a047;
+}
+
+
+.admin-evento-card.evento-otro{
+    border-left-color:#78909c;
+}
+
+
+/* FECHA */
+
+.admin-evento-fecha{
+    min-height:64px;
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:14px;
+
+    background:#f2f6fb;
+}
+
+
+.admin-evento-fecha strong{
+    color:#1565C0;
+
+    font-size:1.55rem;
+    line-height:1;
+}
+
+
+.admin-evento-fecha span{
+    margin-top:5px;
+
+    color:#64748b;
+
+    font-size:.72rem;
+    font-weight:700;
+}
+
+
+/* INFORMACIÓN */
+
+.admin-evento-info{
+    min-width:0;
+}
+
+
+.admin-evento-tipo{
+    margin-bottom:4px;
+
+    color:#475569;
+
+    font-size:.8rem;
+    font-weight:700;
+}
+
+
+.admin-evento-info h3{
+    margin:0 0 7px;
+
+    color:#1e293b;
+
+    font-size:1.02rem;
+}
+
+
+.admin-evento-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+
+    color:#64748b;
+
+    font-size:.84rem;
+}
+
+
+/* EDITAR */
+
+.admin-evento-editar{
+    border:none;
+    border-radius:11px;
+
+    padding:9px 13px;
+
+    background:#eef5ff;
+
+    color:#1565C0;
+
+    font-weight:600;
+
+    cursor:pointer;
+}
+
+
+.admin-evento-editar:hover{
+    background:#dcecff;
+}
+
+
+/* ANTERIORES */
+
+.admin-eventos-anteriores{
+    margin-top:24px;
+}
+
+
+.admin-eventos-anteriores summary{
+    cursor:pointer;
+
+    color:#64748b;
+
+    font-weight:600;
+}
+
+
+.admin-eventos-grupo-anteriores{
+    margin-top:12px;
+}
+
+
+.admin-evento-anterior{
+    opacity:.72;
+}
+
+
+/* SIN EVENTOS */
+
+.admin-eventos-vacio{
+    padding:40px 20px;
+
+    text-align:center;
+
+    background:white;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 6px 18px
+        rgba(15,23,42,.06);
+}
+
+
+.admin-eventos-vacio-icono{
+    font-size:2.3rem;
+}
+
+
+.admin-eventos-vacio h3{
+    margin:10px 0 5px;
+
+    color:#334155;
+}
+
+
+.admin-eventos-vacio p{
+    margin:0;
+
+    color:#64748b;
+}
+
+
+/* MÓVIL */
+
+@media(max-width:768px){
+
+    .admin-eventos-cabecera{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+
+    .admin-nuevo-evento{
+        width:100%;
+    }
+
+
+    .admin-evento-card{
+        grid-template-columns:58px 1fr;
+
+        gap:12px;
+
+        padding:14px;
+    }
+
+
+    .admin-evento-editar{
+        grid-column:1 / -1;
+
+        width:100%;
+    }
+
+
+    .admin-evento-fecha{
+        min-height:58px;
+    }
+
+}
