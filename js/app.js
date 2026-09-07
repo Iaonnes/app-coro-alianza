@@ -1174,14 +1174,30 @@ function crearTarjetaAdminEvento(
             </div>
 
 
-            <button
-                class="admin-evento-editar"
-                type="button"
-                onclick="editarEventoAdmin('${idEvento}')">
+            <div class="admin-evento-acciones">
 
-                Editar
 
-            </button>
+                <button
+                    class="admin-evento-editar"
+                    type="button"
+                    onclick="editarEventoAdmin('${idEvento}')">
+
+                    Editar
+
+                </button>
+
+
+                <button
+                    class="admin-evento-eliminar"
+                    type="button"
+                    onclick="eliminarEventoAdmin('${idEvento}')">
+
+                    Eliminar
+
+                </button>
+
+
+            </div>
 
         </article>
 
@@ -2711,6 +2727,258 @@ async function editarEventoAdmin(
 
         alert(
             "No fue posible cargar el evento."
+        );
+
+    }
+
+}
+
+// ======================================================
+// ELIMINAR / DESACTIVAR EVENTO
+// APPCORUS V3.3
+// ======================================================
+
+async function eliminarEventoAdmin(
+    idEvento
+) {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    try {
+
+        // ==========================================
+        // OBTENER EVENTO DESDE CACHÉ
+        // ==========================================
+
+        const data =
+            await obtenerDatosApp();
+
+
+        const eventos =
+            Array.isArray(
+                data.eventos
+            )
+                ? data.eventos
+                : [];
+
+
+        const evento =
+            eventos.find(
+                item =>
+                    String(
+                        item.idEvento
+                    ) ===
+                    String(
+                        idEvento
+                    )
+            );
+
+
+        if (!evento) {
+
+            alert(
+                "No fue posible encontrar el evento."
+            );
+
+            return;
+
+        }
+
+
+        // ==========================================
+        // CONFIRMACIÓN
+        // ==========================================
+
+        const confirmar =
+            window.confirm(
+
+                `¿Eliminar el evento?\n\n` +
+
+                `${evento.titulo || evento.tipo}\n` +
+
+                `${evento.fecha || ""} · ${evento.hora || ""}\n\n` +
+
+                `El evento dejará de mostrarse en AppCorus.`
+
+            );
+
+
+        if (!confirmar) {
+
+            return;
+
+        }
+
+
+        // ==========================================
+        // DESACTIVAR MEDIANTE editarEvento
+        // ==========================================
+
+        const respuesta =
+            await fetch(
+
+                URL_API,
+
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "editarEvento",
+
+                            credential:
+                                adminCredential,
+
+                            evento: {
+
+                                idEvento:
+                                    evento.idEvento,
+
+                                fecha:
+                                    evento.fechaISO,
+
+                                hora:
+                                    String(
+                                        evento.hora ||
+                                        ""
+                                    ).substring(
+                                        0,
+                                        5
+                                    ),
+
+                                tipo:
+                                    evento.tipo,
+
+                                descripcion:
+                                    evento.titulo ||
+                                    evento.tipo,
+
+                                lugar:
+                                    evento.lugar ||
+                                    "",
+
+                                referencia:
+                                    evento.referencia ||
+                                    "",
+
+                                activo:
+                                    false
+
+                            }
+
+                        })
+
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+
+                resultado.error ||
+                "No fue posible eliminar el evento."
+
+            );
+
+        }
+
+
+        // ==========================================
+        // UNA SOLA RECARGA DE DATOS
+        // ==========================================
+
+        const datosActualizados =
+            await refrescarDatosApp();
+
+
+        // ==========================================
+        // ACTUALIZAR APP
+        // ==========================================
+
+        renderizarInicio(
+            datosActualizados
+        );
+
+
+        renderizarCalendario(
+            datosActualizados
+        );
+
+
+        renderizarEsquemas(
+            datosActualizados
+        );
+
+
+        await abrirAdminEventos(
+            datosActualizados
+        );
+
+
+        // ==========================================
+        // MENSAJE
+        // ==========================================
+
+        const pantalla =
+            document.querySelector(
+                ".admin-eventos"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+
+                "afterbegin",
+
+                `
+
+                    <div class="admin-exito">
+
+                        ✅ Evento eliminado correctamente.
+
+                    </div>
+
+                `
+
+            );
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error eliminando evento:",
+            error
+        );
+
+
+        alert(
+
+            error.message ||
+            "No fue posible eliminar el evento."
+
         );
 
     }
