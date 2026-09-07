@@ -1231,15 +1231,809 @@ function escaparHtml(
 // En el siguiente paso esta función
 // abrirá el formulario real.
 
-function abrirFormularioNuevoEvento() {
+// ==========================================
+// NUEVO EVENTO
+// ==========================================
+
+async function abrirFormularioNuevoEvento() {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+        return;
+
+    }
 
 
-    alert(
-        "El formulario para crear eventos será el siguiente paso."
+    const seccion =
+        document.getElementById(
+            "administracion"
+        );
+
+
+    // ==========================================
+    // PANTALLA INICIAL
+    // ==========================================
+
+    seccion.innerHTML = `
+
+        <div class="admin-formulario-evento">
+
+            <button
+                class="admin-volver"
+                onclick="abrirAdminEventos()">
+
+                ← Eventos
+
+            </button>
+
+
+            <div class="admin-formulario-encabezado">
+
+                <div class="admin-formulario-icono">
+                    📅
+                </div>
+
+                <div>
+
+                    <h2>
+                        Nuevo evento
+                    </h2>
+
+                    <p>
+                        ${escaparHtml(
+                            adminUsuario.nombreCoro ||
+                            ""
+                        )}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="adminFormularioContenido">
+
+                <div class="admin-validando">
+                    Cargando formulario...
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    // ==========================================
+    // OBTENER CATÁLOGOS
+    // ==========================================
+
+    try {
+
+        const respuesta =
+            await fetch(
+                URL_API
+            );
+
+
+        const data =
+            await respuesta.json();
+
+
+        const catalogos =
+            data.catalogos || {};
+
+
+        const tiposEvento =
+            Array.isArray(
+                catalogos.tiposEvento
+            )
+                ? catalogos.tiposEvento
+                : [];
+
+
+        const lugares =
+            Array.isArray(
+                catalogos.lugares
+            )
+                ? catalogos.lugares
+                : [];
+
+
+        // ==========================================
+        // VALIDAR CATÁLOGOS
+        // ==========================================
+
+        if (
+            tiposEvento.length === 0
+        ) {
+
+            throw new Error(
+                "No existen tipos de evento en el catálogo."
+            );
+
+        }
+
+
+        renderizarFormularioNuevoEvento(
+            tiposEvento,
+            lugares
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error cargando formulario de evento:",
+            error
+        );
+
+
+        const contenido =
+            document.getElementById(
+                "adminFormularioContenido"
+            );
+
+
+        if (contenido) {
+
+            contenido.innerHTML = `
+
+                <div class="admin-error">
+
+                    No fue posible cargar
+                    los catálogos del evento.
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+}
+
+
+// ==========================================
+// RENDERIZAR FORMULARIO
+// ==========================================
+
+function renderizarFormularioNuevoEvento(
+    tiposEvento,
+    lugares
+) {
+
+    const contenido =
+        document.getElementById(
+            "adminFormularioContenido"
+        );
+
+
+    if (!contenido) {
+
+        return;
+
+    }
+
+
+    const opcionesTipo =
+        tiposEvento
+            .map(
+                tipo => `
+
+                    <option
+                        value="${escaparHtml(tipo)}">
+
+                        ${escaparHtml(tipo)}
+
+                    </option>
+
+                `
+            )
+            .join("");
+
+
+    const opcionesLugar =
+        lugares
+            .map(
+                lugar => `
+
+                    <option
+                        value="${escaparHtml(lugar)}">
+
+                        ${escaparHtml(lugar)}
+
+                    </option>
+
+                `
+            )
+            .join("");
+
+
+    contenido.innerHTML = `
+
+        <form
+            id="formNuevoEvento"
+            class="admin-evento-form">
+
+
+            <!-- FECHA Y HORA -->
+
+            <div class="admin-form-fila">
+
+
+                <div class="admin-form-campo">
+
+                    <label for="eventoFecha">
+                        Fecha *
+                    </label>
+
+                    <input
+                        type="date"
+                        id="eventoFecha"
+                        required>
+
+                </div>
+
+
+                <div class="admin-form-campo">
+
+                    <label for="eventoHora">
+                        Hora *
+                    </label>
+
+                    <input
+                        type="time"
+                        id="eventoHora"
+                        required>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- TIPO -->
+
+            <div class="admin-form-campo">
+
+                <label for="eventoTipo">
+                    Tipo de evento *
+                </label>
+
+                <select
+                    id="eventoTipo"
+                    required>
+
+                    <option value="">
+                        Selecciona un tipo
+                    </option>
+
+                    ${opcionesTipo}
+
+                </select>
+
+            </div>
+
+
+            <!-- DESCRIPCIÓN -->
+
+            <div class="admin-form-campo">
+
+                <label for="eventoDescripcion">
+                    Descripción *
+                </label>
+
+                <input
+                    type="text"
+                    id="eventoDescripcion"
+                    maxlength="150"
+                    placeholder="Ej. Ensayo Coro Nueva Alianza"
+                    required>
+
+            </div>
+
+
+            <!-- LUGAR -->
+
+            <div class="admin-form-campo">
+
+                <label for="eventoLugar">
+                    Lugar
+                </label>
+
+                <select id="eventoLugar">
+
+                    <option value="">
+                        Sin lugar / Por definir
+                    </option>
+
+                    ${opcionesLugar}
+
+                </select>
+
+            </div>
+
+
+            <!-- REFERENCIA -->
+
+            <div class="admin-form-campo">
+
+                <label for="eventoReferencia">
+                    Referencia
+                </label>
+
+                <input
+                    type="text"
+                    id="eventoReferencia"
+                    maxlength="200"
+                    placeholder="Información adicional opcional">
+
+            </div>
+
+
+            <!-- ACTIVO -->
+
+            <label class="admin-form-activo">
+
+                <div>
+
+                    <strong>
+                        Evento activo
+                    </strong>
+
+                    <small>
+                        Se mostrará en AppCorus
+                    </small>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    id="eventoActivo"
+                    checked>
+
+            </label>
+
+
+            <!-- MENSAJES -->
+
+            <div
+                id="adminFormMensaje">
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div class="admin-form-acciones">
+
+                <button
+                    type="button"
+                    class="admin-btn-cancelar"
+                    onclick="abrirAdminEventos()">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    id="btnGuardarEvento"
+                    class="admin-btn-guardar">
+
+                    Guardar evento
+
+                </button>
+
+            </div>
+
+
+        </form>
+    `;
+
+
+    // ==========================================
+    // EVENTO SUBMIT
+    // ==========================================
+
+    const formulario =
+        document.getElementById(
+            "formNuevoEvento"
+        );
+
+
+    formulario.addEventListener(
+        "submit",
+        function(evento) {
+
+            evento.preventDefault();
+
+            guardarNuevoEvento();
+
+        }
     );
 
 }
 
+
+// ==========================================
+// GUARDAR NUEVO EVENTO
+// ==========================================
+
+async function guardarNuevoEvento() {
+
+    if (
+        !adminCredential ||
+        !adminUsuario
+    ) {
+
+        abrirAccesoAdministracion();
+        return;
+
+    }
+
+
+    // ==========================================
+    // CAMPOS
+    // ==========================================
+
+    const fecha =
+        document
+            .getElementById(
+                "eventoFecha"
+            )
+            .value;
+
+
+    const hora =
+        document
+            .getElementById(
+                "eventoHora"
+            )
+            .value;
+
+
+    const tipo =
+        document
+            .getElementById(
+                "eventoTipo"
+            )
+            .value
+            .trim();
+
+
+    const descripcion =
+        document
+            .getElementById(
+                "eventoDescripcion"
+            )
+            .value
+            .trim();
+
+
+    const lugar =
+        document
+            .getElementById(
+                "eventoLugar"
+            )
+            .value
+            .trim();
+
+
+    const referencia =
+        document
+            .getElementById(
+                "eventoReferencia"
+            )
+            .value
+            .trim();
+
+
+    const activo =
+        document
+            .getElementById(
+                "eventoActivo"
+            )
+            .checked;
+
+
+    const mensaje =
+        document.getElementById(
+            "adminFormMensaje"
+        );
+
+
+    const boton =
+        document.getElementById(
+            "btnGuardarEvento"
+        );
+
+
+    // ==========================================
+    // VALIDACIONES
+    // ==========================================
+
+    if (!fecha) {
+
+        mostrarMensajeFormulario(
+            "Selecciona la fecha.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!hora) {
+
+        mostrarMensajeFormulario(
+            "Selecciona la hora.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!tipo) {
+
+        mostrarMensajeFormulario(
+            "Selecciona el tipo de evento.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!descripcion) {
+
+        mostrarMensajeFormulario(
+            "Escribe la descripción del evento.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // BLOQUEAR BOTÓN
+    // ==========================================
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Guardando...";
+
+
+    mensaje.innerHTML = `
+
+        <div class="admin-validando">
+
+            Guardando evento...
+
+        </div>
+    `;
+
+
+    try {
+
+        // ==========================================
+        // ENVIAR AL APPS SCRIPT
+        // ==========================================
+
+        const respuesta =
+            await fetch(
+
+                URL_API,
+
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "crearEvento",
+
+                            credential:
+                                adminCredential,
+
+                            evento: {
+
+                                fecha:
+                                    fecha,
+
+                                hora:
+                                    hora,
+
+                                tipo:
+                                    tipo,
+
+                                descripcion:
+                                    descripcion,
+
+                                lugar:
+                                    lugar,
+
+                                referencia:
+                                    referencia,
+
+                                activo:
+                                    activo
+
+                            }
+
+                        })
+
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        // ==========================================
+        // ERROR DEL SERVIDOR
+        // ==========================================
+
+        if (!resultado.ok) {
+
+            throw new Error(
+
+                resultado.error ||
+                "No fue posible guardar el evento."
+
+            );
+
+        }
+
+
+        // ==========================================
+        // ACTUALIZAR APP
+        // ==========================================
+
+        await cargarInicio();
+
+        await cargarCalendario();
+
+
+        // ==========================================
+        // VOLVER A EVENTOS
+        // ==========================================
+
+        await abrirAdminEventos();
+
+
+        // ==========================================
+        // MENSAJE DE ÉXITO
+        // ==========================================
+
+        const pantalla =
+            document.querySelector(
+                ".admin-eventos"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+
+                "afterbegin",
+
+                `
+
+                <div class="admin-exito">
+
+                    ✅ Evento creado correctamente.
+
+                    ${
+                        resultado.idEvento
+                            ? `
+                                <small>
+                                    ${escaparHtml(
+                                        resultado.idEvento
+                                    )}
+                                </small>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+                `
+
+            );
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error guardando evento:",
+            error
+        );
+
+
+        mostrarMensajeFormulario(
+
+            error.message ||
+            "No fue posible guardar el evento.",
+
+            "error"
+
+        );
+
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            "Guardar evento";
+
+    }
+
+}
+
+
+// ==========================================
+// MENSAJES DEL FORMULARIO
+// ==========================================
+
+function mostrarMensajeFormulario(
+    texto,
+    tipo
+) {
+
+    const mensaje =
+        document.getElementById(
+            "adminFormMensaje"
+        );
+
+
+    if (!mensaje) {
+
+        return;
+
+    }
+
+
+    const clase =
+        tipo === "error"
+            ? "admin-error"
+            : "admin-exito";
+
+
+    mensaje.innerHTML = `
+
+        <div class="${clase}">
+
+            ${escaparHtml(texto)}
+
+        </div>
+
+    `;
+
+}
 
 // ==========================================
 // EDITAR EVENTO
