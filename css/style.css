@@ -2562,3 +2562,262 @@ header{
     }
 
 }
+/* =========================================================
+   APPCORUS - ADMINISTRACIÓN
+   NUEVA UBICACIÓN
+   ========================================================= */
+
+
+/* Contenedor que aparece cuando seleccionamos
+   "Agregar nueva ubicación" */
+
+.admin-nuevo-lugar-box {
+    margin-top: 14px;
+    padding: 16px;
+
+    background: #f4f8fd;
+
+    border: 1px solid #d7e4f3;
+    border-radius: 16px;
+
+    box-sizing: border-box;
+}
+
+
+/* Título / label */
+
+.admin-nuevo-lugar-box > label {
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: #1f2937;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+
+/* Input + botón */
+
+.admin-nuevo-lugar-fila {
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
+    align-items: stretch;
+
+    gap: 10px;
+}
+
+
+/* Campo para escribir la ubicación */
+
+.admin-nuevo-lugar-fila input {
+    width: 100%;
+    min-width: 0;
+
+    padding: 12px 14px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+
+    border: 1px solid #cfdceb;
+    border-radius: 12px;
+
+    color: #172033;
+
+    font-family: inherit;
+    font-size: 1rem;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* Focus del campo */
+
+.admin-nuevo-lugar-fila input:focus {
+    border-color: #1976d2;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(25, 118, 210, 0.12);
+}
+
+
+/* Placeholder */
+
+.admin-nuevo-lugar-fila input::placeholder {
+    color: #8a94a3;
+}
+
+
+/* Botón Agregar ubicación */
+
+.admin-btn-agregar-lugar {
+    min-height: 46px;
+
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #1976d2;
+
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* Hover */
+
+.admin-btn-agregar-lugar:hover {
+    background: #1565c0;
+
+    box-shadow:
+        0 5px 12px
+        rgba(25, 118, 210, 0.18);
+}
+
+
+/* Click */
+
+.admin-btn-agregar-lugar:active {
+    transform: scale(0.98);
+}
+
+
+/* Cuando está guardando */
+
+.admin-btn-agregar-lugar:disabled {
+    background: #82b3e5;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
+}
+
+
+/* Texto explicativo */
+
+.admin-nuevo-lugar-box small {
+    display: block;
+
+    margin-top: 9px;
+
+    color: #667085;
+
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+
+/* Mensaje debajo del nuevo lugar */
+
+#mensajeNuevoLugar {
+    margin-top: 10px;
+}
+
+
+/* =========================================================
+   MENSAJES
+   ========================================================= */
+
+#mensajeNuevoLugar .admin-error,
+#adminFormMensaje .admin-error {
+    padding: 11px 13px;
+
+    background: #fff1f1;
+
+    border: 1px solid #ffcaca;
+    border-radius: 10px;
+
+    color: #b42318;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+#mensajeNuevoLugar .admin-validando,
+#adminFormMensaje .admin-validando {
+    padding: 11px 13px;
+
+    background: #eef6ff;
+
+    border: 1px solid #cfe5ff;
+    border-radius: 10px;
+
+    color: #0b63bd;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+#adminFormMensaje .admin-exito {
+    padding: 11px 13px;
+
+    background: #ecfdf3;
+
+    border: 1px solid #bbefce;
+    border-radius: 10px;
+
+    color: #137333;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SELECT LUGAR
+   ========================================================= */
+
+#eventoLugar {
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   RESPONSIVE - CELULAR
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .admin-nuevo-lugar-box {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+
+    .admin-nuevo-lugar-fila {
+        grid-template-columns: 1fr;
+
+        gap: 9px;
+    }
+
+
+    .admin-btn-agregar-lugar {
+        width: 100%;
+        min-height: 48px;
+    }
+
+}
