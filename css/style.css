@@ -2898,3 +2898,85 @@ header{
     }
 
 }
+/* =========================================================
+   APPCORUS V3.3
+   BOTONES EDITAR / ELIMINAR EVENTO
+   ========================================================= */
+
+.admin-evento-acciones {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+/* EDITAR */
+
+.admin-evento-acciones .admin-evento-editar {
+    min-width: 76px;
+}
+
+
+/* ELIMINAR */
+
+.admin-evento-eliminar {
+    min-width: 90px;
+
+    padding: 10px 14px;
+
+    background: #fff1f2;
+
+    border: 1px solid #fecdd3;
+    border-radius: 12px;
+
+    color: #c62828;
+
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+
+.admin-evento-eliminar:hover {
+    background: #ffe4e6;
+    border-color: #fda4af;
+}
+
+
+.admin-evento-eliminar:active {
+    transform: scale(0.97);
+}
+
+
+/* =========================================================
+   CELULAR
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .admin-evento-acciones {
+        width: 100%;
+        margin-top: 10px;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+
+    .admin-evento-acciones button {
+        width: 100%;
+        min-height: 44px;
+    }
+
+}
