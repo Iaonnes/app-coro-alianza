@@ -321,9 +321,7 @@ async function manejarLoginGoogle(
 // PANEL PRINCIPAL ADMIN
 // ==========================================
 
-function mostrarPanelAdministracion(
-    usuario
-) {
+function mostrarPanelAdministracion(usuario) {
 
     const seccion =
         document.getElementById(
@@ -335,38 +333,24 @@ function mostrarPanelAdministracion(
 
         <div class="admin-panel">
 
-
-            <!-- PERFIL -->
-
             <div class="admin-usuario">
 
                 <span class="admin-avatar">
-
                     👤
-
                 </span>
-
 
                 <div>
 
                     <h2>
-
                         Hola, ${escaparHtml(usuario.nombre)}
-
                     </h2>
 
-
                     <p>
-
                         ${escaparHtml(usuario.rol)}
-
                     </p>
 
-
                     <small>
-
                         ${escaparHtml(usuario.nombreCoro)}
-
                     </small>
 
                 </div>
@@ -374,98 +358,105 @@ function mostrarPanelAdministracion(
             </div>
 
 
-            <!-- OPCIONES -->
-
             <div class="admin-opciones">
 
-
-                <!-- EVENTOS -->
-
                 <button
+                    id="btnAdminEventos"
                     class="admin-card"
-                    onclick="abrirAdminEventos()">
+                    type="button">
 
                     <span class="admin-card-icono">
-
                         📅
-
                     </span>
-
 
                     <div>
 
                         <strong>
-
                             Eventos
-
                         </strong>
 
-
                         <small>
-
                             Crear y administrar eventos
-
                         </small>
 
                     </div>
 
-
                     <span>
-
                         ›
-
                     </span>
 
                 </button>
 
-
-                <!-- ESQUEMAS -->
 
                 <button
+                    id="btnAdminEsquemas"
                     class="admin-card"
-                    onclick="abrirAdminEsquemas()">
+                    type="button">
 
                     <span class="admin-card-icono">
-
                         📖
-
                     </span>
-
 
                     <div>
 
                         <strong>
-
                             Esquemas
-
                         </strong>
 
-
                         <small>
-
                             Crear y modificar esquemas
-
                         </small>
 
                     </div>
 
-
                     <span>
-
                         ›
-
                     </span>
 
                 </button>
-
 
             </div>
 
         </div>
     `;
 
-}
 
+    // ==========================================
+    // EVENTOS DEL PANEL
+    // ==========================================
+
+    const btnEventos =
+        document.getElementById(
+            "btnAdminEventos"
+        );
+
+
+    const btnEsquemas =
+        document.getElementById(
+            "btnAdminEsquemas"
+        );
+
+
+    if (btnEventos) {
+
+        btnEventos.addEventListener(
+            "click",
+            abrirAdminEventos
+        );
+
+    }
+
+
+    if (btnEsquemas) {
+
+        btnEsquemas.addEventListener(
+            "click",
+            abrirAdminEsquemas
+        );
+
+    }
+
+}
 
 // ==========================================
 // ADMINISTRACIÓN - EVENTOS
