@@ -2821,86 +2821,10 @@ header{
     }
 
 }
+
 /* =========================================================
    APPCORUS V3.3
-   ACCIONES DE EVENTO
-   ========================================================= */
-
-.admin-evento-acciones {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    align-self: center;
-}
-
-
-/* EDITAR */
-
-.admin-evento-acciones .admin-evento-editar {
-    min-width: 80px;
-}
-
-
-/* ELIMINAR */
-
-.admin-evento-eliminar {
-    min-width: 80px;
-
-    padding: 10px 14px;
-
-    border: 1px solid #fecaca;
-    border-radius: 12px;
-
-    background: #fff1f2;
-
-    color: #c62828;
-
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.15s ease;
-}
-
-
-.admin-evento-eliminar:hover {
-    background: #ffe4e6;
-    border-color: #fda4af;
-}
-
-
-.admin-evento-eliminar:active {
-    transform: scale(0.97);
-}
-
-
-/* CELULAR */
-
-@media (max-width: 600px) {
-
-    .admin-evento-acciones {
-        width: 100%;
-
-        flex-direction: row;
-
-        gap: 8px;
-    }
-
-
-    .admin-evento-acciones button {
-        flex: 1;
-    }
-
-}
-/* =========================================================
-   APPCORUS V3.3
-   BOTONES EDITAR / ELIMINAR EVENTO
+   ACCIONES EDITAR / ELIMINAR EVENTO
    ========================================================= */
 
 .admin-evento-acciones {
@@ -2908,7 +2832,6 @@ header{
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-
     flex-shrink: 0;
 }
 
@@ -2924,26 +2847,24 @@ header{
 
 .admin-evento-eliminar {
     min-width: 90px;
-
-    padding: 10px 14px;
-
-    background: #fff1f2;
+    padding: 9px 13px;
 
     border: 1px solid #fecdd3;
-    border-radius: 12px;
+    border-radius: 11px;
 
+    background: #fff1f2;
     color: #c62828;
 
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: .9rem;
     font-weight: 700;
 
     cursor: pointer;
 
     transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.15s ease;
+        background .2s ease,
+        border-color .2s ease,
+        transform .15s ease;
 }
 
 
@@ -2954,29 +2875,103 @@ header{
 
 
 .admin-evento-eliminar:active {
-    transform: scale(0.97);
+    transform: scale(.97);
 }
 
 
 /* =========================================================
-   CELULAR
+   TABLET / MÓVIL
    ========================================================= */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+
+    .admin-evento-card {
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
+    }
+
+
+    /* Las acciones ocupan las dos columnas de la tarjeta */
 
     .admin-evento-acciones {
+        grid-column: 1 / -1;
         width: 100%;
-        margin-top: 10px;
 
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
+
+        margin-top: 4px;
+    }
+
+
+    .admin-evento-acciones .admin-evento-editar,
+    .admin-evento-acciones .admin-evento-eliminar {
+        grid-column: auto;
+        width: 100%;
+        min-width: 0;
+        min-height: 42px;
+        margin: 0;
+    }
+
+
+    .admin-evento-info {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+
+    .admin-evento-info h3 {
+        overflow-wrap: anywhere;
+    }
+
+}
+
+
+/* =========================================================
+   CELULAR PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .admin-evento-card {
+        grid-template-columns: 52px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+
+
+    .admin-evento-fecha {
+        min-height: 54px;
+    }
+
+
+    .admin-evento-fecha strong {
+        font-size: 1.35rem;
+    }
+
+
+    .admin-evento-info h3 {
+        font-size: .95rem;
+    }
+
+
+    .admin-evento-meta {
+        gap: 7px;
+        font-size: .78rem;
+    }
+
+
+    .admin-evento-acciones {
+        grid-template-columns: 1fr 1fr;
     }
 
 
     .admin-evento-acciones button {
-        width: 100%;
-        min-height: 44px;
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: .82rem;
     }
 
 }
