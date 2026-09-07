@@ -2,12 +2,12 @@
 // CONFIGURACIÓN
 // ==========================================
 
-// API AppScript AppCorus V_2
+// API AppScript AppCorus V2.2
 const URL_API =
 "https://script.google.com/macros/s/AKfycbx7IkTSR91bHhRS0OL_48OUBM7GNkvBkgZY5casEGFqYUN2vM2W6ylUlYiR-LLxF112/exec";
 
 const GOOGLE_CLIENT_ID =
-    "765205397306-q1qna5aj3j5ifk62j28us4lqrgjk7ig8.apps.googleusercontent.com";
+"765205397306-q1qna5aj3j5ifk62j28us4lqrgjk7ig8.apps.googleusercontent.com";
 
 let googleLoginInicializado = false;
 
@@ -15,10 +15,10 @@ let googleLoginInicializado = false;
 // ==========================================
 // SESIÓN ADMINISTRATIVA
 // ==========================================
-
-// La credencial se conserva únicamente mientras
-// la página permanece abierta.
-// No se guarda en localStorage ni cookies.
+//
+// Se conserva únicamente mientras la página
+// permanezca abierta.
+// ==========================================
 
 let adminCredential = null;
 let adminUsuario = null;
@@ -32,9 +32,6 @@ function abrirAccesoAdministracion() {
 
     mostrarSeccion("administracion");
 
-
-    // Si ya inició sesión no volvemos
-    // a mostrar Google Login.
 
     if (adminUsuario) {
 
@@ -57,16 +54,9 @@ function abrirAccesoAdministracion() {
 
 function inicializarGoogleLogin() {
 
-
     // ==========================================
     // DESARROLLO LOCAL
     // ==========================================
-
-    // Google OAuth no permite iniciar sesión
-    // directamente desde file://
-    //
-    // Esto evita el error 400 cuando trabajamos
-    // con los archivos locales.
 
     if (
         window.location.protocol === "file:"
@@ -94,12 +84,14 @@ function inicializarGoogleLogin() {
         if (mensaje) {
 
             mensaje.innerHTML = `
+
                 <div class="admin-validando">
 
                     🔐 El acceso administrativo está disponible
                     en la versión publicada de AppCorus.
 
                 </div>
+
             `;
 
         }
@@ -111,7 +103,7 @@ function inicializarGoogleLogin() {
 
 
     // ==========================================
-    // EVITAR INICIALIZACIÓN DUPLICADA
+    // EVITAR DOBLE INICIALIZACIÓN
     // ==========================================
 
     if (googleLoginInicializado) {
@@ -140,10 +132,6 @@ function inicializarGoogleLogin() {
     }
 
 
-    // ==========================================
-    // INICIALIZAR GOOGLE
-    // ==========================================
-
     google.accounts.id.initialize({
 
         client_id:
@@ -155,15 +143,22 @@ function inicializarGoogleLogin() {
     });
 
 
-    // ==========================================
-    // MOSTRAR BOTÓN
-    // ==========================================
+    const contenedor =
+        document.getElementById(
+            "googleLoginButton"
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
 
     google.accounts.id.renderButton(
 
-        document.getElementById(
-            "googleLoginButton"
-        ),
+        contenedor,
 
         {
 
@@ -206,21 +201,20 @@ async function manejarLoginGoogle(
         );
 
 
-    mensaje.innerHTML = `
-        <div class="admin-validando">
+    if (mensaje) {
 
-            Validando cuenta...
+        mensaje.innerHTML = `
 
-        </div>
-    `;
+            <div class="admin-validando">
+                Validando cuenta...
+            </div>
+
+        `;
+
+    }
 
 
     try {
-
-
-        // ==========================================
-        // VALIDAR CONTRA API
-        // ==========================================
 
         const respuesta =
             await fetch(
@@ -252,31 +246,32 @@ async function manejarLoginGoogle(
             await respuesta.json();
 
 
-        // ==========================================
-        // CUENTA NO AUTORIZADA
-        // ==========================================
-
         if (!resultado.ok) {
 
-            mensaje.innerHTML = `
-                <div class="admin-error">
+            if (mensaje) {
 
-                    ⛔ ${
-                        resultado.error ||
-                        "Cuenta no autorizada"
-                    }
+                mensaje.innerHTML = `
 
-                </div>
-            `;
+                    <div class="admin-error">
+
+                        ⛔ ${
+                            escaparHtml(
+                                resultado.error ||
+                                "Cuenta no autorizada"
+                            )
+                        }
+
+                    </div>
+
+                `;
+
+            }
+
 
             return;
 
         }
 
-
-        // ==========================================
-        // GUARDAR SESIÓN EN MEMORIA
-        // ==========================================
 
         adminCredential =
             respuestaGoogle.credential;
@@ -286,10 +281,6 @@ async function manejarLoginGoogle(
             resultado.usuario;
 
 
-        // ==========================================
-        // MOSTRAR PANEL
-        // ==========================================
-
         mostrarPanelAdministracion(
             resultado.usuario
         );
@@ -297,20 +288,25 @@ async function manejarLoginGoogle(
 
     } catch(error) {
 
-
         console.error(
             "Error validando administrador:",
             error
         );
 
 
-        mensaje.innerHTML = `
-            <div class="admin-error">
+        if (mensaje) {
 
-                No fue posible validar la cuenta.
+            mensaje.innerHTML = `
 
-            </div>
-        `;
+                <div class="admin-error">
+
+                    No fue posible validar la cuenta.
+
+                </div>
+
+            `;
+
+        }
 
     }
 
@@ -321,7 +317,9 @@ async function manejarLoginGoogle(
 // PANEL PRINCIPAL ADMIN
 // ==========================================
 
-function mostrarPanelAdministracion(usuario) {
+function mostrarPanelAdministracion(
+    usuario
+) {
 
     const seccion =
         document.getElementById(
@@ -329,15 +327,24 @@ function mostrarPanelAdministracion(usuario) {
         );
 
 
+    if (!seccion) {
+
+        return;
+
+    }
+
+
     seccion.innerHTML = `
 
         <div class="admin-panel">
+
 
             <div class="admin-usuario">
 
                 <span class="admin-avatar">
                     👤
                 </span>
+
 
                 <div>
 
@@ -360,6 +367,7 @@ function mostrarPanelAdministracion(usuario) {
 
             <div class="admin-opciones">
 
+
                 <button
                     id="btnAdminEventos"
                     class="admin-card"
@@ -368,6 +376,7 @@ function mostrarPanelAdministracion(usuario) {
                     <span class="admin-card-icono">
                         📅
                     </span>
+
 
                     <div>
 
@@ -380,6 +389,7 @@ function mostrarPanelAdministracion(usuario) {
                         </small>
 
                     </div>
+
 
                     <span>
                         ›
@@ -397,6 +407,7 @@ function mostrarPanelAdministracion(usuario) {
                         📖
                     </span>
 
+
                     <div>
 
                         <strong>
@@ -409,21 +420,20 @@ function mostrarPanelAdministracion(usuario) {
 
                     </div>
 
+
                     <span>
                         ›
                     </span>
 
                 </button>
 
+
             </div>
 
         </div>
+
     `;
 
-
-    // ==========================================
-    // EVENTOS DEL PANEL
-    // ==========================================
 
     const btnEventos =
         document.getElementById(
@@ -458,16 +468,12 @@ function mostrarPanelAdministracion(usuario) {
 
 }
 
+
 // ==========================================
 // ADMINISTRACIÓN - EVENTOS
 // ==========================================
 
 async function abrirAdminEventos() {
-
-
-    // ==========================================
-    // COMPROBAR SESIÓN
-    // ==========================================
 
     if (
         !adminUsuario ||
@@ -487,9 +493,12 @@ async function abrirAdminEventos() {
         );
 
 
-    // ==========================================
-    // PANTALLA EVENTOS
-    // ==========================================
+    if (!seccion) {
+
+        return;
+
+    }
+
 
     seccion.innerHTML = `
 
@@ -501,10 +510,10 @@ async function abrirAdminEventos() {
 
                 <div>
 
-
                     <button
+                        id="btnVolverAdmin"
                         class="admin-volver"
-                        onclick="mostrarPanelAdministracion(adminUsuario)">
+                        type="button">
 
                         ← Administración
 
@@ -512,9 +521,7 @@ async function abrirAdminEventos() {
 
 
                     <h2>
-
                         📅 Eventos
-
                     </h2>
 
 
@@ -530,13 +537,13 @@ async function abrirAdminEventos() {
 
                     </p>
 
-
                 </div>
 
 
                 <button
+                    id="btnNuevoEvento"
                     class="admin-nuevo-evento"
-                    onclick="abrirFormularioNuevoEvento()">
+                    type="button">
 
                     + Nuevo evento
 
@@ -562,15 +569,49 @@ async function abrirAdminEventos() {
 
 
         </div>
+
     `;
 
 
-    // ==========================================
-    // CARGAR EVENTOS
-    // ==========================================
+    const btnVolver =
+        document.getElementById(
+            "btnVolverAdmin"
+        );
+
+
+    const btnNuevo =
+        document.getElementById(
+            "btnNuevoEvento"
+        );
+
+
+    if (btnVolver) {
+
+        btnVolver.addEventListener(
+            "click",
+            () => {
+
+                mostrarPanelAdministracion(
+                    adminUsuario
+                );
+
+            }
+        );
+
+    }
+
+
+    if (btnNuevo) {
+
+        btnNuevo.addEventListener(
+            "click",
+            abrirFormularioNuevoEvento
+        );
+
+    }
+
 
     try {
-
 
         const respuesta =
             await fetch(
@@ -592,10 +633,6 @@ async function abrirAdminEventos() {
                 : [];
 
 
-        // ==========================================
-        // ORDENAR POR FECHA
-        // ==========================================
-
         eventos.sort(
 
             (a, b) =>
@@ -614,7 +651,6 @@ async function abrirAdminEventos() {
 
     } catch(error) {
 
-
         console.error(
             "Error cargando eventos de Administración:",
             error
@@ -630,11 +666,13 @@ async function abrirAdminEventos() {
         if (lista) {
 
             lista.innerHTML = `
+
                 <div class="admin-error">
 
                     No fue posible cargar los eventos.
 
                 </div>
+
             `;
 
         }
@@ -645,7 +683,7 @@ async function abrirAdminEventos() {
 
 
 // ==========================================
-// RENDERIZAR EVENTOS
+// RENDERIZAR EVENTOS ADMIN
 // ==========================================
 
 function renderizarAdminEventos(
@@ -665,41 +703,27 @@ function renderizarAdminEventos(
     }
 
 
-    // ==========================================
-    // SIN EVENTOS
-    // ==========================================
-
     if (!eventos.length) {
-
 
         contenedor.innerHTML = `
 
             <div class="admin-eventos-vacio">
 
-
                 <div class="admin-eventos-vacio-icono">
-
                     📅
-
                 </div>
 
-
                 <h3>
-
                     No hay eventos registrados
-
                 </h3>
 
-
                 <p>
-
                     Crea el primer evento desde
                     “Nuevo evento”.
-
                 </p>
 
-
             </div>
+
         `;
 
 
@@ -708,17 +732,9 @@ function renderizarAdminEventos(
     }
 
 
-    // ==========================================
-    // FECHA ACTUAL
-    // ==========================================
-
     const ahora =
         new Date();
 
-
-    // ==========================================
-    // PRÓXIMOS
-    // ==========================================
 
     const proximos =
         eventos.filter(
@@ -732,10 +748,6 @@ function renderizarAdminEventos(
         );
 
 
-    // ==========================================
-    // ANTERIORES
-    // ==========================================
-
     const anteriores =
         eventos.filter(
 
@@ -748,60 +760,43 @@ function renderizarAdminEventos(
         );
 
 
-    let html = "";
+    let html =
+        "";
 
-
-    // ==========================================
-    // MOSTRAR PRÓXIMOS
-    // ==========================================
 
     if (proximos.length) {
-
 
         html += `
 
             <div class="admin-eventos-grupo">
 
-
                 <h3 class="admin-eventos-subtitulo">
-
                     Próximos eventos
-
                 </h3>
-
 
                 ${
                     proximos
                         .map(
-
                             evento =>
-
                                 crearTarjetaAdminEvento(
                                     evento
                                 )
-
                         )
                         .join("")
                 }
 
-
             </div>
+
         `;
 
     }
 
 
-    // ==========================================
-    // MOSTRAR ANTERIORES
-    // ==========================================
-
     if (anteriores.length) {
-
 
         html += `
 
             <details class="admin-eventos-anteriores">
-
 
                 <summary>
 
@@ -811,38 +806,30 @@ function renderizarAdminEventos(
                 </summary>
 
 
-                <div class="
-                    admin-eventos-grupo
-                    admin-eventos-grupo-anteriores
-                ">
-
+                <div
+                    class="
+                        admin-eventos-grupo
+                        admin-eventos-grupo-anteriores
+                    ">
 
                     ${
                         anteriores
-
                             .slice()
-
                             .reverse()
-
                             .map(
-
                                 evento =>
-
                                     crearTarjetaAdminEvento(
                                         evento,
                                         true
                                     )
-
                             )
-
                             .join("")
                     }
 
-
                 </div>
 
-
             </details>
+
         `;
 
     }
@@ -855,14 +842,13 @@ function renderizarAdminEventos(
 
 
 // ==========================================
-// CREAR TARJETA DE EVENTO
+// TARJETA ADMIN EVENTO
 // ==========================================
 
 function crearTarjetaAdminEvento(
     evento,
     esAnterior = false
 ) {
-
 
     const estilo =
         obtenerEstiloEvento(
@@ -936,46 +922,31 @@ function crearTarjetaAdminEvento(
         ">
 
 
-            <!-- FECHA -->
-
             <div class="admin-evento-fecha">
 
-
                 <strong>
-
                     ${fecha.dia}
-
                 </strong>
 
-
                 <span>
-
                     ${fecha.mes}
-
                 </span>
-
 
             </div>
 
 
-            <!-- INFORMACIÓN -->
-
             <div class="admin-evento-info">
-
 
                 <div class="admin-evento-tipo">
 
                     ${estilo.icono}
-
                     ${tipo}
 
                 </div>
 
 
                 <h3>
-
                     ${titulo}
-
                 </h3>
 
 
@@ -984,44 +955,34 @@ function crearTarjetaAdminEvento(
 
                     ${
                         hora
-
                             ? `
                                 <span>
-
                                     🕒 ${hora}
-
                                 </span>
                             `
-
                             : ""
                     }
 
 
                     ${
                         lugar
-
                             ? `
                                 <span>
-
                                     📍 ${lugar}
-
                                 </span>
                             `
-
                             : ""
                     }
 
 
                 </div>
 
-
             </div>
 
 
-            <!-- EDITAR -->
-
             <button
                 class="admin-evento-editar"
+                type="button"
                 onclick="editarEventoAdmin('${idEvento}')">
 
                 Editar
@@ -1030,6 +991,7 @@ function crearTarjetaAdminEvento(
 
 
         </article>
+
     `;
 
 }
@@ -1042,7 +1004,6 @@ function crearTarjetaAdminEvento(
 function obtenerFechaHoraAdmin(
     evento
 ) {
-
 
     const fechaISO =
         String(
@@ -1064,7 +1025,6 @@ function obtenerFechaHoraAdmin(
 
 
     if (fechaISO) {
-
 
         const fecha =
             new Date(
@@ -1090,9 +1050,6 @@ function obtenerFechaHoraAdmin(
     }
 
 
-    // Si no existe una fecha válida
-    // la mandamos al final.
-
     return new Date(
         9999,
         0,
@@ -1103,13 +1060,12 @@ function obtenerFechaHoraAdmin(
 
 
 // ==========================================
-// FORMATO FECHA EVENTO ADMIN
+// FORMATO FECHA ADMIN
 // ==========================================
 
 function obtenerFechaAdmin(
     evento
 ) {
-
 
     const fecha =
         obtenerFechaHoraAdmin(
@@ -1140,7 +1096,6 @@ function obtenerFechaAdmin(
         9999
     ) {
 
-
         return {
 
             dia:
@@ -1156,9 +1111,7 @@ function obtenerFechaAdmin(
 
     return {
 
-
         dia:
-
             String(
                 fecha.getDate()
             )
@@ -1167,13 +1120,10 @@ function obtenerFechaAdmin(
                 "0"
             ),
 
-
         mes:
-
             meses[
                 fecha.getMonth()
             ]
-
 
     };
 
@@ -1187,7 +1137,6 @@ function obtenerFechaAdmin(
 function escaparHtml(
     valor
 ) {
-
 
     return String(
         valor ?? ""
@@ -1225,16 +1174,6 @@ function escaparHtml(
 // NUEVO EVENTO
 // ==========================================
 
-// Por ahora solamente dejamos preparada
-// la acción.
-//
-// En el siguiente paso esta función
-// abrirá el formulario real.
-
-// ==========================================
-// NUEVO EVENTO
-// ==========================================
-
 async function abrirFormularioNuevoEvento() {
 
     if (
@@ -1243,6 +1182,7 @@ async function abrirFormularioNuevoEvento() {
     ) {
 
         abrirAccesoAdministracion();
+
         return;
 
     }
@@ -1254,17 +1194,22 @@ async function abrirFormularioNuevoEvento() {
         );
 
 
-    // ==========================================
-    // PANTALLA INICIAL
-    // ==========================================
+    if (!seccion) {
+
+        return;
+
+    }
+
 
     seccion.innerHTML = `
 
         <div class="admin-formulario-evento">
 
+
             <button
+                id="btnVolverEventos"
                 class="admin-volver"
-                onclick="abrirAdminEventos()">
+                type="button">
 
                 ← Eventos
 
@@ -1277,6 +1222,7 @@ async function abrirFormularioNuevoEvento() {
                     📅
                 </div>
 
+
                 <div>
 
                     <h2>
@@ -1284,10 +1230,12 @@ async function abrirFormularioNuevoEvento() {
                     </h2>
 
                     <p>
-                        ${escaparHtml(
-                            adminUsuario.nombreCoro ||
-                            ""
-                        )}
+                        ${
+                            escaparHtml(
+                                adminUsuario.nombreCoro ||
+                                ""
+                            )
+                        }
                     </p>
 
                 </div>
@@ -1295,8 +1243,7 @@ async function abrirFormularioNuevoEvento() {
             </div>
 
 
-            <div
-                id="adminFormularioContenido">
+            <div id="adminFormularioContenido">
 
                 <div class="admin-validando">
                     Cargando formulario...
@@ -1304,13 +1251,27 @@ async function abrirFormularioNuevoEvento() {
 
             </div>
 
+
         </div>
+
     `;
 
 
-    // ==========================================
-    // OBTENER CATÁLOGOS
-    // ==========================================
+    const btnVolver =
+        document.getElementById(
+            "btnVolverEventos"
+        );
+
+
+    if (btnVolver) {
+
+        btnVolver.addEventListener(
+            "click",
+            abrirAdminEventos
+        );
+
+    }
+
 
     try {
 
@@ -1343,10 +1304,6 @@ async function abrirFormularioNuevoEvento() {
                 ? catalogos.lugares
                 : [];
 
-
-        // ==========================================
-        // VALIDAR CATÁLOGOS
-        // ==========================================
 
         if (
             tiposEvento.length === 0
@@ -1400,7 +1357,7 @@ async function abrirFormularioNuevoEvento() {
 
 
 // ==========================================
-// RENDERIZAR FORMULARIO
+// RENDERIZAR FORMULARIO NUEVO EVENTO
 // ==========================================
 
 function renderizarFormularioNuevoEvento(
@@ -1462,8 +1419,6 @@ function renderizarFormularioNuevoEvento(
             class="admin-evento-form">
 
 
-            <!-- FECHA Y HORA -->
-
             <div class="admin-form-fila">
 
 
@@ -1498,13 +1453,12 @@ function renderizarFormularioNuevoEvento(
             </div>
 
 
-            <!-- TIPO -->
-
             <div class="admin-form-campo">
 
                 <label for="eventoTipo">
                     Tipo de evento *
                 </label>
+
 
                 <select
                     id="eventoTipo"
@@ -1520,8 +1474,6 @@ function renderizarFormularioNuevoEvento(
 
             </div>
 
-
-            <!-- DESCRIPCIÓN -->
 
             <div class="admin-form-campo">
 
@@ -1539,13 +1491,16 @@ function renderizarFormularioNuevoEvento(
             </div>
 
 
-            <!-- LUGAR -->
+            <!-- =====================================
+                 LUGAR
+            ====================================== -->
 
             <div class="admin-form-campo">
 
                 <label for="eventoLugar">
                     Lugar
                 </label>
+
 
                 <select id="eventoLugar">
 
@@ -1555,17 +1510,74 @@ function renderizarFormularioNuevoEvento(
 
                     ${opcionesLugar}
 
+                    <option value="__NUEVO_LUGAR__">
+                        ➕ Agregar nueva ubicación...
+                    </option>
+
                 </select>
+
+
+                <!-- NUEVA UBICACIÓN -->
+
+                <div
+                    id="contenedorNuevoLugar"
+                    class="admin-nuevo-lugar-box"
+                    style="display:none;">
+
+
+                    <label for="nuevoLugarNombre">
+
+                        Nueva ubicación
+
+                    </label>
+
+
+                    <div class="admin-nuevo-lugar-fila">
+
+                        <input
+                            type="text"
+                            id="nuevoLugarNombre"
+                            maxlength="120"
+                            placeholder="Ej. Casa de Juan">
+
+
+                        <button
+                            type="button"
+                            id="btnAgregarNuevoLugar"
+                            class="admin-btn-agregar-lugar">
+
+                            Agregar ubicación
+
+                        </button>
+
+                    </div>
+
+
+                    <small>
+
+                        La ubicación quedará disponible
+                        para futuros eventos.
+
+                    </small>
+
+
+                    <div id="mensajeNuevoLugar">
+                    </div>
+
+
+                </div>
 
             </div>
 
 
-            <!-- REFERENCIA -->
+            <!-- =====================================
+                 REFERENCIA
+            ====================================== -->
 
             <div class="admin-form-campo">
 
                 <label for="eventoReferencia">
-                    Referencia
+                    Notas / referencia
                 </label>
 
                 <input
@@ -1577,7 +1589,9 @@ function renderizarFormularioNuevoEvento(
             </div>
 
 
-            <!-- ACTIVO -->
+            <!-- =====================================
+                 ACTIVO
+            ====================================== -->
 
             <label class="admin-form-activo">
 
@@ -1593,6 +1607,7 @@ function renderizarFormularioNuevoEvento(
 
                 </div>
 
+
                 <input
                     type="checkbox"
                     id="eventoActivo"
@@ -1601,21 +1616,17 @@ function renderizarFormularioNuevoEvento(
             </label>
 
 
-            <!-- MENSAJES -->
-
-            <div
-                id="adminFormMensaje">
+            <div id="adminFormMensaje">
             </div>
 
 
-            <!-- BOTONES -->
-
             <div class="admin-form-acciones">
+
 
                 <button
                     type="button"
-                    class="admin-btn-cancelar"
-                    onclick="abrirAdminEventos()">
+                    id="btnCancelarEvento"
+                    class="admin-btn-cancelar">
 
                     Cancelar
 
@@ -1631,15 +1642,17 @@ function renderizarFormularioNuevoEvento(
 
                 </button>
 
+
             </div>
 
 
         </form>
+
     `;
 
 
     // ==========================================
-    // EVENTO SUBMIT
+    // SUBMIT
     // ==========================================
 
     const formulario =
@@ -1648,16 +1661,430 @@ function renderizarFormularioNuevoEvento(
         );
 
 
-    formulario.addEventListener(
-        "submit",
-        function(evento) {
+    if (formulario) {
 
-            evento.preventDefault();
+        formulario.addEventListener(
+            "submit",
+            function(evento) {
 
-            guardarNuevoEvento();
+                evento.preventDefault();
+
+                guardarNuevoEvento();
+
+            }
+        );
+
+    }
+
+
+    // ==========================================
+    // CANCELAR
+    // ==========================================
+
+    const btnCancelar =
+        document.getElementById(
+            "btnCancelarEvento"
+        );
+
+
+    if (btnCancelar) {
+
+        btnCancelar.addEventListener(
+            "click",
+            abrirAdminEventos
+        );
+
+    }
+
+
+    // ==========================================
+    // NUEVA UBICACIÓN
+    // ==========================================
+
+    const selectLugar =
+        document.getElementById(
+            "eventoLugar"
+        );
+
+
+    const contenedorNuevoLugar =
+        document.getElementById(
+            "contenedorNuevoLugar"
+        );
+
+
+    const btnAgregarNuevoLugar =
+        document.getElementById(
+            "btnAgregarNuevoLugar"
+        );
+
+
+    if (
+        selectLugar &&
+        contenedorNuevoLugar
+    ) {
+
+        selectLugar.addEventListener(
+            "change",
+            function() {
+
+                if (
+                    selectLugar.value ===
+                    "__NUEVO_LUGAR__"
+                ) {
+
+                    contenedorNuevoLugar
+                        .style
+                        .display =
+                            "block";
+
+
+                    setTimeout(
+                        () => {
+
+                            const input =
+                                document.getElementById(
+                                    "nuevoLugarNombre"
+                                );
+
+
+                            if (input) {
+
+                                input.focus();
+
+                            }
+
+                        },
+                        50
+                    );
+
+
+                } else {
+
+                    contenedorNuevoLugar
+                        .style
+                        .display =
+                            "none";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (btnAgregarNuevoLugar) {
+
+        btnAgregarNuevoLugar.addEventListener(
+            "click",
+            guardarNuevaUbicacion
+        );
+
+    }
+
+}
+
+
+// ==========================================
+// GUARDAR NUEVA UBICACIÓN
+// ==========================================
+
+async function guardarNuevaUbicacion() {
+
+    if (
+        !adminCredential ||
+        !adminUsuario
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    const input =
+        document.getElementById(
+            "nuevoLugarNombre"
+        );
+
+
+    const boton =
+        document.getElementById(
+            "btnAgregarNuevoLugar"
+        );
+
+
+    const mensaje =
+        document.getElementById(
+            "mensajeNuevoLugar"
+        );
+
+
+    const select =
+        document.getElementById(
+            "eventoLugar"
+        );
+
+
+    const contenedor =
+        document.getElementById(
+            "contenedorNuevoLugar"
+        );
+
+
+    if (
+        !input ||
+        !boton ||
+        !select
+    ) {
+
+        return;
+
+    }
+
+
+    const lugar =
+        input.value.trim();
+
+
+    if (!lugar) {
+
+        if (mensaje) {
+
+            mensaje.innerHTML = `
+
+                <div class="admin-error">
+
+                    Escribe el nombre de la ubicación.
+
+                </div>
+
+            `;
 
         }
-    );
+
+
+        input.focus();
+
+        return;
+
+    }
+
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Agregando...";
+
+
+    if (mensaje) {
+
+        mensaje.innerHTML = `
+
+            <div class="admin-validando">
+
+                Guardando ubicación...
+
+            </div>
+
+        `;
+
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+
+                URL_API,
+
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "crearLugar",
+
+                            credential:
+                                adminCredential,
+
+                            lugar:
+                                lugar
+
+                        })
+
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+
+                resultado.error ||
+                "No fue posible agregar la ubicación."
+
+            );
+
+        }
+
+
+        const nombreLugar =
+            String(
+                resultado.lugar ||
+                lugar
+            ).trim();
+
+
+        // ==========================================
+        // BUSCAR SI YA ESTÁ EN EL SELECT
+        // ==========================================
+
+        let opcion =
+            Array
+                .from(
+                    select.options
+                )
+                .find(
+                    item =>
+                        item.value ===
+                        nombreLugar
+                );
+
+
+        // ==========================================
+        // SI NO ESTÁ, AGREGARLA
+        // ==========================================
+
+        if (!opcion) {
+
+            opcion =
+                document.createElement(
+                    "option"
+                );
+
+
+            opcion.value =
+                nombreLugar;
+
+
+            opcion.textContent =
+                nombreLugar;
+
+
+            const opcionNueva =
+                Array
+                    .from(
+                        select.options
+                    )
+                    .find(
+                        item =>
+                            item.value ===
+                            "__NUEVO_LUGAR__"
+                    );
+
+
+            select.insertBefore(
+                opcion,
+                opcionNueva || null
+            );
+
+        }
+
+
+        // ==========================================
+        // SELECCIONAR UBICACIÓN
+        // ==========================================
+
+        select.value =
+            nombreLugar;
+
+
+        if (contenedor) {
+
+            contenedor.style.display =
+                "none";
+
+        }
+
+
+        input.value =
+            "";
+
+
+        if (mensaje) {
+
+            mensaje.innerHTML =
+                "";
+
+        }
+
+
+        mostrarMensajeFormulario(
+
+            resultado.existente
+
+                ? "La ubicación ya existía y fue seleccionada."
+
+                : "Ubicación agregada correctamente.",
+
+            "exito"
+
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error agregando ubicación:",
+            error
+        );
+
+
+        if (mensaje) {
+
+            mensaje.innerHTML = `
+
+                <div class="admin-error">
+
+                    ${
+                        escaparHtml(
+                            error.message ||
+                            "No fue posible agregar la ubicación."
+                        )
+                    }
+
+                </div>
+
+            `;
+
+        }
+
+
+    } finally {
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            "Agregar ubicación";
+
+    }
 
 }
 
@@ -1674,78 +2101,51 @@ async function guardarNuevoEvento() {
     ) {
 
         abrirAccesoAdministracion();
+
         return;
 
     }
 
 
-    // ==========================================
-    // CAMPOS
-    // ==========================================
-
-    const fecha =
-        document
-            .getElementById(
-                "eventoFecha"
-            )
-            .value;
-
-
-    const hora =
-        document
-            .getElementById(
-                "eventoHora"
-            )
-            .value;
-
-
-    const tipo =
-        document
-            .getElementById(
-                "eventoTipo"
-            )
-            .value
-            .trim();
-
-
-    const descripcion =
-        document
-            .getElementById(
-                "eventoDescripcion"
-            )
-            .value
-            .trim();
-
-
-    const lugar =
-        document
-            .getElementById(
-                "eventoLugar"
-            )
-            .value
-            .trim();
-
-
-    const referencia =
-        document
-            .getElementById(
-                "eventoReferencia"
-            )
-            .value
-            .trim();
-
-
-    const activo =
-        document
-            .getElementById(
-                "eventoActivo"
-            )
-            .checked;
-
-
-    const mensaje =
+    const campoFecha =
         document.getElementById(
-            "adminFormMensaje"
+            "eventoFecha"
+        );
+
+
+    const campoHora =
+        document.getElementById(
+            "eventoHora"
+        );
+
+
+    const campoTipo =
+        document.getElementById(
+            "eventoTipo"
+        );
+
+
+    const campoDescripcion =
+        document.getElementById(
+            "eventoDescripcion"
+        );
+
+
+    const campoLugar =
+        document.getElementById(
+            "eventoLugar"
+        );
+
+
+    const campoReferencia =
+        document.getElementById(
+            "eventoReferencia"
+        );
+
+
+    const campoActivo =
+        document.getElementById(
+            "eventoActivo"
         );
 
 
@@ -1753,6 +2153,50 @@ async function guardarNuevoEvento() {
         document.getElementById(
             "btnGuardarEvento"
         );
+
+
+    if (
+        !campoFecha ||
+        !campoHora ||
+        !campoTipo ||
+        !campoDescripcion ||
+        !campoLugar ||
+        !campoReferencia ||
+        !campoActivo ||
+        !boton
+    ) {
+
+        return;
+
+    }
+
+
+    const fecha =
+        campoFecha.value;
+
+
+    const hora =
+        campoHora.value;
+
+
+    const tipo =
+        campoTipo.value.trim();
+
+
+    const descripcion =
+        campoDescripcion.value.trim();
+
+
+    const lugar =
+        campoLugar.value.trim();
+
+
+    const referencia =
+        campoReferencia.value.trim();
+
+
+    const activo =
+        campoActivo.checked;
 
 
     // ==========================================
@@ -1766,6 +2210,8 @@ async function guardarNuevoEvento() {
             "error"
         );
 
+        campoFecha.focus();
+
         return;
 
     }
@@ -1777,6 +2223,8 @@ async function guardarNuevoEvento() {
             "Selecciona la hora.",
             "error"
         );
+
+        campoHora.focus();
 
         return;
 
@@ -1790,6 +2238,8 @@ async function guardarNuevoEvento() {
             "error"
         );
 
+        campoTipo.focus();
+
         return;
 
     }
@@ -1802,14 +2252,32 @@ async function guardarNuevoEvento() {
             "error"
         );
 
+        campoDescripcion.focus();
+
         return;
 
     }
 
 
     // ==========================================
-    // BLOQUEAR BOTÓN
+    // NO PERMITIR GUARDAR LA OPCIÓN
+    // "AGREGAR NUEVA UBICACIÓN"
     // ==========================================
+
+    if (
+        lugar ===
+        "__NUEVO_LUGAR__"
+    ) {
+
+        mostrarMensajeFormulario(
+            "Primero agrega la nueva ubicación.",
+            "error"
+        );
+
+        return;
+
+    }
+
 
     boton.disabled =
         true;
@@ -1819,21 +2287,13 @@ async function guardarNuevoEvento() {
         "Guardando...";
 
 
-    mensaje.innerHTML = `
-
-        <div class="admin-validando">
-
-            Guardando evento...
-
-        </div>
-    `;
+    mostrarMensajeFormulario(
+        "Guardando evento...",
+        "validando"
+    );
 
 
     try {
-
-        // ==========================================
-        // ENVIAR AL APPS SCRIPT
-        // ==========================================
 
         const respuesta =
             await fetch(
@@ -1890,10 +2350,6 @@ async function guardarNuevoEvento() {
             await respuesta.json();
 
 
-        // ==========================================
-        // ERROR DEL SERVIDOR
-        // ==========================================
-
         if (!resultado.ok) {
 
             throw new Error(
@@ -1907,7 +2363,7 @@ async function guardarNuevoEvento() {
 
 
         // ==========================================
-        // ACTUALIZAR APP
+        // ACTUALIZAR SECCIONES PÚBLICAS
         // ==========================================
 
         await cargarInicio();
@@ -1916,14 +2372,14 @@ async function guardarNuevoEvento() {
 
 
         // ==========================================
-        // VOLVER A EVENTOS
+        // VOLVER A LISTA DE EVENTOS
         // ==========================================
 
         await abrirAdminEventos();
 
 
         // ==========================================
-        // MENSAJE DE ÉXITO
+        // CONFIRMACIÓN
         // ==========================================
 
         const pantalla =
@@ -1940,23 +2396,25 @@ async function guardarNuevoEvento() {
 
                 `
 
-                <div class="admin-exito">
+                    <div class="admin-exito">
 
-                    ✅ Evento creado correctamente.
+                        ✅ Evento creado correctamente.
 
-                    ${
-                        resultado.idEvento
-                            ? `
-                                <small>
-                                    ${escaparHtml(
-                                        resultado.idEvento
-                                    )}
-                                </small>
-                            `
-                            : ""
-                    }
+                        ${
+                            resultado.idEvento
+                                ? `
+                                    <small>
+                                        ${
+                                            escaparHtml(
+                                                resultado.idEvento
+                                            )
+                                        }
+                                    </small>
+                                `
+                                : ""
+                        }
 
-                </div>
+                    </div>
 
                 `
 
@@ -2001,7 +2459,7 @@ async function guardarNuevoEvento() {
 
 function mostrarMensajeFormulario(
     texto,
-    tipo
+    tipo = "exito"
 ) {
 
     const mensaje =
@@ -2017,10 +2475,28 @@ function mostrarMensajeFormulario(
     }
 
 
-    const clase =
+    let clase =
+        "admin-exito";
+
+
+    if (
         tipo === "error"
-            ? "admin-error"
-            : "admin-exito";
+    ) {
+
+        clase =
+            "admin-error";
+
+    }
+
+
+    if (
+        tipo === "validando"
+    ) {
+
+        clase =
+            "admin-validando";
+
+    }
 
 
     mensaje.innerHTML = `
@@ -2035,17 +2511,17 @@ function mostrarMensajeFormulario(
 
 }
 
+
 // ==========================================
 // EDITAR EVENTO
 // ==========================================
-
-// También queda preparado para el
-// siguiente paso.
+//
+// Lo conectaremos en el siguiente paso.
+// ==========================================
 
 function editarEventoAdmin(
     idEvento
 ) {
-
 
     alert(
 
@@ -2064,12 +2540,12 @@ function editarEventoAdmin(
 
 function abrirAdminEsquemas() {
 
-
     alert(
         "Administración de Esquemas será el siguiente módulo."
     );
 
 }
+
 
 // ==========================================
 // NAVEGACIÓN
@@ -2077,17 +2553,38 @@ function abrirAdminEsquemas() {
 
 function mostrarSeccion(id) {
 
-    document.querySelectorAll(".seccion").forEach(seccion => {
-        seccion.classList.remove("activa");
-    });
+    document
+        .querySelectorAll(
+            ".seccion"
+        )
+        .forEach(
+            seccion => {
 
-    document.getElementById(id).classList.add("activa");
+                seccion.classList.remove(
+                    "activa"
+                );
+
+            }
+        );
+
+
+    const destino =
+        document.getElementById(
+            id
+        );
+
+
+    if (destino) {
+
+        destino.classList.add(
+            "activa"
+        );
+
+    }
+
 }
 
 
-// ==========================================
-// Resumen de Inicio
-// ==========================================
 // ==========================================
 // INICIO
 // ==========================================
@@ -2097,71 +2594,105 @@ async function cargarInicio() {
     try {
 
         const response =
-            await fetch(URL_API);
+            await fetch(
+                URL_API
+            );
+
 
         const data =
             await response.json();
 
+
         const contenedor =
-            document.getElementById("inicioEventos");
+            document.getElementById(
+                "inicioEventos"
+            );
 
-        contenedor.innerHTML = "";
+
+        if (!contenedor) {
+
+            return;
+
+        }
 
 
-        // ==========================================
-        // FECHA Y HORA ACTUAL
-        // ==========================================
+        contenedor.innerHTML =
+            "";
+
 
         const ahora =
             new Date();
 
 
-        // ==========================================
-        // EVENTOS FUTUROS
-        // ==========================================
+        const eventos =
+            Array.isArray(
+                data.eventos
+            )
+                ? data.eventos
+                : [];
+
 
         const eventosProximos =
-            data.eventos
+            eventos
 
-            .map(evento => {
+                .map(
+                    evento => {
 
-                const hora =
-                    evento.hora
-                        ? evento.hora.substring(0, 5)
-                        : "00:00";
+                        const hora =
+                            evento.hora
 
-                const fechaHora =
-                    new Date(
-                        `${evento.fechaISO}T${hora}:00`
-                    );
+                                ? evento.hora
+                                    .substring(
+                                        0,
+                                        5
+                                    )
 
-                return {
-                    ...evento,
-                    fechaHora
-                };
-
-            })
-
-            .filter(evento =>
-                evento.fechaHora >= ahora
-            )
-
-            .sort((a, b) =>
-                a.fechaHora - b.fechaHora
-            )
-
-            .slice(0, 4);
+                                : "00:00";
 
 
-        // ==========================================
-        // SIN EVENTOS
-        // ==========================================
+                        const fechaHora =
+                            new Date(
+
+                                `${evento.fechaISO}T${hora}:00`
+
+                            );
+
+
+                        return {
+
+                            ...evento,
+
+                            fechaHora
+
+                        };
+
+                    }
+                )
+
+                .filter(
+                    evento =>
+                        evento.fechaHora >=
+                        ahora
+                )
+
+                .sort(
+                    (a, b) =>
+                        a.fechaHora -
+                        b.fechaHora
+                )
+
+                .slice(
+                    0,
+                    4
+                );
+
 
         if (
             eventosProximos.length === 0
         ) {
 
             contenedor.innerHTML = `
+
                 <div class="inicio-sin-eventos">
 
                     <div class="inicio-sin-eventos-icono">
@@ -2178,28 +2709,30 @@ async function cargarInicio() {
                     </p>
 
                 </div>
+
             `;
 
+
             return;
+
         }
 
 
-        // ==========================================
-        // EVENTO PRINCIPAL
-        // ==========================================
-
         const principal =
             eventosProximos[0];
+
 
         const estiloPrincipal =
             obtenerEstiloEvento(
                 principal.tipo
             );
 
+
         const fechaPrincipal =
             formatearFechaInicio(
                 principal.fechaHora
             );
+
 
         const faltante =
             obtenerTextoFaltante(
@@ -2222,16 +2755,19 @@ async function cargarInicio() {
             </div>
 
 
-            <div class="
-                evento-destacado
-                ${estiloPrincipal.clase}
-            ">
+            <div
+                class="
+                    evento-destacado
+                    ${estiloPrincipal.clase}
+                ">
 
                 <div class="evento-destacado-superior">
 
                     <span class="evento-tipo-badge">
+
                         ${estiloPrincipal.icono}
-                        ${principal.tipo}
+                        ${escaparHtml(principal.tipo)}
+
                     </span>
 
                     <span class="evento-faltante">
@@ -2263,18 +2799,29 @@ async function cargarInicio() {
                     <div class="evento-info-principal">
 
                         <h3>
-                            ${principal.titulo || principal.tipo}
+
+                            ${
+                                escaparHtml(
+                                    principal.titulo ||
+                                    principal.tipo
+                                )
+                            }
+
                         </h3>
 
                         <p>
-                            🕒 ${principal.hora}
+                            🕒 ${escaparHtml(principal.hora)}
                         </p>
 
                         ${
                             principal.lugar
                                 ? `
                                     <p>
-                                        📍 ${principal.lugar}
+                                        📍 ${
+                                            escaparHtml(
+                                                principal.lugar
+                                            )
+                                        }
                                     </p>
                                 `
                                 : ""
@@ -2285,15 +2832,14 @@ async function cargarInicio() {
                 </div>
 
             </div>
+
         `;
 
 
-        // ==========================================
-        // SIGUIENTES EVENTOS
-        // ==========================================
-
         const siguientes =
-            eventosProximos.slice(1);
+            eventosProximos.slice(
+                1
+            );
 
 
         if (
@@ -2309,6 +2855,7 @@ async function cargarInicio() {
                     </h3>
 
                     <div class="lista-proximos-eventos">
+
             `;
 
 
@@ -2320,6 +2867,7 @@ async function cargarInicio() {
                             evento.tipo
                         );
 
+
                     const fecha =
                         formatearFechaCompacta(
                             evento.fechaHora
@@ -2328,10 +2876,11 @@ async function cargarInicio() {
 
                     html += `
 
-                        <div class="
-                            evento-proximo
-                            ${estilo.clase}
-                        ">
+                        <div
+                            class="
+                                evento-proximo
+                                ${estilo.clase}
+                            ">
 
                             <div class="evento-proximo-fecha">
 
@@ -2349,26 +2898,56 @@ async function cargarInicio() {
                             <div class="evento-proximo-info">
 
                                 <strong>
+
                                     ${estilo.icono}
-                                    ${evento.tipo}
+
+                                    ${
+                                        escaparHtml(
+                                            evento.tipo
+                                        )
+                                    }
+
                                 </strong>
 
+
                                 <span>
-                                    ${evento.titulo || ""}
+
+                                    ${
+                                        escaparHtml(
+                                            evento.titulo ||
+                                            ""
+                                        )
+                                    }
+
                                 </span>
 
+
                                 <small>
-                                    🕒 ${evento.hora}
+
+                                    🕒 ${
+                                        escaparHtml(
+                                            evento.hora
+                                        )
+                                    }
+
                                     ${
                                         evento.lugar
-                                            ? ` · 📍 ${evento.lugar}`
+
+                                            ? ` · 📍 ${
+                                                escaparHtml(
+                                                    evento.lugar
+                                                )
+                                            }`
+
                                             : ""
                                     }
+
                                 </small>
 
                             </div>
 
                         </div>
+
                     `;
 
                 }
@@ -2376,16 +2955,15 @@ async function cargarInicio() {
 
 
             html += `
+
                     </div>
+
                 </div>
+
             `;
 
         }
 
-
-        // ==========================================
-        // BOTÓN CALENDARIO
-        // ==========================================
 
         html += `
 
@@ -2400,6 +2978,7 @@ async function cargarInicio() {
                 </button>
 
             </div>
+
         `;
 
 
@@ -2419,83 +2998,120 @@ async function cargarInicio() {
 }
 
 
-
 // ==========================================
 // ESTILO SEGÚN TIPO DE EVENTO
 // ==========================================
 
-function obtenerEstiloEvento(tipo) {
+function obtenerEstiloEvento(
+    tipo
+) {
 
     const texto =
-        String(tipo || "")
-            .toLowerCase();
+        String(
+            tipo || ""
+        )
+        .toLowerCase();
 
 
     if (
-        texto.includes("ensayo")
+        texto.includes(
+            "ensayo"
+        )
     ) {
 
         return {
-            icono: "🎼",
-            clase: "evento-ensayo"
+
+            icono:
+                "🎼",
+
+            clase:
+                "evento-ensayo"
+
         };
 
     }
 
 
     if (
-        texto.includes("misa")
+        texto.includes(
+            "misa"
+        )
     ) {
 
         return {
-            icono: "⛪",
-            clase: "evento-misa"
+
+            icono:
+                "⛪",
+
+            clase:
+                "evento-misa"
+
         };
 
     }
 
 
     if (
-        texto.includes("present")
+        texto.includes(
+            "present"
+        )
     ) {
 
         return {
-            icono: "🎤",
-            clase: "evento-presentacion"
+
+            icono:
+                "🎤",
+
+            clase:
+                "evento-presentacion"
+
         };
 
     }
 
 
     if (
-        texto.includes("evento")
+        texto.includes(
+            "evento"
+        )
     ) {
 
         return {
-            icono: "✨",
-            clase: "evento-especial"
+
+            icono:
+                "✨",
+
+            clase:
+                "evento-especial"
+
         };
 
     }
 
 
-    // Cualquier tipo nuevo que agregues
     return {
-        icono: "📌",
-        clase: "evento-otro"
+
+        icono:
+            "📌",
+
+        clase:
+            "evento-otro"
+
     };
 
 }
-
 
 
 // ==========================================
 // FECHA PRINCIPAL
 // ==========================================
 
-function formatearFechaInicio(fecha) {
+function formatearFechaInicio(
+    fecha
+) {
 
     const dias = [
+
         "DOM",
         "LUN",
         "MAR",
@@ -2503,9 +3119,12 @@ function formatearFechaInicio(fecha) {
         "JUE",
         "VIE",
         "SÁB"
+
     ];
 
+
     const meses = [
+
         "ENERO",
         "FEBRERO",
         "MARZO",
@@ -2518,6 +3137,7 @@ function formatearFechaInicio(fecha) {
         "OCTUBRE",
         "NOVIEMBRE",
         "DICIEMBRE"
+
     ];
 
 
@@ -2531,7 +3151,8 @@ function formatearFechaInicio(fecha) {
         dia:
             String(
                 fecha.getDate()
-            ).padStart(
+            )
+            .padStart(
                 2,
                 "0"
             ),
@@ -2546,14 +3167,16 @@ function formatearFechaInicio(fecha) {
 }
 
 
-
 // ==========================================
 // FECHA COMPACTA
 // ==========================================
 
-function formatearFechaCompacta(fecha) {
+function formatearFechaCompacta(
+    fecha
+) {
 
     const meses = [
+
         "ENE",
         "FEB",
         "MAR",
@@ -2566,6 +3189,7 @@ function formatearFechaCompacta(fecha) {
         "OCT",
         "NOV",
         "DIC"
+
     ];
 
 
@@ -2584,7 +3208,6 @@ function formatearFechaCompacta(fecha) {
 }
 
 
-
 // ==========================================
 // FECHA ACTUAL
 // ==========================================
@@ -2597,20 +3220,29 @@ function formatearFechaHoy() {
 
     return fecha
         .toLocaleDateString(
+
             "es-MX",
+
             {
-                weekday: "long",
-                day: "numeric",
-                month: "long"
+
+                weekday:
+                    "long",
+
+                day:
+                    "numeric",
+
+                month:
+                    "long"
+
             }
+
         );
 
 }
 
 
-
 // ==========================================
-// TEXTO "HOY / MAÑANA / FALTAN X DÍAS"
+// HOY / MAÑANA / FALTAN DÍAS
 // ==========================================
 
 function obtenerTextoFaltante(
@@ -2619,6 +3251,7 @@ function obtenerTextoFaltante(
 
     const hoy =
         new Date();
+
 
     hoy.setHours(
         0,
@@ -2633,6 +3266,7 @@ function obtenerTextoFaltante(
             fechaEvento
         );
 
+
     evento.setHours(
         0,
         0,
@@ -2643,11 +3277,16 @@ function obtenerTextoFaltante(
 
     const diferencia =
         Math.round(
+
             (
                 evento -
                 hoy
-            ) /
+            )
+
+            /
+
             86400000
+
         );
 
 
@@ -2672,90 +3311,117 @@ function obtenerTextoFaltante(
     return `Faltan ${diferencia} días`;
 
 }
-// ==========================================
-// ENSAYOS
-// ==========================================
 
-async function cargarEnsayos() {
-
-    try {
-
-        const response = await fetch(URL_API);
-        const data = await response.json();
-
-        const contenedor =
-            document.getElementById("listaEnsayos");
-
-        contenedor.innerHTML = "";
-
-        data.ensayos.forEach(item => {
-
-            contenedor.innerHTML += `
-                <div class="card">
-                    <h3>📅 ${item.fecha}</h3>
-                    <p>⏰ ${item.hora}</p>
-                    <p>📍 ${item.lugar}</p>
-                    <p>📝 ${item.descripcion || ""}</p>
-                </div>
-            `;
-        });
-
-    } catch(error) {
-
-        console.error(error);
-
-    }
-}
 
 // ==========================================
 // ESQUEMAS
 // ==========================================
 
-let indiceEsquema = 0;
-let fechasDisponibles = [];
+let indiceEsquema =
+    0;
+
+let fechasDisponibles =
+    [];
+
 
 async function cargarEsquemas() {
 
     try {
 
-        const response = await fetch(URL_API);
-        const data = await response.json();
+        const response =
+            await fetch(
+                URL_API
+            );
+
+
+        const data =
+            await response.json();
+
 
         const contenedor =
-            document.getElementById("listaEsquemas");
+            document.getElementById(
+                "listaEsquemas"
+            );
 
-        contenedor.innerHTML = "";
 
-        if (data.esquemas.length === 0) {
+        if (!contenedor) {
+
+            return;
+
+        }
+
+
+        contenedor.innerHTML =
+            "";
+
+
+        const esquemas =
+            Array.isArray(
+                data.esquemas
+            )
+                ? data.esquemas
+                : [];
+
+
+        if (
+            esquemas.length === 0
+        ) {
 
             contenedor.innerHTML = `
+
                 <div class="card">
                     No hay esquemas disponibles.
                 </div>
+
             `;
 
+
             return;
+
         }
 
-        fechasDisponibles = [];
 
-        data.esquemas.forEach(item => {
+        fechasDisponibles =
+            [];
 
-            const clave =
-                `${item.fecha}-${item.hora}-${item.descripcion}`;
 
-            if (!fechasDisponibles.some(f => f.clave === clave)) {
+        esquemas.forEach(
+            item => {
 
-                fechasDisponibles.push({
-                    clave,
-                    fecha: item.fecha,
-                    hora: item.hora,
-                    descripcion: item.descripcion
-                });
+                const clave =
+                    `${item.fecha}-${item.hora}-${item.descripcion}`;
+
+
+                if (
+                    !fechasDisponibles
+                        .some(
+                            f =>
+                                f.clave ===
+                                clave
+                        )
+                ) {
+
+                    fechasDisponibles.push({
+
+                        clave:
+                            clave,
+
+                        fecha:
+                            item.fecha,
+
+                        hora:
+                            item.hora,
+
+                        descripcion:
+                            item.descripcion
+
+                    });
+
+                }
 
             }
+        );
 
-        });
 
         if (
             indiceEsquema >
@@ -2767,26 +3433,51 @@ async function cargarEsquemas() {
 
         }
 
+
+        if (
+            indiceEsquema < 0
+        ) {
+
+            indiceEsquema =
+                0;
+
+        }
+
+
         const esquemaActual =
-            fechasDisponibles[indiceEsquema];
+            fechasDisponibles[
+                indiceEsquema
+            ];
+
 
         const fechaSeleccionada =
             esquemaActual.fecha;
 
+
         const horaSeleccionada =
             esquemaActual.hora;
+
 
         const descripcionSeleccionada =
             esquemaActual.descripcion;
 
+
         contenedor.innerHTML = `
+
             <div class="navegacion-esquema">
 
                 <button
                     onclick="cambiarEsquema(-1)"
-                    ${indiceEsquema === 0 ? "disabled" : ""}>
+                    ${
+                        indiceEsquema === 0
+                            ? "disabled"
+                            : ""
+                    }>
+
                     ◀
+
                 </button>
+
 
                 <div class="titulo-esquema">
 
@@ -2800,76 +3491,160 @@ async function cargarEsquemas() {
 
                 </div>
 
+
                 <button
                     onclick="cambiarEsquema(1)"
-                    ${indiceEsquema === fechasDisponibles.length - 1 ? "disabled" : ""}>
+                    ${
+                        indiceEsquema ===
+                        fechasDisponibles.length - 1
+
+                            ? "disabled"
+
+                            : ""
+                    }>
+
                     ▶
+
                 </button>
 
             </div>
 
-                <p class="descripcion-esquema">
-                    ${descripcionSeleccionada}
-                </p>
 
-            <div class="card" id="cardEsquema"></div>
+            <p class="descripcion-esquema">
+                ${descripcionSeleccionada}
+            </p>
+
+
+            <div
+                class="card"
+                id="cardEsquema">
+            </div>
+
         `;
+
 
         const card =
-            document.getElementById("cardEsquema");
-
-        const esquemaDelDia =
-            data.esquemas.filter(item =>
-
-                item.fecha === fechaSeleccionada &&
-                item.hora === horaSeleccionada &&
-                item.descripcion === descripcionSeleccionada
-
+            document.getElementById(
+                "cardEsquema"
             );
 
-            esquemaDelDia.forEach(item => {
+
+        const esquemaDelDia =
+            esquemas.filter(
+                item =>
+
+                    item.fecha ===
+                        fechaSeleccionada
+
+                    &&
+
+                    item.hora ===
+                        horaSeleccionada
+
+                    &&
+
+                    item.descripcion ===
+                        descripcionSeleccionada
+            );
+
+
+        esquemaDelDia.forEach(
+            item => {
 
                 card.innerHTML += `
+
                     <div class="linea-canto">
+
                         <span class="momento">
-                            ${item.momento} :
+
+                            ${
+                                escaparHtml(
+                                    item.momento
+                                )
+                            } :
+
                         </span>
+
 
                         <span class="canto">
+
                             ${
-                                item.canto && item.canto.trim() !== ""
-                                    ? `🎵 ${item.canto}`
-                                    : `<span class="canto-vacio">Pendiente</span>`
+                                item.canto &&
+                                item.canto.trim() !== ""
+
+                                    ? `🎵 ${
+                                        escaparHtml(
+                                            item.canto
+                                        )
+                                    }`
+
+                                    : `
+                                        <span class="canto-vacio">
+                                            Pendiente
+                                        </span>
+                                    `
                             }
+
                         </span>
+
                     </div>
+
                 `;
 
-            });
+            }
+        );
 
-    } catch (error) {
 
-        console.error("Error esquemas:", error);
+    } catch(error) {
 
-        document.getElementById("listaEsquemas").innerHTML = `
-            <div class="card">
-                Error al cargar los esquemas.
-            </div>
-        `;
+        console.error(
+            "Error esquemas:",
+            error
+        );
+
+
+        const contenedor =
+            document.getElementById(
+                "listaEsquemas"
+            );
+
+
+        if (contenedor) {
+
+            contenedor.innerHTML = `
+
+                <div class="card">
+
+                    Error al cargar los esquemas.
+
+                </div>
+
+            `;
+
+        }
 
     }
 
 }
 
-function cambiarEsquema(direccion) {
 
-    indiceEsquema += direccion;
+function cambiarEsquema(
+    direccion
+) {
 
-    if (indiceEsquema < 0) {
+    indiceEsquema +=
+        direccion;
 
-        indiceEsquema = 0;
+
+    if (
+        indiceEsquema < 0
+    ) {
+
+        indiceEsquema =
+            0;
 
     }
+
 
     if (
         indiceEsquema >
@@ -2881,9 +3656,12 @@ function cambiarEsquema(direccion) {
 
     }
 
+
     cargarEsquemas();
 
 }
+
+
 // ==========================================
 // CANTOS
 // ==========================================
@@ -2893,69 +3671,114 @@ async function cargarCantos() {
     try {
 
         const response =
-            await fetch(URL_API);
+            await fetch(
+                URL_API
+            );
+
 
         const data =
             await response.json();
 
+
         const lista =
-            document.getElementById("listaCantos");
+            document.getElementById(
+                "listaCantos"
+            );
 
-        lista.innerHTML = "";
 
-
-        if (
-            !data.cantos ||
-            data.cantos.length === 0
-        ) {
-
-            lista.innerHTML = `
-                <li class="cantos-vacio">
-                    🎵 No hay categorías disponibles
-                </li>
-            `;
+        if (!lista) {
 
             return;
+
         }
 
 
-        data.cantos.forEach(categoria => {
+        lista.innerHTML =
+            "";
 
-            lista.innerHTML += `
-                <li class="canto-categoria">
 
-                    <a
-                        href="${categoria.url}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+        const cantos =
+            Array.isArray(
+                data.cantos
+            )
+                ? data.cantos
+                : [];
 
-                        <div class="canto-categoria-icono">
-                            🎵
-                        </div>
 
-                        <div class="canto-categoria-info">
+        if (
+            cantos.length === 0
+        ) {
 
-                            <strong>
-                                ${categoria.categoria}
-                            </strong>
+            lista.innerHTML = `
 
-                            <span>
-                                Abrir carpeta de cantos
-                            </span>
+                <li class="cantos-vacio">
 
-                        </div>
-
-                        <div class="canto-categoria-flecha">
-                            ›
-                        </div>
-
-                    </a>
+                    🎵 No hay categorías disponibles
 
                 </li>
+
             `;
 
-        });
+
+            return;
+
+        }
+
+
+        cantos.forEach(
+            categoria => {
+
+                lista.innerHTML += `
+
+                    <li class="canto-categoria">
+
+                        <a
+                            href="${
+                                escaparHtml(
+                                    categoria.url
+                                )
+                            }"
+                            target="_blank"
+                            rel="noopener noreferrer">
+
+
+                            <div class="canto-categoria-icono">
+                                🎵
+                            </div>
+
+
+                            <div class="canto-categoria-info">
+
+                                <strong>
+
+                                    ${
+                                        escaparHtml(
+                                            categoria.categoria
+                                        )
+                                    }
+
+                                </strong>
+
+                                <span>
+                                    Abrir carpeta de cantos
+                                </span>
+
+                            </div>
+
+
+                            <div class="canto-categoria-flecha">
+                                ›
+                            </div>
+
+
+                        </a>
+
+                    </li>
+
+                `;
+
+            }
+        );
 
 
     } catch(error) {
@@ -2968,304 +3791,617 @@ async function cargarCantos() {
     }
 
 }
+
+
 // ==========================================
 // CALENDARIO
 // ==========================================
 
-let mesActual = 0;
-let añoActual = 0;
-let eventosCalendario = [];
-let mesesDisponibles = [];
+let mesActual =
+    0;
+
+let añoActual =
+    0;
+
+let eventosCalendario =
+    [];
+
+let mesesDisponibles =
+    [];
+
 
 async function cargarCalendario() {
 
     try {
 
-        const response = await fetch(URL_API);
-        const data = await response.json();
+        const response =
+            await fetch(
+                URL_API
+            );
 
-        eventosCalendario = data.eventos;
+
+        const data =
+            await response.json();
+
+
+        eventosCalendario =
+            Array.isArray(
+                data.eventos
+            )
+                ? data.eventos
+                : [];
+
 
         const calendario =
-            document.getElementById("calendarioEventos");
+            document.getElementById(
+                "calendarioEventos"
+            );
+
 
         const detalle =
-            document.getElementById("detalleFecha");
+            document.getElementById(
+                "detalleFecha"
+            );
 
-        calendario.innerHTML = "";
-        detalle.innerHTML = "";
 
-        const meses = [
-            "Enero","Febrero","Marzo",
-            "Abril","Mayo","Junio",
-            "Julio","Agosto","Septiembre",
-            "Octubre","Noviembre","Diciembre"
-        ];
+        if (
+            !calendario ||
+            !detalle
+        ) {
 
-        mesesDisponibles = [];
-
-        eventosCalendario.forEach(evento => {
-
-            const partes =
-                evento.fecha.split(" de ");
-
-            const nombreMes =
-                partes[1];
-
-            const indiceMes =
-                meses.findIndex(
-                    m => m.toLowerCase() === nombreMes
-                );
-
-            const clave =
-                `${indiceMes}-2026`;
-
-            if (!mesesDisponibles.some(m => m.clave === clave)) {
-
-                mesesDisponibles.push({
-                    clave,
-                    mes: indiceMes,
-                    año: 2026
-                });
-
-            }
-
-        });
-
-        if (!mesesDisponibles.length) {
             return;
+
         }
 
-        if (mesActual === 0 && añoActual === 0) {
+
+        calendario.innerHTML =
+            "";
+
+
+        detalle.innerHTML =
+            "";
+
+
+        const meses = [
+
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre"
+
+        ];
+
+
+        mesesDisponibles =
+            [];
+
+
+        eventosCalendario.forEach(
+            evento => {
+
+                if (!evento.fechaISO) {
+
+                    return;
+
+                }
+
+
+                const partesISO =
+                    evento.fechaISO.split(
+                        "-"
+                    );
+
+
+                if (
+                    partesISO.length !== 3
+                ) {
+
+                    return;
+
+                }
+
+
+                const anio =
+                    Number(
+                        partesISO[0]
+                    );
+
+
+                const indiceMes =
+                    Number(
+                        partesISO[1]
+                    ) - 1;
+
+
+                const clave =
+                    `${indiceMes}-${anio}`;
+
+
+                if (
+                    !mesesDisponibles.some(
+                        item =>
+                            item.clave ===
+                            clave
+                    )
+                ) {
+
+                    mesesDisponibles.push({
+
+                        clave:
+                            clave,
+
+                        mes:
+                            indiceMes,
+
+                        año:
+                            anio
+
+                    });
+
+                }
+
+            }
+        );
+
+
+        mesesDisponibles.sort(
+            (a, b) => {
+
+                if (
+                    a.año !==
+                    b.año
+                ) {
+
+                    return (
+                        a.año -
+                        b.año
+                    );
+
+                }
+
+
+                return (
+                    a.mes -
+                    b.mes
+                );
+
+            }
+        );
+
+
+        if (
+            !mesesDisponibles.length
+        ) {
+
+            return;
+
+        }
+
+
+        const mesExiste =
+            mesesDisponibles.some(
+                item =>
+
+                    item.mes ===
+                        mesActual
+
+                    &&
+
+                    item.año ===
+                        añoActual
+            );
+
+
+        if (!mesExiste) {
 
             mesActual =
                 mesesDisponibles[0].mes;
+
 
             añoActual =
                 mesesDisponibles[0].año;
 
         }
 
+
         const primerDia =
-            new Date(añoActual, mesActual, 1)
-                .getDay();
+            new Date(
+                añoActual,
+                mesActual,
+                1
+            )
+            .getDay();
+
 
         const diasMes =
             new Date(
+
                 añoActual,
                 mesActual + 1,
                 0
-            ).getDate();
 
-            calendario.innerHTML = `
-                <div class="calendario-panel">
+            )
+            .getDate();
 
-                    <div class="cabecera-calendario">
 
-                        <button onclick="mesAnterior()">
-                            ◀
-                        </button>
+        calendario.innerHTML = `
 
-                        <div class="titulo-calendario-principal">
-                            <h2 class="titulo-calendario">
-                                📅 Calendario
-                            </h2>
+            <div class="calendario-panel">
 
-                            <p class="subtitulo-calendario">
-                                ${meses[mesActual]} ${añoActual}
-                            </p>
-                        </div>
+                <div class="cabecera-calendario">
 
-                        <button onclick="mesSiguiente()">
-                            ▶
-                        </button>
+                    <button onclick="mesAnterior()">
+                        ◀
+                    </button>
 
-                    </div>
 
-                    <div class="calendar-grid">
-                        <div class="calendar-weekday">L</div>
-                        <div class="calendar-weekday">M</div>
-                        <div class="calendar-weekday">M</div>
-                        <div class="calendar-weekday">J</div>
-                        <div class="calendar-weekday">V</div>
-                        <div class="calendar-weekday">S</div>
-                        <div class="calendar-weekday">D</div>
-                    </div>
+                    <div class="titulo-calendario-principal">
 
-                </div>
-            `;
-
-        const grid =
-            calendario.querySelector(".calendar-grid");
-
-        const offset =
-            primerDia === 0
-                ? 6
-                : primerDia - 1;
-
-        for (let i = 0; i < offset; i++) {
-
-            grid.innerHTML += `
-                <div class="calendar-empty"></div>
-            `;
-
-        }
-
-        for (let dia = 1; dia <= diasMes; dia++) {
-
-            const eventoDia =
-                eventosCalendario.filter(evento => {
-
-                    const partes =
-                        evento.fecha.split(" de ");
-
-                    const diaEvento =
-                        parseInt(partes[0]);
-
-                    const mesEvento =
-                        meses.findIndex(
-                            m =>
-                                m.toLowerCase() ===
-                                partes[1]
-                        );
-
-                    return (
-                        diaEvento === dia &&
-                        mesEvento === mesActual
-                    );
-
-                });
-
-            let color = "";
-
-            if (eventoDia.length > 0) {
-
-                const tipo =
-                    String(eventoDia[0].tipo || "")
-                        .toLowerCase()
-                        .trim();
-
-                if (tipo.includes("misa")) {
-
-                    color = "calendar-misa";
-
-                } else if (tipo.includes("ensayo")) {
-
-                    color = "calendar-ensayo";
-
-                } else if (tipo.includes("evento")) {
-
-                    color = "calendar-evento";
-
-                } else if (tipo.includes("present")) {
-
-                    color = "calendar-presentacion";
-
-                }
-
-            }
-
-                grid.innerHTML += `
-                    <div
-                        class="calendar-day ${color} ${eventoDia.length > 0 ? "has-event" : ""}"
-                        data-day="${dia}"
-                        onclick="mostrarEventosDia(${dia})">
-
-                        ${dia}
-
-                    </div>
-                `;
-
-        }
-
-        window.mostrarEventosDia = function(dia) {
-            
-            document
-                    .querySelectorAll(".calendar-day")
-                    .forEach(el => el.classList.remove("selected"));
-
-                const diaActivo =
-                    document.querySelector(`.calendar-day[data-day="${dia}"]`);
-
-                if (diaActivo) {
-                    diaActivo.classList.add("selected");
-                }
-
-            const lista =
-                eventosCalendario.filter(evento => {
-
-                    const partes =
-                        evento.fecha.split(" de ");
-
-                    const diaEvento =
-                        parseInt(partes[0]);
-
-                    const mesEvento =
-                        meses.findIndex(
-                            m =>
-                                m.toLowerCase() ===
-                                partes[1]
-                        );
-
-                    return (
-                        diaEvento === dia &&
-                        mesEvento === mesActual
-                    );
-
-                });
-
-                detalle.innerHTML = `
-                    <div class="card card-dia-seleccionado">
-
-                        <h2>
-                            📅 ${dia} de ${meses[mesActual].toLowerCase()}
+                        <h2 class="titulo-calendario">
+                            📅 Calendario
                         </h2>
 
-                        <p>
-                            ${lista.length} evento(s) programado(s)
+                        <p class="subtitulo-calendario">
+
+                            ${
+                                meses[
+                                    mesActual
+                                ]
+                            }
+
+                            ${añoActual}
+
                         </p>
 
                     </div>
-                `;
 
-            lista.forEach(evento => {
 
-                const tipoTexto =
-                    String(evento.tipo || "").toLowerCase().trim();
+                    <button onclick="mesSiguiente()">
+                        ▶
+                    </button>
 
-                let claseChip = "tipo-evento-chip";
-                let etiqueta = "🟢 Evento";
+                </div>
 
-                if (tipoTexto.includes("misa")) {
-                    claseChip = "tipo-misa-chip";
-                    etiqueta = "🟡 Misa";
-                } else if (tipoTexto.includes("ensayo")) {
-                    claseChip = "tipo-ensayo-chip";
-                    etiqueta = "🔵 Ensayo";
-                } else if (tipoTexto.includes("present")) {
-                    claseChip = "tipo-presentacion-chip";
-                    etiqueta = "🟣 Presentación";
+
+                <div class="calendar-grid">
+
+                    <div class="calendar-weekday">L</div>
+                    <div class="calendar-weekday">M</div>
+                    <div class="calendar-weekday">M</div>
+                    <div class="calendar-weekday">J</div>
+                    <div class="calendar-weekday">V</div>
+                    <div class="calendar-weekday">S</div>
+                    <div class="calendar-weekday">D</div>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        const grid =
+            calendario.querySelector(
+                ".calendar-grid"
+            );
+
+
+        const offset =
+            primerDia === 0
+
+                ? 6
+
+                : primerDia - 1;
+
+
+        for (
+            let i = 0;
+            i < offset;
+            i++
+        ) {
+
+            grid.innerHTML += `
+
+                <div class="calendar-empty">
+                </div>
+
+            `;
+
+        }
+
+
+        for (
+            let dia = 1;
+            dia <= diasMes;
+            dia++
+        ) {
+
+            const eventoDia =
+                eventosCalendario.filter(
+                    evento => {
+
+                        if (
+                            !evento.fechaISO
+                        ) {
+
+                            return false;
+
+                        }
+
+
+                        const partes =
+                            evento.fechaISO
+                                .split(
+                                    "-"
+                                );
+
+
+                        const anioEvento =
+                            Number(
+                                partes[0]
+                            );
+
+
+                        const mesEvento =
+                            Number(
+                                partes[1]
+                            ) - 1;
+
+
+                        const diaEvento =
+                            Number(
+                                partes[2]
+                            );
+
+
+                        return (
+
+                            diaEvento ===
+                                dia
+
+                            &&
+
+                            mesEvento ===
+                                mesActual
+
+                            &&
+
+                            anioEvento ===
+                                añoActual
+
+                        );
+
+                    }
+                );
+
+
+            let color =
+                "";
+
+
+            if (
+                eventoDia.length > 0
+            ) {
+
+                color =
+                    obtenerClaseCalendario(
+                        eventoDia[0].tipo
+                    );
+
+            }
+
+
+            grid.innerHTML += `
+
+                <div
+                    class="
+                        calendar-day
+                        ${color}
+                        ${
+                            eventoDia.length > 0
+                                ? "has-event"
+                                : ""
+                        }
+                    "
+                    data-day="${dia}"
+                    onclick="mostrarEventosDia(${dia})">
+
+                    ${dia}
+
+                </div>
+
+            `;
+
+        }
+
+
+        window.mostrarEventosDia =
+            function(dia) {
+
+                document
+                    .querySelectorAll(
+                        ".calendar-day"
+                    )
+                    .forEach(
+                        elemento => {
+
+                            elemento.classList.remove(
+                                "selected"
+                            );
+
+                        }
+                    );
+
+
+                const diaActivo =
+                    document.querySelector(
+
+                        `.calendar-day[data-day="${dia}"]`
+
+                    );
+
+
+                if (diaActivo) {
+
+                    diaActivo.classList.add(
+                        "selected"
+                    );
+
                 }
 
-                detalle.innerHTML += `
-                    <div class="card card-evento-calendario">
 
-                        <div class="tipo-chip ${claseChip}">
-                            ${etiqueta}
-                        </div>
+                const lista =
+                    eventosCalendario.filter(
+                        evento => {
 
-                        <div class="evento-contenido">
-                            <h3>${evento.titulo}</h3>
-                            <p>⏰ ${evento.hora}</p>
-                            <p>📍 ${evento.lugar || "Sin ubicación"}</p>
-                        </div>
+                            if (
+                                !evento.fechaISO
+                            ) {
+
+                                return false;
+
+                            }
+
+
+                            const partes =
+                                evento.fechaISO
+                                    .split(
+                                        "-"
+                                    );
+
+
+                            return (
+
+                                Number(
+                                    partes[2]
+                                ) ===
+                                    dia
+
+                                &&
+
+                                Number(
+                                    partes[1]
+                                ) - 1 ===
+                                    mesActual
+
+                                &&
+
+                                Number(
+                                    partes[0]
+                                ) ===
+                                    añoActual
+
+                            );
+
+                        }
+                    );
+
+
+                detalle.innerHTML = `
+
+                    <div class="card card-dia-seleccionado">
+
+                        <h2>
+
+                            📅 ${dia} de
+                            ${
+                                meses[
+                                    mesActual
+                                ]
+                                .toLowerCase()
+                            }
+
+                        </h2>
+
+                        <p>
+
+                            ${lista.length}
+                            evento(s) programado(s)
+
+                        </p>
 
                     </div>
+
                 `;
 
-            });
 
-        };
+                lista.forEach(
+                    evento => {
+
+                        const estilo =
+                            obtenerEstiloCalendario(
+                                evento.tipo
+                            );
+
+
+                        detalle.innerHTML += `
+
+                            <div class="card card-evento-calendario">
+
+                                <div
+                                    class="
+                                        tipo-chip
+                                        ${estilo.clase}
+                                    ">
+
+                                    ${estilo.etiqueta}
+
+                                </div>
+
+
+                                <div class="evento-contenido">
+
+                                    <h3>
+
+                                        ${
+                                            escaparHtml(
+                                                evento.titulo
+                                            )
+                                        }
+
+                                    </h3>
+
+                                    <p>
+                                        ⏰ ${
+                                            escaparHtml(
+                                                evento.hora
+                                            )
+                                        }
+                                    </p>
+
+                                    <p>
+
+                                        📍 ${
+                                            evento.lugar
+
+                                                ? escaparHtml(
+                                                    evento.lugar
+                                                )
+
+                                                : "Sin ubicación"
+                                        }
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        `;
+
+                    }
+                );
+
+            };
+
 
     } catch(error) {
 
@@ -3277,22 +4413,193 @@ async function cargarCalendario() {
     }
 
 }
+
+
+// ==========================================
+// CLASE CALENDARIO
+// ==========================================
+
+function obtenerClaseCalendario(
+    tipo
+) {
+
+    const texto =
+        String(
+            tipo || ""
+        )
+        .toLowerCase();
+
+
+    if (
+        texto.includes(
+            "misa"
+        )
+    ) {
+
+        return "calendar-misa";
+
+    }
+
+
+    if (
+        texto.includes(
+            "ensayo"
+        )
+    ) {
+
+        return "calendar-ensayo";
+
+    }
+
+
+    if (
+        texto.includes(
+            "present"
+        )
+    ) {
+
+        return "calendar-presentacion";
+
+    }
+
+
+    if (
+        texto.includes(
+            "evento"
+        )
+    ) {
+
+        return "calendar-evento";
+
+    }
+
+
+    return "";
+
+}
+
+
+// ==========================================
+// ESTILO DETALLE CALENDARIO
+// ==========================================
+
+function obtenerEstiloCalendario(
+    tipo
+) {
+
+    const texto =
+        String(
+            tipo || ""
+        )
+        .toLowerCase();
+
+
+    if (
+        texto.includes(
+            "misa"
+        )
+    ) {
+
+        return {
+
+            clase:
+                "tipo-misa-chip",
+
+            etiqueta:
+                "🟡 Misa"
+
+        };
+
+    }
+
+
+    if (
+        texto.includes(
+            "ensayo"
+        )
+    ) {
+
+        return {
+
+            clase:
+                "tipo-ensayo-chip",
+
+            etiqueta:
+                "🔵 Ensayo"
+
+        };
+
+    }
+
+
+    if (
+        texto.includes(
+            "present"
+        )
+    ) {
+
+        return {
+
+            clase:
+                "tipo-presentacion-chip",
+
+            etiqueta:
+                "🟣 Presentación"
+
+        };
+
+    }
+
+
+    return {
+
+        clase:
+            "tipo-evento-chip",
+
+        etiqueta:
+            "🟢 Evento"
+
+    };
+
+}
+
+
+// ==========================================
+// MES ANTERIOR
+// ==========================================
+
 function mesAnterior() {
 
     const indice =
-        mesesDisponibles.findIndex(
-            m =>
-                m.mes === mesActual &&
-                m.año === añoActual
-        );
+        mesesDisponibles
+            .findIndex(
+                item =>
 
-    if (indice > 0) {
+                    item.mes ===
+                        mesActual
+
+                    &&
+
+                    item.año ===
+                        añoActual
+            );
+
+
+    if (
+        indice > 0
+    ) {
 
         mesActual =
-            mesesDisponibles[indice - 1].mes;
+            mesesDisponibles[
+                indice - 1
+            ].mes;
+
 
         añoActual =
-            mesesDisponibles[indice - 1].año;
+            mesesDisponibles[
+                indice - 1
+            ].año;
+
 
         cargarCalendario();
 
@@ -3300,113 +4607,121 @@ function mesAnterior() {
 
 }
 
+
+// ==========================================
+// MES SIGUIENTE
+// ==========================================
+
 function mesSiguiente() {
 
     const indice =
-        mesesDisponibles.findIndex(
-            m =>
-                m.mes === mesActual &&
-                m.año === añoActual
-        );
+        mesesDisponibles
+            .findIndex(
+                item =>
+
+                    item.mes ===
+                        mesActual
+
+                    &&
+
+                    item.año ===
+                        añoActual
+            );
+
 
     if (
+        indice >= 0 &&
         indice <
         mesesDisponibles.length - 1
     ) {
 
         mesActual =
-            mesesDisponibles[indice + 1].mes;
+            mesesDisponibles[
+                indice + 1
+            ].mes;
+
 
         añoActual =
-            mesesDisponibles[indice + 1].año;
+            mesesDisponibles[
+                indice + 1
+            ].año;
+
 
         cargarCalendario();
 
     }
 
 }
+
+
 // ==========================================
-// FILTRO
+// FILTRAR CANTOS
 // ==========================================
 
 function filtrarCantos() {
 
+    const input =
+        document.getElementById(
+            "buscarCanto"
+        );
+
+
+    if (!input) {
+
+        return;
+
+    }
+
+
     const texto =
-        document.getElementById("buscarCanto")
-        .value
-        .toLowerCase();
+        input.value
+            .toLowerCase();
+
 
     const elementos =
-        document.querySelectorAll("#listaCantos li");
+        document.querySelectorAll(
+            "#listaCantos li"
+        );
 
-    elementos.forEach(item => {
 
-        const nombre =
-            item.textContent.toLowerCase();
+    elementos.forEach(
+        item => {
 
-        item.style.display =
-            nombre.includes(texto)
-                ? ""
-                : "none";
-    });
-}
-function mostrarDetalleCalendario(evento) {
+            const nombre =
+                item.textContent
+                    .toLowerCase();
 
-    const detalle =
-        document.getElementById("detalleFecha");
 
-    detalle.innerHTML = `
-        <div class="card">
+            item.style.display =
+                nombre.includes(
+                    texto
+                )
 
-            <h2>
-                📅 ${evento.fecha}
-            </h2>
+                    ? ""
 
-            <h3 class="
-                ${evento.tipo === "Ensayo" ? "tipo-ensayo" : ""}
-                ${evento.tipo === "Misa Dominical" ? "tipo-misa" : ""}
-                ${evento.tipo === "Evento Especial" ? "tipo-evento" : ""}
-                ${evento.tipo === "Presentación" ? "tipo-presentacion" : ""}
-            ">
+                    : "none";
 
-                ${
-                    evento.tipo === "Ensayo"
-                        ? "🔵 Ensayo"
-                    : evento.tipo === "Misa Dominical"
-                        ? "🟡 Misa"
-                    : evento.tipo === "Evento Especial"
-                        ? "🟢 Evento Especial"
-                    : evento.tipo === "Presentación"
-                        ? "🟣 Presentación"
-                    : evento.tipo
-                }
-
-            </h3>
-
-            <p>${evento.titulo}</p>
-
-            <p>⏰ ${evento.hora}</p>
-
-            ${
-                evento.lugar
-                    ? `<p>📍 ${evento.lugar}</p>`
-                    : ""
-            }
-
-        </div>
-    `;
+        }
+    );
 
 }
 
+
 // ==========================================
-// INICIO
+// INICIALIZACIÓN
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    cargarInicio();
-    cargarEsquemas();
-    cargarCantos();
-    cargarCalendario();
+        cargarInicio();
 
-});
+        cargarEsquemas();
+
+        cargarCantos();
+
+        cargarCalendario();
+
+    }
+);
