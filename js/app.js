@@ -2639,25 +2639,1175 @@ function mostrarMensajeFormulario(
 
 // ======================================================
 // EDITAR EVENTO
-// ======================================================
-//
-// V3.3
+// APPCORUS V3.3
 // ======================================================
 
-function editarEventoAdmin(
+async function editarEventoAdmin(
     idEvento
 ) {
 
-    alert(
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
 
-        "La edición de " +
-        idEvento +
-        " llegará en AppCorus V3.3."
+        abrirAccesoAdministracion();
 
-    );
+        return;
+
+    }
+
+
+    try {
+
+        const data =
+            await obtenerDatosApp();
+
+
+        const eventos =
+            Array.isArray(
+                data.eventos
+            )
+                ? data.eventos
+                : [];
+
+
+        const evento =
+            eventos.find(
+                item =>
+                    String(
+                        item.idEvento
+                    ) ===
+                    String(
+                        idEvento
+                    )
+            );
+
+
+        if (!evento) {
+
+            alert(
+                "No fue posible encontrar el evento."
+            );
+
+            return;
+
+        }
+
+
+        abrirFormularioEditarEvento(
+            evento,
+            data
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error buscando evento:",
+            error
+        );
+
+
+        alert(
+            "No fue posible cargar el evento."
+        );
+
+    }
 
 }
 
+
+// ======================================================
+// FORMULARIO EDITAR EVENTO
+// ======================================================
+
+function abrirFormularioEditarEvento(
+    evento,
+    data
+) {
+
+    const seccion =
+        document.getElementById(
+            "administracion"
+        );
+
+
+    if (!seccion) {
+
+        return;
+
+    }
+
+
+    const catalogos =
+        data.catalogos ||
+        {};
+
+
+    const tiposEvento =
+        Array.isArray(
+            catalogos.tiposEvento
+        )
+            ? catalogos.tiposEvento
+            : [];
+
+
+    const lugares =
+        Array.isArray(
+            catalogos.lugares
+        )
+            ? catalogos.lugares
+            : [];
+
+
+    const opcionesTipo =
+        tiposEvento
+            .map(
+                tipo => {
+
+                    const seleccionado =
+                        tipo === evento.tipo
+                            ? "selected"
+                            : "";
+
+
+                    return `
+
+                        <option
+                            value="${escaparHtml(tipo)}"
+                            ${seleccionado}>
+
+                            ${escaparHtml(tipo)}
+
+                        </option>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    const opcionesLugar =
+        lugares
+            .map(
+                lugar => {
+
+                    const seleccionado =
+                        lugar === evento.lugar
+                            ? "selected"
+                            : "";
+
+
+                    return `
+
+                        <option
+                            value="${escaparHtml(lugar)}"
+                            ${seleccionado}>
+
+                            ${escaparHtml(lugar)}
+
+                        </option>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    seccion.innerHTML = `
+
+        <div class="admin-formulario-evento">
+
+
+            <button
+                id="btnVolverEventosEditar"
+                class="admin-volver"
+                type="button">
+
+                ← Eventos
+
+            </button>
+
+
+            <div class="admin-formulario-encabezado">
+
+                <div class="admin-formulario-icono">
+                    ✏️
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        Editar evento
+                    </h2>
+
+                    <p>
+                        ${escaparHtml(evento.idEvento)}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="formEditarEvento"
+                class="admin-evento-form">
+
+
+                <!-- FECHA Y HORA -->
+
+                <div class="admin-form-fila">
+
+
+                    <div class="admin-form-campo">
+
+                        <label for="editarEventoFecha">
+                            Fecha *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="editarEventoFecha"
+                            value="${escaparHtml(evento.fechaISO)}"
+                            required>
+
+                    </div>
+
+
+                    <div class="admin-form-campo">
+
+                        <label for="editarEventoHora">
+                            Hora *
+                        </label>
+
+                        <input
+                            type="time"
+                            id="editarEventoHora"
+                            value="${escaparHtml(
+                                String(
+                                    evento.hora || ""
+                                ).substring(
+                                    0,
+                                    5
+                                )
+                            )}"
+                            required>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- TIPO -->
+
+                <div class="admin-form-campo">
+
+                    <label for="editarEventoTipo">
+                        Tipo de evento *
+                    </label>
+
+                    <select
+                        id="editarEventoTipo"
+                        required>
+
+                        ${opcionesTipo}
+
+                    </select>
+
+                </div>
+
+
+                <!-- DESCRIPCIÓN -->
+
+                <div class="admin-form-campo">
+
+                    <label for="editarEventoDescripcion">
+                        Descripción *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarEventoDescripcion"
+                        maxlength="150"
+                        value="${escaparHtml(
+                            evento.titulo ||
+                            ""
+                        )}"
+                        required>
+
+                </div>
+
+
+                <!-- LUGAR -->
+
+                <div class="admin-form-campo">
+
+                    <label for="editarEventoLugar">
+                        Lugar
+                    </label>
+
+                    <select id="editarEventoLugar">
+
+                        <option
+                            value=""
+                            ${
+                                !evento.lugar
+                                    ? "selected"
+                                    : ""
+                            }>
+
+                            Sin lugar / Por definir
+
+                        </option>
+
+                        ${opcionesLugar}
+
+                        <option value="__NUEVO_LUGAR__">
+                            ➕ Agregar nueva ubicación...
+                        </option>
+
+                    </select>
+
+
+                    <div
+                        id="contenedorNuevoLugarEditar"
+                        class="admin-nuevo-lugar-box"
+                        style="display:none;">
+
+
+                        <label for="nuevoLugarNombreEditar">
+
+                            Nueva ubicación
+
+                        </label>
+
+
+                        <div class="admin-nuevo-lugar-fila">
+
+                            <input
+                                type="text"
+                                id="nuevoLugarNombreEditar"
+                                maxlength="120"
+                                placeholder="Ej. Casa de Juan">
+
+
+                            <button
+                                type="button"
+                                id="btnAgregarNuevoLugarEditar"
+                                class="admin-btn-agregar-lugar">
+
+                                Agregar ubicación
+
+                            </button>
+
+                        </div>
+
+
+                        <small>
+
+                            La ubicación quedará disponible
+                            para futuros eventos.
+
+                        </small>
+
+
+                        <div id="mensajeNuevoLugarEditar">
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- REFERENCIA -->
+
+                <div class="admin-form-campo">
+
+                    <label for="editarEventoReferencia">
+                        Notas / referencia
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarEventoReferencia"
+                        maxlength="200"
+                        value="${escaparHtml(
+                            evento.referencia ||
+                            ""
+                        )}"
+                        placeholder="Información adicional opcional">
+
+                </div>
+
+
+                <!-- ACTIVO -->
+
+                <label class="admin-form-activo">
+
+                    <div>
+
+                        <strong>
+                            Evento activo
+                        </strong>
+
+                        <small>
+                            Se mostrará en AppCorus
+                        </small>
+
+                    </div>
+
+                    <input
+                        type="checkbox"
+                        id="editarEventoActivo"
+                        checked>
+
+                </label>
+
+
+                <div id="adminEditarMensaje">
+                </div>
+
+
+                <!-- ACCIONES -->
+
+                <div class="admin-form-acciones">
+
+                    <button
+                        type="button"
+                        id="btnCancelarEdicion"
+                        class="admin-btn-cancelar">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        id="btnGuardarCambiosEvento"
+                        class="admin-btn-guardar">
+
+                        Guardar cambios
+
+                    </button>
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    `;
+
+
+    // ==================================================
+    // VOLVER
+    // ==================================================
+
+    document
+        .getElementById(
+            "btnVolverEventosEditar"
+        )
+        ?.addEventListener(
+
+            "click",
+
+            () =>
+                abrirAdminEventos()
+
+        );
+
+
+    document
+        .getElementById(
+            "btnCancelarEdicion"
+        )
+        ?.addEventListener(
+
+            "click",
+
+            () =>
+                abrirAdminEventos()
+
+        );
+
+
+    // ==================================================
+    // GUARDAR
+    // ==================================================
+
+    document
+        .getElementById(
+            "formEditarEvento"
+        )
+        ?.addEventListener(
+
+            "submit",
+
+            event => {
+
+                event.preventDefault();
+
+
+                guardarCambiosEvento(
+                    evento.idEvento
+                );
+
+            }
+
+        );
+
+
+    // ==================================================
+    // NUEVA UBICACIÓN EN EDICIÓN
+    // ==================================================
+
+    const selectLugar =
+        document.getElementById(
+            "editarEventoLugar"
+        );
+
+
+    const contenedorNuevoLugar =
+        document.getElementById(
+            "contenedorNuevoLugarEditar"
+        );
+
+
+    selectLugar
+        ?.addEventListener(
+
+            "change",
+
+            () => {
+
+                if (
+                    selectLugar.value ===
+                    "__NUEVO_LUGAR__"
+                ) {
+
+                    contenedorNuevoLugar
+                        .style
+                        .display =
+                            "block";
+
+
+                    setTimeout(
+                        () =>
+                            document
+                                .getElementById(
+                                    "nuevoLugarNombreEditar"
+                                )
+                                ?.focus(),
+                        50
+                    );
+
+
+                } else {
+
+                    contenedorNuevoLugar
+                        .style
+                        .display =
+                            "none";
+
+                }
+
+            }
+
+        );
+
+
+    document
+        .getElementById(
+            "btnAgregarNuevoLugarEditar"
+        )
+        ?.addEventListener(
+
+            "click",
+
+            guardarNuevaUbicacionEdicion
+
+        );
+
+}
+
+
+// ======================================================
+// AGREGAR UBICACIÓN DESDE EDICIÓN
+// ======================================================
+
+async function guardarNuevaUbicacionEdicion() {
+
+    const input =
+        document.getElementById(
+            "nuevoLugarNombreEditar"
+        );
+
+
+    const boton =
+        document.getElementById(
+            "btnAgregarNuevoLugarEditar"
+        );
+
+
+    const mensaje =
+        document.getElementById(
+            "mensajeNuevoLugarEditar"
+        );
+
+
+    const select =
+        document.getElementById(
+            "editarEventoLugar"
+        );
+
+
+    const contenedor =
+        document.getElementById(
+            "contenedorNuevoLugarEditar"
+        );
+
+
+    const lugar =
+        input
+            ?.value
+            .trim();
+
+
+    if (!lugar) {
+
+        mensaje.innerHTML = `
+
+            <div class="admin-error">
+
+                Escribe el nombre de la ubicación.
+
+            </div>
+
+        `;
+
+
+        input?.focus();
+
+        return;
+
+    }
+
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Agregando...";
+
+
+    mensaje.innerHTML = `
+
+        <div class="admin-validando">
+
+            Guardando ubicación...
+
+        </div>
+
+    `;
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+
+                URL_API,
+
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "crearLugar",
+
+                            credential:
+                                adminCredential,
+
+                            lugar:
+                                lugar
+
+                        })
+
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible agregar la ubicación."
+            );
+
+        }
+
+
+        const nombreLugar =
+            String(
+                resultado.lugar ||
+                lugar
+            )
+            .trim();
+
+
+        let opcion =
+            Array
+                .from(
+                    select.options
+                )
+                .find(
+                    item =>
+                        item.value ===
+                        nombreLugar
+                );
+
+
+        if (!opcion) {
+
+            opcion =
+                document.createElement(
+                    "option"
+                );
+
+
+            opcion.value =
+                nombreLugar;
+
+
+            opcion.textContent =
+                nombreLugar;
+
+
+            const opcionNueva =
+                Array
+                    .from(
+                        select.options
+                    )
+                    .find(
+                        item =>
+                            item.value ===
+                            "__NUEVO_LUGAR__"
+                    );
+
+
+            select.insertBefore(
+                opcion,
+                opcionNueva ||
+                null
+            );
+
+        }
+
+
+        select.value =
+            nombreLugar;
+
+
+        contenedor.style.display =
+            "none";
+
+
+        input.value =
+            "";
+
+
+        mensaje.innerHTML =
+            "";
+
+
+        // Actualizar caché local
+        if (
+            appDataCache &&
+            appDataCache.catalogos
+        ) {
+
+            if (
+                !appDataCache
+                    .catalogos
+                    .lugares
+                    .includes(
+                        nombreLugar
+                    )
+            ) {
+
+                appDataCache
+                    .catalogos
+                    .lugares
+                    .push(
+                        nombreLugar
+                    );
+
+            }
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error agregando ubicación:",
+            error
+        );
+
+
+        mensaje.innerHTML = `
+
+            <div class="admin-error">
+
+                ${escaparHtml(error.message)}
+
+            </div>
+
+        `;
+
+
+    } finally {
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            "Agregar ubicación";
+
+    }
+
+}
+
+
+// ======================================================
+// GUARDAR CAMBIOS EVENTO
+// ======================================================
+
+async function guardarCambiosEvento(
+    idEvento
+) {
+
+    const fecha =
+        document
+            .getElementById(
+                "editarEventoFecha"
+            )
+            ?.value;
+
+
+    const hora =
+        document
+            .getElementById(
+                "editarEventoHora"
+            )
+            ?.value;
+
+
+    const tipo =
+        document
+            .getElementById(
+                "editarEventoTipo"
+            )
+            ?.value
+            .trim();
+
+
+    const descripcion =
+        document
+            .getElementById(
+                "editarEventoDescripcion"
+            )
+            ?.value
+            .trim();
+
+
+    const lugar =
+        document
+            .getElementById(
+                "editarEventoLugar"
+            )
+            ?.value
+            .trim();
+
+
+    const referencia =
+        document
+            .getElementById(
+                "editarEventoReferencia"
+            )
+            ?.value
+            .trim();
+
+
+    const activo =
+        document
+            .getElementById(
+                "editarEventoActivo"
+            )
+            ?.checked;
+
+
+    const boton =
+        document.getElementById(
+            "btnGuardarCambiosEvento"
+        );
+
+
+    const mensaje =
+        document.getElementById(
+            "adminEditarMensaje"
+        );
+
+
+    if (
+        !fecha ||
+        !hora ||
+        !tipo ||
+        !descripcion
+    ) {
+
+        mensaje.innerHTML = `
+
+            <div class="admin-error">
+
+                Completa los campos obligatorios.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    if (
+        lugar ===
+        "__NUEVO_LUGAR__"
+    ) {
+
+        mensaje.innerHTML = `
+
+            <div class="admin-error">
+
+                Primero agrega la nueva ubicación.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Guardando...";
+
+
+    mensaje.innerHTML = `
+
+        <div class="admin-validando">
+
+            Guardando cambios...
+
+        </div>
+
+    `;
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+
+                URL_API,
+
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "editarEvento",
+
+                            credential:
+                                adminCredential,
+
+                            evento: {
+
+                                idEvento:
+                                    idEvento,
+
+                                fecha:
+                                    fecha,
+
+                                hora:
+                                    hora,
+
+                                tipo:
+                                    tipo,
+
+                                descripcion:
+                                    descripcion,
+
+                                lugar:
+                                    lugar,
+
+                                referencia:
+                                    referencia,
+
+                                activo:
+                                    activo
+
+                            }
+
+                        })
+
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+
+                resultado.error ||
+                "No fue posible actualizar el evento."
+
+            );
+
+        }
+
+
+        // ==========================================
+        // UNA SOLA RECARGA
+        // ==========================================
+
+        const data =
+            await refrescarDatosApp();
+
+
+        renderizarInicio(
+            data
+        );
+
+
+        renderizarCalendario(
+            data
+        );
+
+
+        renderizarEsquemas(
+            data
+        );
+
+
+        await abrirAdminEventos(
+            data
+        );
+
+
+        const pantalla =
+            document.querySelector(
+                ".admin-eventos"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+
+                "afterbegin",
+
+                `
+
+                    <div class="admin-exito">
+
+                        ✅ Evento actualizado correctamente.
+
+                        <small>
+                            ${escaparHtml(idEvento)}
+                        </small>
+
+                    </div>
+
+                `
+
+            );
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error editando evento:",
+            error
+        );
+
+
+        mensaje.innerHTML = `
+
+            <div class="admin-error">
+
+                ${
+                    escaparHtml(
+                        error.message ||
+                        "No fue posible actualizar el evento."
+                    )
+                }
+
+            </div>
+
+        `;
+
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            "Guardar cambios";
+
+    }
+
+}
 
 // ======================================================
 // ADMINISTRACIÓN ESQUEMAS
