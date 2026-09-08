@@ -6074,16 +6074,967 @@ function normalizarTextoEsquema(
 
 // ======================================================
 // EDITAR ESQUEMA
+// APPCORUS V3.4
 // ======================================================
 
-function editarEsquemaAdmin(
+async function editarEsquemaAdmin(
     idEsquema
 ) {
 
-    alert(
-        "Ahora vamos a editar " +
-        idEsquema
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    try {
+
+        const datos =
+            await obtenerDatosAdminEsquemas();
+
+
+        const esquemas =
+            Array.isArray(
+                datos.esquemas
+            )
+                ? datos.esquemas
+                : [];
+
+
+        const esquema =
+            esquemas.find(
+                item =>
+                    String(
+                        item.idEsquema || ""
+                    ) ===
+                    String(
+                        idEsquema || ""
+                    )
+            );
+
+
+        if (!esquema) {
+
+            alert(
+                "No fue posible encontrar el esquema."
+            );
+
+            return;
+
+        }
+
+
+        abrirFormularioEditarEsquema(
+            esquema,
+            datos
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error buscando esquema:",
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "No fue posible cargar el esquema."
+        );
+
+    }
+
+}
+
+
+// ======================================================
+// FORMULARIO EDITAR ESQUEMA
+// ======================================================
+
+function abrirFormularioEditarEsquema(
+    esquema,
+    datos
+) {
+
+    const seccion =
+        document.getElementById(
+            "administracion"
+        );
+
+
+    if (!seccion) {
+
+        return;
+
+    }
+
+
+    const catalogos =
+        datos.catalogos || {};
+
+
+    const tiposEsquema =
+        Array.isArray(
+            catalogos.tiposEsquema
+        )
+            ? catalogos.tiposEsquema
+            : [];
+
+
+    const momentos =
+        Array.isArray(
+            catalogos.momentosMisa
+        )
+            ? catalogos.momentosMisa
+            : [];
+
+
+    const eventosActivos =
+        Array.isArray(
+            datos.eventos
+        )
+            ? datos.eventos
+            : [];
+
+
+    const eventosCelebracion =
+        eventosActivos.filter(
+            evento =>
+                !normalizarTextoEsquema(
+                    evento.tipo
+                ).includes(
+                    "ensayo"
+                )
+        );
+
+
+    const celebracionActual =
+        esquema.celebracion ||
+        null;
+
+
+    const eventoActual =
+        celebracionActual
+            ?.evento ||
+        null;
+
+
+    const idEventoActual =
+        String(
+            celebracionActual
+                ?.idEvento ||
+            eventoActual
+                ?.idEvento ||
+            ""
+        );
+
+
+    // Si el esquema está ligado a un evento histórico,
+    // lo agregamos al select para poder conservarlo.
+    const eventosSelect =
+        [...eventosCelebracion];
+
+
+    if (
+        eventoActual &&
+        idEventoActual &&
+        !eventosSelect.some(
+            evento =>
+                String(
+                    evento.idEvento || ""
+                ) ===
+                idEventoActual
+        )
+    ) {
+
+        eventosSelect.unshift({
+            ...eventoActual,
+            esHistorico:
+                true
+        });
+
+    }
+
+
+    const opcionesTipo =
+        tiposEsquema
+            .map(
+                tipo => {
+
+                    const seleccionado =
+                        String(tipo) ===
+                        String(
+                            esquema.tipoEsquema || ""
+                        )
+                            ? "selected"
+                            : "";
+
+
+                    return `
+
+                        <option
+                            value="${escaparHtml(tipo)}"
+                            ${seleccionado}>
+
+                            ${escaparHtml(tipo)}
+
+                        </option>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    const opcionesCelebracion =
+        eventosSelect
+            .map(
+                evento => {
+
+                    const idEvento =
+                        String(
+                            evento.idEvento || ""
+                        );
+
+
+                    const seleccionado =
+                        idEvento ===
+                        idEventoActual
+                            ? "selected"
+                            : "";
+
+
+                    const historico =
+                        evento.esHistorico ||
+                        evento.activo === false
+                            ? " · histórico"
+                            : "";
+
+
+                    return `
+
+                        <option
+                            value="${escaparHtml(idEvento)}"
+                            ${seleccionado}>
+
+                            ${escaparHtml(
+                                obtenerTextoEventoEsquema(
+                                    evento
+                                ) +
+                                historico
+                            )}
+
+                        </option>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    const detalles =
+        Array.isArray(
+            esquema.detalles
+        )
+            ? esquema.detalles
+            : [];
+
+
+    const detallePorMomento = {};
+
+
+    detalles.forEach(
+        detalle => {
+
+            const clave =
+                normalizarTextoEsquema(
+                    detalle.momento
+                );
+
+
+            if (
+                clave &&
+                !detallePorMomento[clave]
+            ) {
+
+                detallePorMomento[clave] =
+                    detalle;
+
+            }
+
+        }
     );
+
+
+    const camposMomentos =
+        momentos
+            .map(
+                (
+                    momento,
+                    indice
+                ) => {
+
+                    const detalle =
+                        detallePorMomento[
+                            normalizarTextoEsquema(
+                                momento
+                            )
+                        ] ||
+                        {};
+
+
+                    return `
+
+                        <div class="admin-esquema-momento">
+
+                            <div class="admin-esquema-momento-titulo">
+
+                                <span class="admin-esquema-numero">
+                                    ${indice + 1}
+                                </span>
+
+                                <strong>
+                                    ${escaparHtml(momento)}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="admin-form-campo">
+
+                                <label>
+                                    Canto
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="editar-esquema-canto-input"
+                                    data-momento="${escaparHtml(momento)}"
+                                    maxlength="200"
+                                    value="${escaparHtml(
+                                        detalle.canto ||
+                                        ""
+                                    )}"
+                                    placeholder="Nombre del canto">
+
+                            </div>
+
+
+                            <div class="admin-form-campo">
+
+                                <label>
+                                    Observaciones
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="editar-esquema-canto-observaciones"
+                                    data-momento="${escaparHtml(momento)}"
+                                    maxlength="200"
+                                    value="${escaparHtml(
+                                        detalle.observaciones ||
+                                        ""
+                                    )}"
+                                    placeholder="Opcional">
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    seccion.innerHTML = `
+
+        <div class="admin-formulario-evento">
+
+            <button
+                id="btnVolverEsquemasEditar"
+                class="admin-volver"
+                type="button">
+
+                ← Esquemas
+
+            </button>
+
+
+            <div class="admin-formulario-encabezado">
+
+                <div class="admin-formulario-icono">
+                    ✏️
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        Editar esquema
+                    </h2>
+
+                    <p>
+                        ${escaparHtml(
+                            esquema.idEsquema ||
+                            ""
+                        )}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="formEditarEsquema"
+                class="admin-evento-form">
+
+
+                <div class="admin-esquema-seccion">
+
+                    <h3>
+                        📖 Información general
+                    </h3>
+
+
+                    <div class="admin-form-campo">
+
+                        <label for="editarEsquemaTipo">
+                            Tipo de esquema *
+                        </label>
+
+                        <select
+                            id="editarEsquemaTipo"
+                            required>
+
+                            ${opcionesTipo}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="admin-form-campo">
+
+                        <label for="editarEsquemaDescripcion">
+                            Descripción *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editarEsquemaDescripcion"
+                            maxlength="200"
+                            value="${escaparHtml(
+                                esquema.descripcion ||
+                                ""
+                            )}"
+                            required>
+
+                    </div>
+
+
+                    <div class="admin-form-campo">
+
+                        <label for="editarEsquemaObservaciones">
+                            Observaciones
+                        </label>
+
+                        <textarea
+                            id="editarEsquemaObservaciones"
+                            rows="3"
+                            maxlength="500"
+                            placeholder="Información adicional opcional">${escaparHtml(
+                                esquema.observaciones ||
+                                ""
+                            )}</textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-esquema-seccion">
+
+                    <h3>
+                        ⛪ Celebración
+                    </h3>
+
+                    <p class="admin-esquema-ayuda">
+                        Cambia el evento donde se utilizará este esquema.
+                    </p>
+
+
+                    <div class="admin-form-campo">
+
+                        <label for="editarEsquemaCelebracion">
+                            Evento
+                        </label>
+
+                        <select
+                            id="editarEsquemaCelebracion">
+
+                            <option value="">
+                                Sin celebración asignada
+                            </option>
+
+                            ${opcionesCelebracion}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-esquema-seccion">
+
+                    <h3>
+                        🎵 Cantos
+                    </h3>
+
+                    <p class="admin-esquema-ayuda">
+                        Puedes cambiar, agregar o quitar cantos.
+                    </p>
+
+
+                    <div class="admin-esquema-momentos">
+
+                        ${camposMomentos}
+
+                    </div>
+
+                </div>
+
+
+                <div id="adminEditarEsquemaMensaje">
+                </div>
+
+
+                <div class="admin-form-acciones">
+
+                    <button
+                        id="btnCancelarEditarEsquema"
+                        type="button"
+                        class="admin-btn-cancelar">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button
+                        id="btnGuardarCambiosEsquema"
+                        type="submit"
+                        class="admin-btn-guardar">
+
+                        Guardar cambios
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById(
+            "btnVolverEsquemasEditar"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                abrirAdminEsquemas(
+                    datos
+                )
+        );
+
+
+    document
+        .getElementById(
+            "btnCancelarEditarEsquema"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                abrirAdminEsquemas(
+                    datos
+                )
+        );
+
+
+    document
+        .getElementById(
+            "formEditarEsquema"
+        )
+        ?.addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+                guardarCambiosEsquema(
+                    esquema.idEsquema
+                );
+
+            }
+        );
+
+}
+
+
+// ======================================================
+// GUARDAR CAMBIOS ESQUEMA
+// ======================================================
+
+async function guardarCambiosEsquema(
+    idEsquema
+) {
+
+    const tipoEsquema =
+        document
+            .getElementById(
+                "editarEsquemaTipo"
+            )
+            ?.value
+            .trim();
+
+
+    const descripcion =
+        document
+            .getElementById(
+                "editarEsquemaDescripcion"
+            )
+            ?.value
+            .trim();
+
+
+    const observaciones =
+        document
+            .getElementById(
+                "editarEsquemaObservaciones"
+            )
+            ?.value
+            .trim() ||
+        "";
+
+
+    const idEventoCelebracion =
+        document
+            .getElementById(
+                "editarEsquemaCelebracion"
+            )
+            ?.value
+            .trim() ||
+        "";
+
+
+    const boton =
+        document.getElementById(
+            "btnGuardarCambiosEsquema"
+        );
+
+
+    const mensaje =
+        document.getElementById(
+            "adminEditarEsquemaMensaje"
+        );
+
+
+    if (!tipoEsquema) {
+
+        mostrarMensajeEditarEsquema(
+            "Selecciona el tipo de esquema.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!descripcion) {
+
+        mostrarMensajeEditarEsquema(
+            "Escribe la descripción del esquema.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    const detalles = [];
+
+
+    document
+        .querySelectorAll(
+            ".editar-esquema-canto-input"
+        )
+        .forEach(
+            input => {
+
+                const canto =
+                    input.value.trim();
+
+
+                if (!canto) {
+
+                    return;
+
+                }
+
+
+                const momento =
+                    input.dataset.momento ||
+                    "";
+
+
+                const observacionesInput =
+                    Array
+                        .from(
+                            document.querySelectorAll(
+                                ".editar-esquema-canto-observaciones"
+                            )
+                        )
+                        .find(
+                            elemento =>
+                                elemento.dataset.momento ===
+                                momento
+                        );
+
+
+                detalles.push({
+                    momento,
+                    canto,
+                    observaciones:
+                        observacionesInput
+                            ?.value
+                            .trim() ||
+                        ""
+                });
+
+            }
+        );
+
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Guardando...";
+
+
+    mostrarMensajeEditarEsquema(
+        "Guardando cambios...",
+        "validando"
+    );
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                URL_API,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+                            accion:
+                                "editarEsquema",
+                            credential:
+                                adminCredential,
+                            esquema: {
+                                idEsquema,
+                                tipoEsquema,
+                                descripcion,
+                                observaciones,
+                                idEventoCelebracion,
+                                detalles
+                            }
+                        })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible actualizar el esquema."
+            );
+
+        }
+
+
+        // Los dos cachés quedan obsoletos.
+        invalidarDatosAdminEsquemas();
+        invalidarDatosApp();
+
+
+        // Refrescamos la parte pública en paralelo para
+        // que al tocar Esquemas en la barra ya esté actualizada.
+        const promesaPublica =
+            obtenerDatosApp(
+                true
+            )
+            .then(
+                data => {
+                    renderizarInicio(data);
+                    renderizarEsquemas(data);
+                    renderizarCantos(data);
+                    renderizarCalendario(data);
+                    return data;
+                }
+            )
+            .catch(
+                error => {
+                    console.warn(
+                        "No fue posible refrescar la vista pública:",
+                        error
+                    );
+                    return null;
+                }
+            );
+
+
+        const datosActualizados =
+            await obtenerDatosAdminEsquemas(
+                true
+            );
+
+
+        await abrirAdminEsquemas(
+            datosActualizados
+        );
+
+
+        const pantalla =
+            document.querySelector(
+                ".admin-esquemas"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+                "afterbegin",
+                `
+                    <div class="admin-exito">
+                        ✅ Esquema actualizado correctamente.
+                    </div>
+                `
+            );
+
+        }
+
+
+        // No bloquea la vuelta a Administración.
+        promesaPublica.then(
+            () => {}
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error editando esquema:",
+            error
+        );
+
+
+        mostrarMensajeEditarEsquema(
+            error.message ||
+            "No fue posible actualizar el esquema.",
+            "error"
+        );
+
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            "Guardar cambios";
+
+    }
+
+}
+
+
+// ======================================================
+// MENSAJES EDITAR ESQUEMA
+// ======================================================
+
+function mostrarMensajeEditarEsquema(
+    texto,
+    tipo = "exito"
+) {
+
+    const mensaje =
+        document.getElementById(
+            "adminEditarEsquemaMensaje"
+        );
+
+
+    if (!mensaje) {
+
+        return;
+
+    }
+
+
+    let clase =
+        "admin-exito";
+
+
+    if (
+        tipo === "error"
+    ) {
+
+        clase =
+            "admin-error";
+
+    }
+
+
+    if (
+        tipo === "validando"
+    ) {
+
+        clase =
+            "admin-validando";
+
+    }
+
+
+    mensaje.innerHTML = `
+        <div class="${clase}">
+            ${escaparHtml(texto)}
+        </div>
+    `;
 
 }
 
@@ -6092,15 +7043,205 @@ function editarEsquemaAdmin(
 // ELIMINAR ESQUEMA
 // ======================================================
 
-function eliminarEsquemaAdmin(
+async function eliminarEsquemaAdmin(
     idEsquema
 ) {
 
-    alert(
-        "La eliminación de " +
-        idEsquema +
-        " será el siguiente paso."
-    );
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    try {
+
+        const datos =
+            await obtenerDatosAdminEsquemas();
+
+
+        const esquema =
+            (
+                Array.isArray(
+                    datos.esquemas
+                )
+                    ? datos.esquemas
+                    : []
+            )
+            .find(
+                item =>
+                    String(
+                        item.idEsquema || ""
+                    ) ===
+                    String(
+                        idEsquema || ""
+                    )
+            );
+
+
+        if (!esquema) {
+
+            alert(
+                "No fue posible encontrar el esquema."
+            );
+
+            return;
+
+        }
+
+
+        const evento =
+            esquema.celebracion
+                ?.evento ||
+            null;
+
+
+        const detalleEvento =
+            evento
+                ? "\n" +
+                  obtenerTextoEventoEsquema(
+                      evento
+                  )
+                : "";
+
+
+        const confirmar =
+            window.confirm(
+                "¿Eliminar este esquema?\n\n" +
+                String(
+                    esquema.descripcion ||
+                    esquema.tipoEsquema ||
+                    idEsquema
+                ) +
+                detalleEvento +
+                "\n\nDejará de mostrarse en AppCorus."
+            );
+
+
+        if (!confirmar) {
+
+            return;
+
+        }
+
+
+        const respuesta =
+            await fetch(
+                URL_API,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+                            accion:
+                                "eliminarEsquema",
+                            credential:
+                                adminCredential,
+                            idEsquema:
+                                idEsquema
+                        })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible eliminar el esquema."
+            );
+
+        }
+
+
+        invalidarDatosAdminEsquemas();
+        invalidarDatosApp();
+
+
+        const promesaPublica =
+            obtenerDatosApp(
+                true
+            )
+            .then(
+                data => {
+                    renderizarInicio(data);
+                    renderizarEsquemas(data);
+                    renderizarCantos(data);
+                    renderizarCalendario(data);
+                    return data;
+                }
+            )
+            .catch(
+                error => {
+                    console.warn(
+                        "No fue posible refrescar la vista pública:",
+                        error
+                    );
+                    return null;
+                }
+            );
+
+
+        const datosActualizados =
+            await obtenerDatosAdminEsquemas(
+                true
+            );
+
+
+        await abrirAdminEsquemas(
+            datosActualizados
+        );
+
+
+        const pantalla =
+            document.querySelector(
+                ".admin-esquemas"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+                "afterbegin",
+                `
+                    <div class="admin-exito">
+                        ✅ Esquema eliminado correctamente.
+                    </div>
+                `
+            );
+
+        }
+
+
+        promesaPublica.then(
+            () => {}
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error eliminando esquema:",
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "No fue posible eliminar el esquema."
+        );
+
+    }
 
 }
 
