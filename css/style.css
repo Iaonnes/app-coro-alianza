@@ -2975,3 +2975,194 @@ header{
     }
 
 }
+/* =========================================================
+   APPCORUS V3.4
+   FORMULARIO DE ESQUEMAS
+   ========================================================= */
+
+.admin-esquema-seccion {
+    margin-bottom: 26px;
+}
+
+.admin-esquema-seccion h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    color: #162033;
+}
+
+.admin-esquema-ayuda {
+    margin: 0 0 12px;
+    color: #64748b;
+    font-size: .9rem;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.admin-esquema-seccion textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: .95rem;
+    resize: vertical;
+    background: #fff;
+}
+
+.admin-esquema-seccion textarea:focus {
+    outline: none;
+    border-color: #1f7bd8;
+    box-shadow: 0 0 0 3px rgba(31, 123, 216, .10);
+}
+
+
+/* =========================================================
+   LISTA DE ENSAYOS
+   ========================================================= */
+
+.admin-esquema-lista-ensayos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-esquema-check-evento {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid #dbe5f1;
+    border-radius: 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition:
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.admin-esquema-check-evento:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.admin-esquema-check-evento input {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: #1f7bd8;
+}
+
+.admin-esquema-check-evento span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.admin-esquema-check-evento strong {
+    color: #172033;
+    font-size: .95rem;
+}
+
+.admin-esquema-check-evento small {
+    margin-top: 3px;
+    color: #64748b;
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   MOMENTOS / CANTOS
+   ========================================================= */
+
+.admin-esquema-momentos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-esquema-momento {
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #dbe5f1;
+    border-radius: 14px;
+}
+
+.admin-esquema-momento-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.admin-esquema-momento-titulo strong {
+    font-size: 1rem;
+    color: #172033;
+}
+
+.admin-esquema-numero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+    background: #e8f2ff;
+    color: #1266c3;
+
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.admin-esquema-momento .admin-form-campo {
+    margin-bottom: 10px;
+}
+
+.admin-esquema-momento .admin-form-campo:last-child {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   VACÍO
+   ========================================================= */
+
+.admin-esquema-vacio {
+    padding: 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #64748b;
+    text-align: center;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .admin-esquema-seccion {
+        margin-bottom: 22px;
+    }
+
+    .admin-esquema-check-evento {
+        padding: 11px 12px;
+    }
+
+    .admin-esquema-momento {
+        padding: 13px;
+    }
+
+    .admin-esquema-momento-titulo {
+        margin-bottom: 10px;
+    }
+
+}
