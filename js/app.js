@@ -5069,14 +5069,1082 @@ function obtenerFechaVisualEsquema(
 //
 // ======================================================
 
-function abrirFormularioNuevoEsquema() {
+// ======================================================
+// NUEVO ESQUEMA
+// APPCORUS V3.4
+// ======================================================
 
-    alert(
-        "Ahora vamos a construir el formulario de Nuevo esquema."
+async function abrirFormularioNuevoEsquema() {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    const seccion =
+        document.getElementById(
+            "administracion"
+        );
+
+
+    if (!seccion) {
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // CARGANDO
+    // ==================================================
+
+    seccion.innerHTML = `
+
+        <div class="admin-formulario-evento">
+
+            <button
+                id="btnVolverEsquemas"
+                class="admin-volver"
+                type="button">
+
+                ← Esquemas
+
+            </button>
+
+
+            <div class="admin-formulario-encabezado">
+
+                <div class="admin-formulario-icono">
+                    📖
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        Nuevo esquema
+                    </h2>
+
+                    <p>
+                        ${
+                            escaparHtml(
+                                adminUsuario.nombreCoro ||
+                                ""
+                            )
+                        }
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div id="adminFormularioEsquema">
+
+                <div class="admin-validando">
+                    Cargando formulario...
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById(
+            "btnVolverEsquemas"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                abrirAdminEsquemas()
+        );
+
+
+    try {
+
+        // ==================================================
+        // USA EL CACHÉ DE ADMINISTRACIÓN
+        // ==================================================
+
+        const datos =
+            await obtenerDatosAdminEsquemas();
+
+
+        renderizarFormularioNuevoEsquema(
+            datos
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error cargando formulario de esquema:",
+            error
+        );
+
+
+        const contenido =
+            document.getElementById(
+                "adminFormularioEsquema"
+            );
+
+
+        if (contenido) {
+
+            contenido.innerHTML = `
+
+                <div class="admin-error">
+
+                    No fue posible cargar el formulario.
+
+                    <br>
+
+                    <small>
+                        ${escaparHtml(
+                            error.message || ""
+                        )}
+                    </small>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+}
+
+
+// ======================================================
+// RENDER FORMULARIO NUEVO ESQUEMA
+// ======================================================
+
+function renderizarFormularioNuevoEsquema(
+    datos
+) {
+
+    const contenido =
+        document.getElementById(
+            "adminFormularioEsquema"
+        );
+
+
+    if (!contenido) {
+
+        return;
+
+    }
+
+
+    const catalogos =
+        datos.catalogos || {};
+
+
+    const tiposEsquema =
+        Array.isArray(
+            catalogos.tiposEsquema
+        )
+            ? catalogos.tiposEsquema
+            : [];
+
+
+    const momentos =
+        Array.isArray(
+            catalogos.momentosMisa
+        )
+            ? catalogos.momentosMisa
+            : [];
+
+
+    const eventos =
+        Array.isArray(
+            datos.eventos
+        )
+            ? datos.eventos
+            : [];
+
+
+    // ==================================================
+    // SEPARAR CELEBRACIONES Y ENSAYOS
+    // ==================================================
+
+    const eventosEnsayo =
+        eventos.filter(
+            evento =>
+                normalizarTextoEsquema(
+                    evento.tipo
+                )
+                .includes(
+                    "ensayo"
+                )
+        );
+
+
+    const eventosCelebracion =
+        eventos.filter(
+            evento =>
+                !normalizarTextoEsquema(
+                    evento.tipo
+                )
+                .includes(
+                    "ensayo"
+                )
+        );
+
+
+    // ==================================================
+    // TIPOS
+    // ==================================================
+
+    const opcionesTipo =
+        tiposEsquema
+            .map(
+                tipo => `
+
+                    <option
+                        value="${escaparHtml(tipo)}">
+
+                        ${escaparHtml(tipo)}
+
+                    </option>
+
+                `
+            )
+            .join("");
+
+
+    // ==================================================
+    // CELEBRACIONES
+    // ==================================================
+
+    const opcionesCelebracion =
+        eventosCelebracion
+            .map(
+                evento => `
+
+                    <option
+                        value="${escaparHtml(
+                            evento.idEvento
+                        )}">
+
+                        ${escaparHtml(
+                            obtenerTextoEventoEsquema(
+                                evento
+                            )
+                        )}
+
+                    </option>
+
+                `
+            )
+            .join("");
+
+
+    // ==================================================
+    // ENSAYOS
+    // ==================================================
+
+    const opcionesEnsayos =
+        eventosEnsayo.length
+            ? eventosEnsayo
+                .map(
+                    evento => `
+
+                        <label class="admin-esquema-check-evento">
+
+                            <input
+                                type="checkbox"
+                                class="esquema-ensayo-check"
+                                value="${escaparHtml(
+                                    evento.idEvento
+                                )}">
+
+                            <span>
+
+                                <strong>
+                                    ${escaparHtml(
+                                        evento.descripcion ||
+                                        evento.tipo ||
+                                        "Ensayo"
+                                    )}
+                                </strong>
+
+                                <small>
+                                    ${escaparHtml(
+                                        obtenerTextoEventoEsquema(
+                                            evento
+                                        )
+                                    )}
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                    `
+                )
+                .join("")
+            : `
+
+                <div class="admin-esquema-vacio">
+                    No hay ensayos activos disponibles.
+                </div>
+
+            `;
+
+
+    // ==================================================
+    // MOMENTOS
+    // ==================================================
+
+    const camposMomentos =
+        momentos
+            .map(
+                (
+                    momento,
+                    indice
+                ) => `
+
+                    <div class="admin-esquema-momento">
+
+                        <div class="admin-esquema-momento-titulo">
+
+                            <span class="admin-esquema-numero">
+                                ${indice + 1}
+                            </span>
+
+                            <strong>
+                                ${escaparHtml(momento)}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="admin-form-campo">
+
+                            <label>
+                                Canto
+                            </label>
+
+                            <input
+                                type="text"
+                                class="esquema-canto-input"
+                                data-momento="${escaparHtml(momento)}"
+                                maxlength="200"
+                                placeholder="Nombre del canto">
+
+                        </div>
+
+
+                        <div class="admin-form-campo">
+
+                            <label>
+                                Observaciones
+                            </label>
+
+                            <input
+                                type="text"
+                                class="esquema-canto-observaciones"
+                                data-momento="${escaparHtml(momento)}"
+                                maxlength="200"
+                                placeholder="Opcional">
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+
+    // ==================================================
+    // FORMULARIO
+    // ==================================================
+
+    contenido.innerHTML = `
+
+        <form
+            id="formNuevoEsquema"
+            class="admin-evento-form">
+
+
+            <div class="admin-esquema-seccion">
+
+                <h3>
+                    📖 Información general
+                </h3>
+
+
+                <div class="admin-form-campo">
+
+                    <label for="nuevoEsquemaTipo">
+                        Tipo de esquema *
+                    </label>
+
+                    <select
+                        id="nuevoEsquemaTipo"
+                        required>
+
+                        <option value="">
+                            Selecciona...
+                        </option>
+
+                        ${opcionesTipo}
+
+                    </select>
+
+                </div>
+
+
+                <div class="admin-form-campo">
+
+                    <label for="nuevoEsquemaDescripcion">
+                        Descripción *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nuevoEsquemaDescripcion"
+                        maxlength="200"
+                        required
+                        placeholder="Ej. Misa dominical 20 de septiembre">
+
+                </div>
+
+
+                <div class="admin-form-campo">
+
+                    <label for="nuevoEsquemaObservaciones">
+                        Observaciones
+                    </label>
+
+                    <textarea
+                        id="nuevoEsquemaObservaciones"
+                        rows="3"
+                        maxlength="500"
+                        placeholder="Información adicional opcional"></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-esquema-seccion">
+
+                <h3>
+                    ⛪ Celebración
+                </h3>
+
+                <p class="admin-esquema-ayuda">
+                    Selecciona el evento donde se utilizará este esquema.
+                </p>
+
+
+                <div class="admin-form-campo">
+
+                    <label for="nuevoEsquemaCelebracion">
+                        Evento
+                    </label>
+
+                    <select
+                        id="nuevoEsquemaCelebracion">
+
+                        <option value="">
+                            Sin celebración asignada
+                        </option>
+
+                        ${opcionesCelebracion}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-esquema-seccion">
+
+                <h3>
+                    🎤 Ensayos
+                </h3>
+
+                <p class="admin-esquema-ayuda">
+                    Puedes relacionar uno o varios ensayos.
+                </p>
+
+
+                <div class="admin-esquema-lista-ensayos">
+
+                    ${opcionesEnsayos}
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-esquema-seccion">
+
+                <h3>
+                    🎵 Cantos
+                </h3>
+
+                <p class="admin-esquema-ayuda">
+                    Deja vacío cualquier momento que no se utilice.
+                </p>
+
+
+                <div class="admin-esquema-momentos">
+
+                    ${camposMomentos}
+
+                </div>
+
+            </div>
+
+
+            <div id="adminNuevoEsquemaMensaje">
+            </div>
+
+
+            <div class="admin-form-acciones">
+
+                <button
+                    id="btnCancelarNuevoEsquema"
+                    type="button"
+                    class="admin-btn-cancelar">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    id="btnGuardarNuevoEsquema"
+                    type="submit"
+                    class="admin-btn-guardar">
+
+                    Guardar esquema
+
+                </button>
+
+            </div>
+
+        </form>
+
+    `;
+
+
+    // ==================================================
+    // CANCELAR
+    // ==================================================
+
+    document
+        .getElementById(
+            "btnCancelarNuevoEsquema"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                abrirAdminEsquemas(
+                    datos
+                )
+        );
+
+
+    // ==================================================
+    // GUARDAR
+    // ==================================================
+
+    document
+        .getElementById(
+            "formNuevoEsquema"
+        )
+        ?.addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+                guardarNuevoEsquema();
+
+            }
+        );
+
+}
+
+
+// ======================================================
+// GUARDAR NUEVO ESQUEMA
+// ======================================================
+
+async function guardarNuevoEsquema() {
+
+    const tipoEsquema =
+        document
+            .getElementById(
+                "nuevoEsquemaTipo"
+            )
+            ?.value
+            .trim();
+
+
+    const descripcion =
+        document
+            .getElementById(
+                "nuevoEsquemaDescripcion"
+            )
+            ?.value
+            .trim();
+
+
+    const observaciones =
+        document
+            .getElementById(
+                "nuevoEsquemaObservaciones"
+            )
+            ?.value
+            .trim() ||
+        "";
+
+
+    const idEventoCelebracion =
+        document
+            .getElementById(
+                "nuevoEsquemaCelebracion"
+            )
+            ?.value
+            .trim() ||
+        "";
+
+
+    const boton =
+        document.getElementById(
+            "btnGuardarNuevoEsquema"
+        );
+
+
+    const mensaje =
+        document.getElementById(
+            "adminNuevoEsquemaMensaje"
+        );
+
+
+    // ==================================================
+    // VALIDACIONES
+    // ==================================================
+
+    if (!tipoEsquema) {
+
+        mostrarMensajeNuevoEsquema(
+            "Selecciona el tipo de esquema.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!descripcion) {
+
+        mostrarMensajeNuevoEsquema(
+            "Escribe la descripción del esquema.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // ENSAYOS
+    // ==================================================
+
+    const idsEventosEnsayo =
+        Array
+            .from(
+                document.querySelectorAll(
+                    ".esquema-ensayo-check:checked"
+                )
+            )
+            .map(
+                input =>
+                    input.value
+            );
+
+
+    // ==================================================
+    // CANTOS
+    // ==================================================
+
+    const detalles =
+        [];
+
+
+    document
+        .querySelectorAll(
+            ".esquema-canto-input"
+        )
+        .forEach(
+            input => {
+
+                const canto =
+                    input.value.trim();
+
+
+                if (!canto) {
+
+                    return;
+
+                }
+
+
+                const momento =
+                    input.dataset.momento ||
+                    "";
+
+
+                const observacionesInput =
+                    Array
+                        .from(
+                            document.querySelectorAll(
+                                ".esquema-canto-observaciones"
+                            )
+                        )
+                        .find(
+                            elemento =>
+                                elemento.dataset.momento ===
+                                momento
+                        );
+
+
+                detalles.push({
+
+                    momento:
+                        momento,
+
+                    canto:
+                        canto,
+
+                    observaciones:
+                        observacionesInput
+                            ?.value
+                            .trim() ||
+                        ""
+
+                });
+
+            }
+        );
+
+
+    // ==================================================
+    // BLOQUEAR BOTÓN
+    // ==================================================
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Guardando...";
+
+
+    mostrarMensajeNuevoEsquema(
+        "Guardando esquema...",
+        "validando"
+    );
+
+
+    try {
+
+        // ==================================================
+        // UN SOLO POST
+        // ==================================================
+
+        const respuesta =
+            await fetch(
+                URL_API,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "crearEsquema",
+
+                            credential:
+                                adminCredential,
+
+                            esquema: {
+
+                                tipoEsquema:
+                                    tipoEsquema,
+
+                                descripcion:
+                                    descripcion,
+
+                                observaciones:
+                                    observaciones,
+
+                                idEventoCelebracion:
+                                    idEventoCelebracion,
+
+                                idsEventosEnsayo:
+                                    idsEventosEnsayo,
+
+                                detalles:
+                                    detalles
+
+                            }
+
+                        })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (
+            !resultado.ok
+        ) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible crear el esquema."
+            );
+
+        }
+
+
+        // ==================================================
+        // INVALIDAR CACHÉS
+        // ==================================================
+
+        invalidarDatosAdminEsquemas();
+
+        invalidarDatosApp();
+
+
+        // ==================================================
+        // RECARGAR SOLO ADMIN ESQUEMAS
+        // ==================================================
+
+        const datosActualizados =
+            await obtenerDatosAdminEsquemas(
+                true
+            );
+
+
+        await abrirAdminEsquemas(
+            datosActualizados
+        );
+
+
+        const pantalla =
+            document.querySelector(
+                ".admin-esquemas"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+                "afterbegin",
+                `
+
+                    <div class="admin-exito">
+
+                        ✅ Esquema creado correctamente.
+
+                    </div>
+
+                `
+            );
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error creando esquema:",
+            error
+        );
+
+
+        mostrarMensajeNuevoEsquema(
+
+            error.message ||
+            "No fue posible crear el esquema.",
+
+            "error"
+
+        );
+
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            "Guardar esquema";
+
+    }
+
+}
+
+
+// ======================================================
+// MENSAJES NUEVO ESQUEMA
+// ======================================================
+
+function mostrarMensajeNuevoEsquema(
+    texto,
+    tipo = "exito"
+) {
+
+    const mensaje =
+        document.getElementById(
+            "adminNuevoEsquemaMensaje"
+        );
+
+
+    if (!mensaje) {
+
+        return;
+
+    }
+
+
+    let clase =
+        "admin-exito";
+
+
+    if (
+        tipo === "error"
+    ) {
+
+        clase =
+            "admin-error";
+
+    }
+
+
+    if (
+        tipo === "validando"
+    ) {
+
+        clase =
+            "admin-validando";
+
+    }
+
+
+    mensaje.innerHTML = `
+
+        <div class="${clase}">
+
+            ${escaparHtml(texto)}
+
+        </div>
+
+    `;
+
+}
+
+
+// ======================================================
+// TEXTO DE EVENTO EN SELECT
+// ======================================================
+
+function obtenerTextoEventoEsquema(
+    evento
+) {
+
+    const fecha =
+        obtenerFechaVisualEsquema(
+            evento.fecha
+        );
+
+
+    const hora =
+        String(
+            evento.hora ||
+            ""
+        )
+        .substring(
+            0,
+            5
+        );
+
+
+    const descripcion =
+        evento.descripcion ||
+        evento.tipo ||
+        "Evento";
+
+
+    return (
+
+        fecha.dia +
+        " " +
+        fecha.mes +
+
+        (
+            hora
+                ? " · " + hora
+                : ""
+        ) +
+
+        " · " +
+
+        descripcion
+
     );
 
 }
 
+
+// ======================================================
+// NORMALIZAR TEXTO
+// ======================================================
+
+function normalizarTextoEsquema(
+    texto
+) {
+
+    return String(
+        texto || ""
+    )
+    .trim()
+    .toLowerCase()
+    .normalize(
+        "NFD"
+    )
+    .replace(
+        /[\u0300-\u036f]/g,
+        ""
+    );
+
+}
 
 // ======================================================
 // EDITAR ESQUEMA
