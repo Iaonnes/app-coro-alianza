@@ -5276,20 +5276,9 @@ function renderizarFormularioNuevoEsquema(
 
 
     // ==================================================
-    // SEPARAR CELEBRACIONES Y ENSAYOS
+    // CELEBRACIONES
+    // No mostramos ensayos dentro de Nuevo esquema.
     // ==================================================
-
-    const eventosEnsayo =
-        eventos.filter(
-            evento =>
-                normalizarTextoEsquema(
-                    evento.tipo
-                )
-                .includes(
-                    "ensayo"
-                )
-        );
-
 
     const eventosCelebracion =
         eventos.filter(
@@ -5349,59 +5338,6 @@ function renderizarFormularioNuevoEsquema(
                 `
             )
             .join("");
-
-
-    // ==================================================
-    // ENSAYOS
-    // ==================================================
-
-    const opcionesEnsayos =
-        eventosEnsayo.length
-            ? eventosEnsayo
-                .map(
-                    evento => `
-
-                        <label class="admin-esquema-check-evento">
-
-                            <input
-                                type="checkbox"
-                                class="esquema-ensayo-check"
-                                value="${escaparHtml(
-                                    evento.idEvento
-                                )}">
-
-                            <span>
-
-                                <strong>
-                                    ${escaparHtml(
-                                        evento.descripcion ||
-                                        evento.tipo ||
-                                        "Ensayo"
-                                    )}
-                                </strong>
-
-                                <small>
-                                    ${escaparHtml(
-                                        obtenerTextoEventoEsquema(
-                                            evento
-                                        )
-                                    )}
-                                </small>
-
-                            </span>
-
-                        </label>
-
-                    `
-                )
-                .join("")
-            : `
-
-                <div class="admin-esquema-vacio">
-                    No hay ensayos activos disponibles.
-                </div>
-
-            `;
 
 
     // ==================================================
@@ -5568,26 +5504,6 @@ function renderizarFormularioNuevoEsquema(
                         ${opcionesCelebracion}
 
                     </select>
-
-                </div>
-
-            </div>
-
-
-            <div class="admin-esquema-seccion">
-
-                <h3>
-                    🎤 Ensayos
-                </h3>
-
-                <p class="admin-esquema-ayuda">
-                    Puedes relacionar uno o varios ensayos.
-                </p>
-
-
-                <div class="admin-esquema-lista-ensayos">
-
-                    ${opcionesEnsayos}
 
                 </div>
 
@@ -5770,23 +5686,6 @@ async function guardarNuevoEsquema() {
 
 
     // ==================================================
-    // ENSAYOS
-    // ==================================================
-
-    const idsEventosEnsayo =
-        Array
-            .from(
-                document.querySelectorAll(
-                    ".esquema-ensayo-check:checked"
-                )
-            )
-            .map(
-                input =>
-                    input.value
-            );
-
-
-    // ==================================================
     // CANTOS
     // ==================================================
 
@@ -5905,8 +5804,10 @@ async function guardarNuevoEsquema() {
                                 idEventoCelebracion:
                                     idEventoCelebracion,
 
+                                // Los ensayos no se gestionan desde este formulario.
+                                // Se envía vacío para conservar compatibilidad con el backend.
                                 idsEventosEnsayo:
-                                    idsEventosEnsayo,
+                                    [],
 
                                 detalles:
                                     detalles
