@@ -2487,6 +2487,14 @@ async function guardarNuevoEvento() {
 
 
         // ======================================
+        // INVALIDAR CACHÉ ADMIN DE ESQUEMAS
+        // El evento puede aparecer en sus tarjetas/selects
+        // ======================================
+
+        invalidarDatosAdminEsquemas();
+
+
+        // ======================================
         // UNA SOLA RECARGA DESDE LA API
         // ======================================
 
@@ -2901,6 +2909,14 @@ async function eliminarEventoAdmin(
             );
 
         }
+
+
+        // ==========================================
+        // INVALIDAR CACHÉ ADMIN DE ESQUEMAS
+        // El evento puede estar relacionado a un esquema
+        // ==========================================
+
+        invalidarDatosAdminEsquemas();
 
 
         // ==========================================
@@ -3981,6 +3997,15 @@ async function guardarCambiosEvento(
             );
 
         }
+
+
+        // ==========================================
+        // INVALIDAR CACHÉ ADMIN DE ESQUEMAS
+        // Si cambian fecha/hora/lugar/descripción del evento,
+        // sus tarjetas deben reconstruirse con datos frescos.
+        // ==========================================
+
+        invalidarDatosAdminEsquemas();
 
 
         // ==========================================
@@ -8187,64 +8212,163 @@ function filtrarCantos() {
 
 
 // ======================================================
-// CARGA INICIAL OPTIMIZADA
+// CARGA INICIAL ROBUSTA Y OPTIMIZADA
+// APPCORUS V3.4
+// ======================================================
+//
+// app.js puede ser cargado dinámicamente por boot.js.
+// Si DOMContentLoaded ya ocurrió, el listener antiguo nunca
+// se ejecutaba y la pantalla de Inicio quedaba vacía.
+//
+// Esta versión funciona en ambos casos:
+// 1) app.js carga antes de DOMContentLoaded.
+// 2) app.js carga después de DOMContentLoaded.
+//
+// Inicio se renderiza primero. Las demás secciones se
+// preparan después usando el mismo JSON, sin otro fetch.
 // ======================================================
 
-document.addEventListener(
+let appCorusInicializando = false;
+let appCorusInicializada = false;
 
-    "DOMContentLoaded",
+async function inicializarAppCorus() {
 
-    async () => {
+    if (
+        appCorusInicializando ||
+        appCorusInicializada
+    ) {
+        return;
+    }
 
-        try {
+    appCorusInicializando = true;
 
-            // ======================================
-            // UNA ÚNICA PETICIÓN
-            // ======================================
+    const contenedorInicio =
+        document.getElementById(
+            "inicioEventos"
+        );
 
-            const data =
-                await obtenerDatosApp();
+    if (
+        contenedorInicio &&
+        !contenedorInicio.innerHTML.trim()
+    ) {
+        contenedorInicio.innerHTML = `
+            <div class="inicio-sin-eventos">
+                <div class="inicio-sin-eventos-icono">⏳</div>
+                <h2>Cargando próximos eventos...</h2>
+            </div>
+        `;
+    }
 
+    try {
 
-            // ======================================
-            // CUATRO SECCIONES
-            // MISMO JSON
-            // ======================================
+        // Una sola consulta para toda la app.
+        const data =
+            await obtenerDatosApp();
 
-            renderizarInicio(
-                data
+        // Prioridad absoluta: Inicio.
+        renderizarInicio(
+            data
+        );
+
+        appCorusInicializada = true;
+
+        // El resto se prepara después sin otro fetch.
+        const prepararSeccionesSecundarias =
+            () => {
+
+                renderizarEsquemas(
+                    data
+                );
+
+                renderizarCantos(
+                    data
+                );
+
+                renderizarCalendario(
+                    data
+                );
+
+            };
+
+        if (
+            "requestIdleCallback" in window
+        ) {
+
+            window.requestIdleCallback(
+                prepararSeccionesSecundarias,
+                { timeout: 1000 }
             );
 
+        } else {
 
-            renderizarEsquemas(
-                data
-            );
-
-
-            renderizarCantos(
-                data
-            );
-
-
-            renderizarCalendario(
-                data
-            );
-
-
-            console.log(
-                "AppCorus V3.2: datos cargados con una sola consulta."
-            );
-
-
-        } catch(error) {
-
-            console.error(
-                "Error cargando AppCorus:",
-                error
+            setTimeout(
+                prepararSeccionesSecundarias,
+                0
             );
 
         }
 
-    }
+        console.log(
+            "✅ AppCorus: Inicio cargado correctamente."
+        );
 
-);
+    } catch(error) {
+
+        console.error(
+            "Error cargando AppCorus:",
+            error
+        );
+
+        if (contenedorInicio) {
+
+            contenedorInicio.innerHTML = `
+                <div class="inicio-sin-eventos">
+                    <div class="inicio-sin-eventos-icono">⚠️</div>
+                    <h2>No fue posible cargar los eventos</h2>
+                    <p>Revisa tu conexión e inténtalo nuevamente.</p>
+                    <button
+                        type="button"
+                        onclick="reintentarCargaInicioAppCorus()">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+
+        }
+
+    } finally {
+
+        appCorusInicializando = false;
+
+    }
+}
+
+async function reintentarCargaInicioAppCorus() {
+
+    appCorusInicializada = false;
+    invalidarDatosApp();
+    await inicializarAppCorus();
+
+}
+
+// ======================================================
+// ARRANQUE COMPATIBLE CON BOOT.JS
+// ======================================================
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        inicializarAppCorus,
+        { once: true }
+    );
+
+} else {
+
+    // boot.js cargó app.js después de DOMContentLoaded.
+    inicializarAppCorus();
+
+}
