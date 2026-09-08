@@ -4081,10 +4081,1031 @@ async function guardarCambiosEvento(
 // ADMINISTRACIÓN ESQUEMAS
 // ======================================================
 
-function abrirAdminEsquemas() {
+// ======================================================
+// ADMINISTRACIÓN - ESQUEMAS
+// APPCORUS V3.4
+// ======================================================
+//
+// Esta pantalla usa su propio caché administrativo.
+//
+// Primera entrada:
+//      1 POST a Apps Script
+//
+// Entradas posteriores:
+//      0 POST mientras los datos sigan vigentes.
+//
+// ======================================================
+
+let adminEsquemasCache = null;
+let adminEsquemasPromise = null;
+
+
+// ======================================================
+// OBTENER DATOS ADMIN ESQUEMAS
+// ======================================================
+
+async function obtenerDatosAdminEsquemas(
+    forzar = false
+) {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        throw new Error(
+            "La sesión de administración no está disponible."
+        );
+
+    }
+
+
+    // Ya están en memoria
+    if (
+        !forzar &&
+        adminEsquemasCache
+    ) {
+
+        return adminEsquemasCache;
+
+    }
+
+
+    // Ya hay una petición corriendo
+    if (
+        !forzar &&
+        adminEsquemasPromise
+    ) {
+
+        return adminEsquemasPromise;
+
+    }
+
+
+    const consulta =
+        fetch(
+            URL_API,
+            {
+                method:
+                    "POST",
+
+                body:
+                    JSON.stringify({
+
+                        accion:
+                            "obtenerEsquemasAdmin",
+
+                        credential:
+                            adminCredential
+
+                    })
+            }
+        )
+        .then(
+            async respuesta => {
+
+                if (
+                    !respuesta.ok
+                ) {
+
+                    throw new Error(
+                        "Error HTTP " +
+                        respuesta.status
+                    );
+
+                }
+
+
+                const resultado =
+                    await respuesta.json();
+
+
+                if (
+                    !resultado.ok
+                ) {
+
+                    throw new Error(
+                        resultado.error ||
+                        "No fue posible cargar los esquemas."
+                    );
+
+                }
+
+
+                return resultado;
+
+            }
+        );
+
+
+    adminEsquemasPromise =
+        consulta;
+
+
+    try {
+
+        const resultado =
+            await consulta;
+
+
+        adminEsquemasCache =
+            resultado;
+
+
+        return resultado;
+
+
+    } finally {
+
+        if (
+            adminEsquemasPromise ===
+            consulta
+        ) {
+
+            adminEsquemasPromise =
+                null;
+
+        }
+
+    }
+
+}
+
+
+// ======================================================
+// INVALIDAR CACHÉ ADMIN ESQUEMAS
+// ======================================================
+
+function invalidarDatosAdminEsquemas() {
+
+    adminEsquemasCache =
+        null;
+
+    adminEsquemasPromise =
+        null;
+
+}
+
+
+// ======================================================
+// ABRIR ADMINISTRACIÓN DE ESQUEMAS
+// ======================================================
+
+async function abrirAdminEsquemas(
+    datosPrecargados = null
+) {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    const seccion =
+        document.getElementById(
+            "administracion"
+        );
+
+
+    if (!seccion) {
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // ESTRUCTURA DE LA PANTALLA
+    // ==================================================
+
+    seccion.innerHTML = `
+
+        <div class="admin-eventos admin-esquemas">
+
+            <div class="admin-eventos-cabecera">
+
+                <div>
+
+                    <button
+                        id="btnVolverAdminEsquemas"
+                        class="admin-volver"
+                        type="button">
+
+                        ← Administración
+
+                    </button>
+
+
+                    <h2>
+                        📖 Esquemas
+                    </h2>
+
+
+                    <p>
+
+                        Administra los esquemas de
+
+                        ${
+                            escaparHtml(
+                                adminUsuario.nombreCoro ||
+                                "tu coro"
+                            )
+                        }.
+
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="btnNuevoEsquema"
+                    class="admin-nuevo-evento"
+                    type="button">
+
+                    + Nuevo esquema
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="adminListaEsquemas"
+                class="admin-lista-eventos">
+
+                <div class="admin-validando">
+
+                    Cargando esquemas...
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    // ==================================================
+    // VOLVER
+    // ==================================================
+
+    document
+        .getElementById(
+            "btnVolverAdminEsquemas"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                mostrarPanelAdministracion(
+                    adminUsuario
+                );
+
+            }
+        );
+
+
+    // ==================================================
+    // NUEVO ESQUEMA
+    // ==================================================
+
+    document
+        .getElementById(
+            "btnNuevoEsquema"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                abrirFormularioNuevoEsquema();
+
+            }
+        );
+
+
+    // ==================================================
+    // OBTENER DATOS
+    // ==================================================
+
+    try {
+
+        const datos =
+            datosPrecargados ||
+            await obtenerDatosAdminEsquemas();
+
+
+        renderizarAdminEsquemas(
+            datos.esquemas || []
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Error cargando administración de esquemas:",
+            error
+        );
+
+
+        const lista =
+            document.getElementById(
+                "adminListaEsquemas"
+            );
+
+
+        if (lista) {
+
+            lista.innerHTML = `
+
+                <div class="admin-error">
+
+                    No fue posible cargar los esquemas.
+
+                    <br>
+
+                    <small>
+                        ${escaparHtml(
+                            error.message || ""
+                        )}
+                    </small>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+}
+
+
+// ======================================================
+// RENDERIZAR LISTA DE ESQUEMAS
+// ======================================================
+
+function renderizarAdminEsquemas(
+    esquemas
+) {
+
+    const contenedor =
+        document.getElementById(
+            "adminListaEsquemas"
+        );
+
+
+    if (!contenedor) {
+
+        return;
+
+    }
+
+
+    const lista =
+        Array.isArray(
+            esquemas
+        )
+            ? [...esquemas]
+            : [];
+
+
+    if (
+        lista.length === 0
+    ) {
+
+        contenedor.innerHTML = `
+
+            <div class="admin-sin-eventos">
+
+                <div class="admin-sin-eventos-icono">
+                    📖
+                </div>
+
+                <strong>
+                    No hay esquemas
+                </strong>
+
+                <p>
+                    Crea el primer esquema del coro.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // ORDENAR POR EVENTO PRINCIPAL
+    // ==================================================
+
+    lista.sort(
+        (
+            a,
+            b
+        ) => {
+
+            const fechaA =
+                obtenerFechaPrincipalEsquema(
+                    a
+                );
+
+
+            const fechaB =
+                obtenerFechaPrincipalEsquema(
+                    b
+                );
+
+
+            return (
+                fechaA -
+                fechaB
+            );
+
+        }
+    );
+
+
+    contenedor.innerHTML =
+        lista
+            .map(
+                esquema =>
+                    crearTarjetaAdminEsquema(
+                        esquema
+                    )
+            )
+            .join("");
+
+}
+
+
+// ======================================================
+// CREAR TARJETA DE ESQUEMA
+// ======================================================
+
+function crearTarjetaAdminEsquema(
+    esquema
+) {
+
+    const idEsquema =
+        escaparHtml(
+            esquema.idEsquema || ""
+        );
+
+
+    const tipo =
+        escaparHtml(
+            esquema.tipoEsquema ||
+            "Sin tipo"
+        );
+
+
+    const descripcion =
+        escaparHtml(
+            esquema.descripcion ||
+            "Sin descripción"
+        );
+
+
+    const totalCantos =
+        Number(
+            esquema.totalCantos ||
+            (
+                Array.isArray(
+                    esquema.detalles
+                )
+                    ? esquema.detalles.length
+                    : 0
+            )
+        );
+
+
+    // ==================================================
+    // EVENTO PRINCIPAL
+    // ==================================================
+
+    const relacionPrincipal =
+        obtenerRelacionPrincipalEsquema(
+            esquema
+        );
+
+
+    const evento =
+        relacionPrincipal
+            ?.evento ||
+        null;
+
+
+    const fecha =
+        evento
+            ? obtenerFechaVisualEsquema(
+                evento.fecha
+            )
+            : {
+                dia:
+                    "--",
+
+                mes:
+                    "---"
+            };
+
+
+    const uso =
+        relacionPrincipal
+            ? escaparHtml(
+                relacionPrincipal.uso ||
+                ""
+            )
+            : "Sin evento";
+
+
+    const hora =
+        evento &&
+        evento.hora
+            ? escaparHtml(
+                String(
+                    evento.hora
+                ).substring(
+                    0,
+                    5
+                )
+            )
+            : "";
+
+
+    const lugar =
+        evento &&
+        evento.lugar
+            ? escaparHtml(
+                evento.lugar
+            )
+            : "";
+
+
+    const descripcionEvento =
+        evento &&
+        evento.descripcion
+            ? escaparHtml(
+                evento.descripcion
+            )
+            : "";
+
+
+    const estadoEvento =
+        evento &&
+        evento.activo === false
+            ? `
+                <span class="admin-esquema-historico">
+                    Evento histórico
+                </span>
+            `
+            : "";
+
+
+    // ==================================================
+    // ENSAYOS
+    // ==================================================
+
+    const totalEnsayos =
+        Array.isArray(
+            esquema.ensayos
+        )
+            ? esquema.ensayos.length
+            : 0;
+
+
+    return `
+
+        <article
+            class="admin-evento-card admin-esquema-card">
+
+            <div class="admin-evento-fecha">
+
+                <strong>
+                    ${fecha.dia}
+                </strong>
+
+                <span>
+                    ${fecha.mes}
+                </span>
+
+            </div>
+
+
+            <div class="admin-evento-info">
+
+                <span class="admin-evento-tipo">
+
+                    📖 ${tipo}
+
+                </span>
+
+
+                <h3>
+                    ${descripcion}
+                </h3>
+
+
+                ${
+                    relacionPrincipal
+                        ? `
+
+                            <div class="admin-evento-meta">
+
+                                <span>
+                                    ${uso}
+                                </span>
+
+                                ${
+                                    hora
+                                        ? `
+                                            <span>
+                                                🕒 ${hora}
+                                            </span>
+                                        `
+                                        : ""
+                                }
+
+                                ${
+                                    lugar
+                                        ? `
+                                            <span>
+                                                📍 ${lugar}
+                                            </span>
+                                        `
+                                        : ""
+                                }
+
+                            </div>
+
+                        `
+                        : `
+
+                            <div class="admin-evento-meta">
+
+                                <span>
+                                    ⚠️ Sin evento relacionado
+                                </span>
+
+                            </div>
+
+                        `
+                }
+
+
+                ${
+                    descripcionEvento
+                        ? `
+
+                            <small class="admin-esquema-evento">
+
+                                ${descripcionEvento}
+
+                            </small>
+
+                        `
+                        : ""
+                }
+
+
+                ${estadoEvento}
+
+
+                <div class="admin-esquema-resumen">
+
+                    <span>
+                        🎵 ${totalCantos}
+                        ${
+                            totalCantos === 1
+                                ? "canto"
+                                : "cantos"
+                        }
+                    </span>
+
+
+                    ${
+                        totalEnsayos > 0
+                            ? `
+
+                                <span>
+                                    🎤 ${totalEnsayos}
+                                    ${
+                                        totalEnsayos === 1
+                                            ? "ensayo"
+                                            : "ensayos"
+                                    }
+                                </span>
+
+                            `
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-evento-acciones">
+
+                <button
+                    class="admin-evento-editar"
+                    type="button"
+                    onclick="editarEsquemaAdmin('${idEsquema}')">
+
+                    Editar
+
+                </button>
+
+
+                <button
+                    class="admin-evento-eliminar"
+                    type="button"
+                    onclick="eliminarEsquemaAdmin('${idEsquema}')">
+
+                    Eliminar
+
+                </button>
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+// ======================================================
+// OBTENER RELACIÓN PRINCIPAL
+// ======================================================
+
+function obtenerRelacionPrincipalEsquema(
+    esquema
+) {
+
+    // Primero celebración
+
+    if (
+        esquema.celebracion &&
+        esquema.celebracion.evento
+    ) {
+
+        return esquema.celebracion;
+
+    }
+
+
+    // Si aún no tiene celebración,
+    // mostrar el primer ensayo.
+
+    if (
+        Array.isArray(
+            esquema.ensayos
+        ) &&
+        esquema.ensayos.length > 0
+    ) {
+
+        return esquema.ensayos[0];
+
+    }
+
+
+    // Cualquier otra relación
+
+    if (
+        Array.isArray(
+            esquema.relaciones
+        ) &&
+        esquema.relaciones.length > 0
+    ) {
+
+        return esquema.relaciones[0];
+
+    }
+
+
+    return null;
+
+}
+
+
+// ======================================================
+// FECHA PRINCIPAL PARA ORDENAR
+// ======================================================
+
+function obtenerFechaPrincipalEsquema(
+    esquema
+) {
+
+    const relacion =
+        obtenerRelacionPrincipalEsquema(
+            esquema
+        );
+
+
+    const fechaISO =
+        relacion
+            ?.evento
+            ?.fecha;
+
+
+    const hora =
+        relacion
+            ?.evento
+            ?.hora ||
+        "00:00";
+
+
+    if (!fechaISO) {
+
+        return new Date(
+            9999,
+            0,
+            1
+        );
+
+    }
+
+
+    const fecha =
+        new Date(
+            `${fechaISO}T${String(
+                hora
+            ).substring(
+                0,
+                5
+            )}:00`
+        );
+
+
+    if (
+        isNaN(
+            fecha.getTime()
+        )
+    ) {
+
+        return new Date(
+            9999,
+            0,
+            1
+        );
+
+    }
+
+
+    return fecha;
+
+}
+
+
+// ======================================================
+// FECHA VISUAL
+// ======================================================
+
+function obtenerFechaVisualEsquema(
+    fechaISO
+) {
+
+    const meses = [
+
+        "ENE",
+        "FEB",
+        "MAR",
+        "ABR",
+        "MAY",
+        "JUN",
+        "JUL",
+        "AGO",
+        "SEP",
+        "OCT",
+        "NOV",
+        "DIC"
+
+    ];
+
+
+    if (!fechaISO) {
+
+        return {
+
+            dia:
+                "--",
+
+            mes:
+                "---"
+
+        };
+
+    }
+
+
+    const partes =
+        String(
+            fechaISO
+        )
+        .split("-");
+
+
+    if (
+        partes.length !== 3
+    ) {
+
+        return {
+
+            dia:
+                "--",
+
+            mes:
+                "---"
+
+        };
+
+    }
+
+
+    const mes =
+        Number(
+            partes[1]
+        ) - 1;
+
+
+    return {
+
+        dia:
+            String(
+                partes[2]
+            )
+            .padStart(
+                2,
+                "0"
+            ),
+
+        mes:
+            meses[mes] ||
+            "---"
+
+    };
+
+}
+
+
+// ======================================================
+// NUEVO ESQUEMA
+// ======================================================
+//
+// El formulario real será el siguiente paso.
+// Dejamos la función creada para que el botón
+// nunca genere un error.
+//
+// ======================================================
+
+function abrirFormularioNuevoEsquema() {
 
     alert(
-        "Administración de Esquemas será el siguiente módulo."
+        "Ahora vamos a construir el formulario de Nuevo esquema."
+    );
+
+}
+
+
+// ======================================================
+// EDITAR ESQUEMA
+// ======================================================
+
+function editarEsquemaAdmin(
+    idEsquema
+) {
+
+    alert(
+        "Ahora vamos a editar " +
+        idEsquema
+    );
+
+}
+
+
+// ======================================================
+// ELIMINAR ESQUEMA
+// ======================================================
+
+function eliminarEsquemaAdmin(
+    idEsquema
+) {
+
+    alert(
+        "La eliminación de " +
+        idEsquema +
+        " será el siguiente paso."
     );
 
 }
