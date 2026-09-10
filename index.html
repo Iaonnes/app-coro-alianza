@@ -14,22 +14,56 @@
 </head>
 <body>
 
-    <header>
+    <header class="app-header">
 
-        <button
-            id="btnAdministracion"
-            class="btn-administracion"
-            onclick="abrirAccesoAdministracion()"
-            aria-label="Administración">
-            ⚙
-        </button>
-        <img
-            src="assets/logoAppCorus.png"
-            class="logo"
-            alt="Logo Coro Nueva Alianza con Cristo">
-        <div id="appVersion" class="app-version"></div>
-        <h1>🎵 Coro Nueva Alianza con Cristo 🎵</h1>
-        <h3>"Ofreciendo nuestra juventud a través del canto."</h3>
+        <!-- Decoración de fondo -->
+        <div class="header-orbe header-orbe-1"></div>
+        <div class="header-orbe header-orbe-2"></div>
+
+        <div class="header-contenido">
+
+            <!-- LOGO -->
+            <div class="header-logo-box">
+
+                <img
+                    src="assets/logoAppCorus.png"
+                    class="logo"
+                    alt="AppCorus">
+
+            </div>
+
+            <!-- VERSIÓN DINÁMICA -->
+            <div
+                id="appVersion"
+                class="app-version">
+            </div>
+
+            <!-- CORO -->
+            <div class="header-identidad">
+
+                <div class="header-titulo-linea">
+
+                    <span class="header-nota">
+                        ♪
+                    </span>
+
+                    <h1>
+                        Coro Nueva Alianza con Cristo
+                    </h1>
+
+                    <span class="header-nota">
+                        ♫
+                    </span>
+
+                </div>
+
+                <p class="header-lema">
+                    Ofreciendo nuestra juventud a través del canto.
+                </p>
+
+            </div>
+
+        </div>
 
     </header>
 

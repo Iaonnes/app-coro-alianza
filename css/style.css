@@ -112,7 +112,9 @@ nav button{
     font-weight:600;
     font-size:14px;
 
-    transition:.3s;
+    transition:
+        background-color .2s ease,
+        transform .2s ease;
 
     touch-action:manipulation;
 }
@@ -152,7 +154,7 @@ nav button:hover{
     box-shadow:
         0 3px 10px rgba(0,0,0,.06);
 
-    transition:.3s;
+    transition:transform .2s ease;
 }
 
 .card:hover{
@@ -173,7 +175,9 @@ nav button:hover{
 
     cursor:pointer;
 
-    transition:.3s;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
 .card-resumen:hover{
@@ -280,7 +284,9 @@ nav button:hover{
 
     cursor:pointer;
 
-    transition:.3s;
+    transition:
+        background-color .2s ease,
+        transform .2s ease;
 }
 
 .navegacion-esquema button:hover{
@@ -412,7 +418,9 @@ nav button:hover{
 
     cursor:pointer;
 
-    transition:.3s;
+    transition:
+        background-color .2s ease,
+        transform .2s ease;
 }
 
 .cabecera-calendario button:hover{
@@ -1043,7 +1051,10 @@ nav button:hover{
     font-weight:700;
     cursor:pointer;
     box-shadow:0 6px 14px rgba(25,118,210,.22);
-    transition:.25s;
+    transition:
+        background-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
 .navegacion-esquema button:hover,
@@ -1196,7 +1207,10 @@ nav button:hover{
     font-weight:700;
     color:#24384f;
     cursor:pointer;
-    transition:.22s;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        background-color .2s ease;
 }
 
 .calendar-day:hover{
@@ -1421,7 +1435,9 @@ nav button:hover{
         0 5px 14px
         rgba(0,0,0,.05);
 
-    transition:.2s;
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
 }
 
 .cantos-buscador input:focus{
@@ -1488,7 +1504,7 @@ nav button:hover{
 
     color:#2c3e50;
 
-    transition:.2s;
+    transition:background-color .2s ease;
 }
 
 
@@ -1623,7 +1639,10 @@ header{
 
     z-index:20;
 
-    transition:.2s;
+    transition:
+        background-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
 .btn-administracion:hover{
@@ -1763,7 +1782,9 @@ header{
         0 8px 22px
         rgba(21,101,192,.08);
 
-    transition:.22s;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
 
@@ -3165,4 +3186,488 @@ header{
         margin-bottom: 10px;
     }
 
+}
+/* =========================================================
+   APPCORUS - OPTIMIZACIÓN VISUAL Y DE RENDERIZADO
+   Conserva el diseño actual y mejora cabecera, interacción,
+   accesibilidad y comportamiento responsive.
+   ========================================================= */
+
+:root{
+    --app-primary:#1565C0;
+    --app-primary-2:#1976D2;
+    --app-primary-dark:#0d47a1;
+    --app-accent:#00a9d6;
+    --app-bg:#eef3f9;
+    --app-surface:#ffffff;
+    --app-text:#2c3e50;
+    --app-muted:#607086;
+    --app-border:#dfe7f1;
+    --app-shadow:0 10px 24px rgba(21,101,192,.08);
+    --app-shadow-soft:0 6px 18px rgba(0,0,0,.06);
+    --app-radius-xl:24px;
+    --app-radius-lg:18px;
+    --app-radius-md:14px;
+    --app-ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* Herencia y pequeños ajustes globales */
+html{
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+}
+
+body{
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--app-bg);
+    color:var(--app-text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    text-rendering:optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea{
+    font:inherit;
+}
+
+button,
+a{
+    -webkit-tap-highlight-color:transparent;
+}
+
+img{
+    max-width:100%;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+    outline:3px solid rgba(25,118,210,.22);
+    outline-offset:2px;
+}
+
+/* =========================================================
+   HEADER MODERNO
+   Funciona con el header actual y también con .app-header.
+   ========================================================= */
+
+header,
+.app-header{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+
+    color:#fff;
+    text-align:center;
+
+    padding:
+        22px
+        72px
+        26px;
+
+    background:
+        radial-gradient(
+            circle at 18% 15%,
+            rgba(255,255,255,.13) 0,
+            rgba(255,255,255,0) 28%
+        ),
+        radial-gradient(
+            circle at 82% 88%,
+            rgba(0,229,255,.10) 0,
+            rgba(0,229,255,0) 30%
+        ),
+        linear-gradient(
+            135deg,
+            var(--app-primary-dark) 0%,
+            var(--app-primary) 42%,
+            var(--app-primary-2) 72%,
+            #0288d1 100%
+        );
+
+    box-shadow:
+        0 8px 28px
+        rgba(13,71,161,.16);
+}
+
+header::before,
+.app-header::before{
+    content:"";
+    position:absolute;
+    z-index:-1;
+
+    width:300px;
+    height:300px;
+
+    top:-215px;
+    left:-70px;
+
+    border-radius:50%;
+    background:rgba(255,255,255,.07);
+
+    pointer-events:none;
+}
+
+header::after,
+.app-header::after{
+    content:"";
+    position:absolute;
+    z-index:-1;
+
+    width:260px;
+    height:260px;
+
+    right:-100px;
+    bottom:-190px;
+
+    border-radius:50%;
+    background:rgba(0,229,255,.08);
+
+    pointer-events:none;
+}
+
+header .logo,
+.app-header .logo{
+    width:112px;
+    height:112px;
+
+    display:block;
+
+    margin:
+        0
+        auto
+        8px;
+
+    padding:4px;
+
+    object-fit:cover;
+
+    border:
+        3px solid
+        rgba(255,255,255,.92);
+
+    border-radius:50%;
+
+    background:#fff;
+
+    box-shadow:
+        0 10px 24px
+        rgba(0,0,0,.18);
+}
+
+header h1,
+.app-header h1{
+    margin:
+        7px
+        0
+        0;
+
+    color:#fff;
+
+    font-size:
+        clamp(
+            1.55rem,
+            3vw,
+            2.15rem
+        );
+
+    line-height:1.15;
+    font-weight:800;
+    letter-spacing:-.35px;
+
+    text-shadow:
+        0 2px 8px
+        rgba(0,0,0,.12);
+}
+
+header > p,
+header .header-lema,
+.app-header .header-lema{
+    margin:
+        5px
+        auto
+        0;
+
+    max-width:720px;
+
+    color:
+        rgba(255,255,255,.90);
+
+    font-size:.96rem;
+    font-weight:500;
+}
+
+/* Versión dinámica */
+header .app-version,
+.app-header .app-version{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:6px;
+
+    min-height:28px;
+
+    margin:
+        0
+        auto
+        8px;
+
+    padding:
+        4px
+        10px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.20);
+
+    border-radius:999px;
+
+    background:
+        rgba(255,255,255,.12);
+
+    color:
+        rgba(255,255,255,.96);
+
+    font-size:.78rem;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255,255,255,.10);
+}
+
+header .app-version strong,
+.app-header .app-version strong{
+    font-weight:700;
+}
+
+header .app-version span,
+.app-header .app-version span{
+    padding:
+        2px
+        7px;
+
+    border-radius:999px;
+
+    background:
+        rgba(255,255,255,.14);
+
+    font-size:.72rem;
+    font-weight:700;
+}
+
+/* Clases opcionales del header mejorado */
+.header-contenido{
+    position:relative;
+    z-index:2;
+
+    width:100%;
+    max-width:900px;
+
+    margin:auto;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.header-titulo-linea{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+.header-nota{
+    color:#90caf9;
+    font-size:1.55rem;
+    line-height:1;
+    opacity:.92;
+}
+
+.header-app-info{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+
+    gap:9px;
+
+    margin-top:13px;
+    padding:7px 13px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.10);
+
+    border-radius:999px;
+
+    background:
+        rgba(0,0,0,.09);
+
+    color:
+        rgba(255,255,255,.92);
+
+    font-size:.78rem;
+    font-weight:600;
+}
+
+.header-app-info i{
+    width:4px;
+    height:4px;
+
+    flex:0 0 4px;
+
+    border-radius:50%;
+    background:rgba(255,255,255,.48);
+}
+
+/* Botón de administración: misma estética con costo controlado */
+.btn-administracion{
+    will-change:auto;
+    -webkit-backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px);
+}
+
+/* Navegación inferior compatible con dispositivos con safe-area */
+.bottom-nav{
+    padding-bottom:
+        max(
+            10px,
+            env(safe-area-inset-bottom)
+        );
+}
+
+/* Controles más fluidos sin animar propiedades innecesarias */
+.admin-btn-guardar,
+.admin-btn-cancelar,
+.admin-nuevo-evento,
+.admin-evento-editar,
+.btn-ver-calendario{
+    transition:
+        background-color .2s var(--app-ease),
+        color .2s var(--app-ease),
+        border-color .2s var(--app-ease),
+        transform .2s var(--app-ease),
+        box-shadow .2s var(--app-ease);
+}
+
+/* Evita hover artificial en pantallas táctiles */
+@media (hover:none){
+    .card:hover,
+    .card-resumen:hover,
+    .admin-card:hover,
+    .calendar-day:hover,
+    .navegacion-esquema button:hover,
+    .cabecera-calendario button:hover,
+    .btn-administracion:hover,
+    .btn-ver-calendario:hover{
+        transform:none;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE DEL HEADER
+   ========================================================= */
+
+@media (max-width:768px){
+
+    header,
+    .app-header{
+        padding:
+            20px
+            62px
+            22px;
+    }
+
+    header .logo,
+    .app-header .logo{
+        width:96px;
+        height:96px;
+    }
+
+    header h1,
+    .app-header h1{
+        font-size:
+            clamp(
+                1.35rem,
+                6vw,
+                1.65rem
+            );
+    }
+
+    header > p,
+    header .header-lema,
+    .app-header .header-lema{
+        font-size:.88rem;
+    }
+
+    .header-titulo-linea{
+        gap:7px;
+    }
+
+    .header-nota{
+        font-size:1.25rem;
+    }
+
+    .header-app-info{
+        margin-top:11px;
+        padding:6px 10px;
+        gap:7px;
+        font-size:.70rem;
+    }
+}
+
+@media (max-width:420px){
+
+    header,
+    .app-header{
+        padding:
+            18px
+            54px
+            20px;
+    }
+
+    header .logo,
+    .app-header .logo{
+        width:88px;
+        height:88px;
+    }
+
+    header .app-version,
+    .app-header .app-version{
+        min-height:26px;
+        padding:3px 8px;
+        font-size:.72rem;
+    }
+
+    .header-nota{
+        display:none;
+    }
+
+    .header-app-info{
+        border-radius:16px;
+    }
+}
+
+/* =========================================================
+   ACCESIBILIDAD / RENDIMIENTO DE MOVIMIENTO
+   Respeta usuarios que prefieren menos animaciones.
+   ========================================================= */
+
+@media (prefers-reduced-motion:reduce){
+
+    *,
+    *::before,
+    *::after{
+        scroll-behavior:auto !important;
+        transition-duration:.01ms !important;
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+    }
 }
