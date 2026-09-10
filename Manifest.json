@@ -5,7 +5,7 @@
   "display": "standalone",
   "icons": [
     {
-      "src": "assets/AppAlianza.png",
+      "src": "assets/logoAppCorus.png",
       "sizes": "512x512",
       "type": "image/png"
     }
