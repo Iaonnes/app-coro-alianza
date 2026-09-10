@@ -24,7 +24,7 @@ main{
     width:min(900px, 100%);
     margin:auto;
     padding:20px;
-    padding-bottom:90px;
+    padding-bottom:105px;
 }
 
 h1{
@@ -516,250 +516,156 @@ nav button:hover{
 }
 
 
-/* =========================================================
-   APPCORUS
+/* ==============================
    NAVEGACIÓN INFERIOR
-   ========================================================= */
+   APPCORUS - ICONOS SVG GRANDES
+================================ */
 
-.bottom-nav {
+.bottom-nav{
+    position:fixed;
 
-    position: fixed;
+    left:0;
+    right:0;
+    bottom:0;
 
-    left: 0;
-    right: 0;
-    bottom: 0;
+    z-index:999;
 
-    z-index: 999;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    align-items:center;
 
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    min-height: 68px;
+    width:100%;
+    min-height:80px;
 
     padding:
-        6px
-        max(
-            8px,
-            env(safe-area-inset-right)
-        )
-        calc(
-            6px +
-            env(safe-area-inset-bottom)
-        )
-        max(
-            8px,
-            env(safe-area-inset-left)
-        );
+        8px
+        max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom))
+        max(8px, env(safe-area-inset-left));
 
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            .96
-        );
+    background:rgba(255,255,255,.97);
 
-    border-top:
-        1px solid
-        #e5edf6;
+    border-top:1px solid #e4ebf4;
 
     box-shadow:
-        0 -6px 24px
-        rgba(
-            15,
-            23,
-            42,
-            .08
-        );
+        0 -5px 20px rgba(15,23,42,.08);
 
-    backdrop-filter:
-        blur(12px);
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
 }
 
+.bottom-nav .nav-item{
+    position:relative;
 
-/* BOTÓN */
+    min-width:0;
+    min-height:58px;
 
-.bottom-nav .nav-item {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
 
-    position: relative;
+    gap:4px;
 
-    min-width: 0;
+    padding:5px 3px;
 
-    display: flex;
+    border:none;
+    background:transparent;
 
-    flex-direction: column;
+    color:#8291a6;
 
-    justify-content: center;
+    font-family:inherit;
 
-    align-items: center;
+    cursor:pointer;
 
-    gap: 3px;
-
-    padding:
-        5px 3px;
-
-    border: 0;
-
-    background:
-        transparent;
-
-    color:
-        #8090a4;
-
-    font-family:
-        inherit;
-
-    cursor: pointer;
-
-    -webkit-tap-highlight-color:
-        transparent;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
 
     transition:
         color .18s ease,
         transform .18s ease;
 }
 
+.bottom-nav .nav-icon{
+    width:31px;
+    height:31px;
 
-/* ICONO SVG */
+    display:block;
 
-.bottom-nav .nav-icon {
-
-    width: 25px;
-    height: 25px;
-
-    fill: none;
-
-    stroke:
-        currentColor;
-
-    stroke-width:
-        1.8;
-
-    stroke-linecap:
-        round;
-
-    stroke-linejoin:
-        round;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
 
     transition:
         transform .18s ease;
 }
 
+.bottom-nav .nav-item span{
+    margin:0;
 
-/* TEXTO */
+    font-size:.74rem;
+    line-height:1.1;
+    font-weight:600;
 
-.bottom-nav .nav-item span {
-
-    margin: 0;
-
-    font-size:
-        .70rem;
-
-    line-height: 1.1;
-
-    font-weight:
-        600;
-
-    white-space:
-        nowrap;
+    white-space:nowrap;
 }
 
-
-/* ==============================
-   ACTIVO
-   ================================ */
-
-.bottom-nav .nav-item.activo {
-
-    color:
-        #1976d2;
+.bottom-nav .nav-item.activo{
+    color:#1976d2;
 }
 
+.bottom-nav .nav-item.activo::before{
+    content:"";
 
-.bottom-nav .nav-item.activo::before {
+    position:absolute;
+    top:-8px;
+    left:50%;
 
-    content: "";
+    width:34px;
+    height:3px;
 
-    position: absolute;
+    border-radius:999px;
 
-    top: -6px;
+    background:#1976d2;
 
-    width: 32px;
-    height: 3px;
-
-    border-radius:
-        999px;
-
-    background:
-        #1976d2;
+    transform:translateX(-50%);
 }
 
-
-.bottom-nav .nav-item.activo .nav-icon {
-
-    transform:
-        translateY(-1px);
+.bottom-nav .nav-item.activo .nav-icon{
+    transform:translateY(-1px) scale(1.08);
 }
 
+.bottom-nav .nav-item:active{
+    transform:scale(.96);
+}
 
-/* ==============================
-   HOVER
-   ================================ */
+@media (hover:hover){
+    .bottom-nav .nav-item:hover{
+        color:#1976d2;
+    }
+}
 
-@media (hover:hover) {
-
-    .bottom-nav .nav-item:hover {
-
-        color:
-            #1976d2;
+@media (max-width:420px){
+    .bottom-nav{
+        min-height:76px;
     }
 
-}
-
-
-/* ==============================
-   CLICK
-   ================================ */
-
-.bottom-nav .nav-item:active {
-
-    transform:
-        scale(.96);
-}
-
-
-/* ==============================
-   CELULAR PEQUEÑO
-   ================================ */
-
-@media (max-width: 420px) {
-
-    .bottom-nav {
-
-        min-height:
-            64px;
+    .bottom-nav .nav-item{
+        min-height:54px;
     }
 
-
-    .bottom-nav .nav-icon {
-
-        width:
-            23px;
-
-        height:
-            23px;
+    .bottom-nav .nav-icon{
+        width:29px;
+        height:29px;
     }
 
-
-    .bottom-nav .nav-item span {
-
-        font-size:
-            .65rem;
+    .bottom-nav .nav-item span{
+        font-size:.69rem;
     }
-
 }
+
 
 /* ==============================
    RESPONSIVE
@@ -3730,14 +3636,7 @@ header .app-version span,
     backdrop-filter:blur(6px);
 }
 
-/* Navegación inferior compatible con dispositivos con safe-area */
-.bottom-nav{
-    padding-bottom:
-        max(
-            10px,
-            env(safe-area-inset-bottom)
-        );
-}
+/* La navegación inferior ya contempla safe-area en su bloque principal. */
 
 /* Controles más fluidos sin animar propiedades innecesarias */
 .admin-btn-guardar,
