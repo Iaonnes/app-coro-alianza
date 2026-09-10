@@ -9513,3 +9513,2108 @@ if (
     inicializarAppCorus();
 
 }
+// ======================================================
+// APPCORUS V3.5 - CANTOS DIRECTOS + RENDIMIENTO
+// PEGAR AL FINAL DE js/app.js
+// ======================================================
+
+let v35ArchivosCantosCache = null;
+let v35ArchivosCantosPromise = null;
+let v35ArchivosCantosCacheHora = 0;
+
+const V35_ARCHIVOS_CANTOS_TTL =
+    15 * 60 * 1000;
+
+
+let v35EsquemasAgrupadosFuente =
+    null;
+
+let v35EsquemasAgrupadosCache =
+    [];
+
+
+// ======================================================
+// OBTENER CANTOS DE DRIVE
+// ======================================================
+
+async function v35ObtenerArchivosCantos(
+    forzar = false
+) {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        throw new Error(
+            "La sesión de administración no está disponible."
+        );
+
+    }
+
+
+    const cacheVigente =
+        v35ArchivosCantosCache &&
+        (
+            Date.now() -
+            v35ArchivosCantosCacheHora
+        ) <
+        V35_ARCHIVOS_CANTOS_TTL;
+
+
+    if (
+        !forzar &&
+        cacheVigente
+    ) {
+
+        return v35ArchivosCantosCache;
+
+    }
+
+
+    if (
+        !forzar &&
+        v35ArchivosCantosPromise
+    ) {
+
+        return v35ArchivosCantosPromise;
+
+    }
+
+
+    const consulta =
+        fetch(
+            URL_API,
+            {
+                method:
+                    "POST",
+
+                body:
+                    JSON.stringify({
+
+                        accion:
+                            "obtenerArchivosCantos",
+
+                        credential:
+                            adminCredential,
+
+                        forzar:
+                            forzar
+
+                    })
+            }
+        )
+        .then(
+            async respuesta => {
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        "Error HTTP " +
+                        respuesta.status
+                    );
+
+                }
+
+
+                const resultado =
+                    await respuesta.json();
+
+
+                if (!resultado.ok) {
+
+                    throw new Error(
+                        resultado.error ||
+                        "No fue posible cargar los cantos."
+                    );
+
+                }
+
+
+                return resultado;
+
+            }
+        );
+
+
+    v35ArchivosCantosPromise =
+        consulta;
+
+
+    try {
+
+        const resultado =
+            await consulta;
+
+
+        v35ArchivosCantosCache =
+            resultado;
+
+        v35ArchivosCantosCacheHora =
+            Date.now();
+
+
+        return resultado;
+
+
+    } finally {
+
+        if (
+            v35ArchivosCantosPromise ===
+            consulta
+        ) {
+
+            v35ArchivosCantosPromise =
+                null;
+
+        }
+
+    }
+
+}
+
+
+// ======================================================
+// PRECARGAR CANTOS EN SEGUNDO PLANO
+// ======================================================
+
+function v35PrecalentarArchivosCantos() {
+
+    v35ObtenerArchivosCantos()
+        .catch(
+            error => {
+
+                console.warn(
+                    "No fue posible precargar el catálogo de cantos:",
+                    error
+                );
+
+            }
+        );
+
+}
+
+
+// ======================================================
+// FILTRAR CANTOS POR MOMENTO
+// ======================================================
+
+function v35ArchivosPorMomento(
+    datosArchivos,
+    momento
+) {
+
+    const clave =
+        normalizarTextoEsquema(
+            momento
+        );
+
+
+    const archivos =
+        Array.isArray(
+            datosArchivos &&
+            datosArchivos.archivos
+        )
+            ? datosArchivos.archivos
+            : [];
+
+
+    return archivos.filter(
+        archivo =>
+            normalizarTextoEsquema(
+                archivo.momento
+            ) ===
+            clave
+    );
+
+}
+
+
+// ======================================================
+// OPCIONES DEL SELECT
+// ======================================================
+
+function v35OpcionesCanto(
+    momento,
+    datosArchivos,
+    idSeleccionado = "",
+    cantoActual = ""
+) {
+
+    const archivos =
+        v35ArchivosPorMomento(
+            datosArchivos,
+            momento
+        );
+
+
+    const idActual =
+        String(
+            idSeleccionado ||
+            ""
+        ).trim();
+
+
+    const nombreActual =
+        String(
+            cantoActual ||
+            ""
+        ).trim();
+
+
+    const opciones = [
+
+        `
+            <option value="">
+                Sin canto
+            </option>
+        `
+
+    ];
+
+
+    let existeActual =
+        false;
+
+
+    archivos.forEach(
+        archivo => {
+
+            const idArchivo =
+                String(
+                    archivo.idArchivo ||
+                    ""
+                ).trim();
+
+
+            const seleccionado =
+                idArchivo &&
+                idArchivo ===
+                idActual;
+
+
+            if (seleccionado) {
+
+                existeActual =
+                    true;
+
+            }
+
+
+            opciones.push(
+
+                `
+                    <option
+
+                        value="${escaparHtml(
+                            idArchivo
+                        )}"
+
+                        data-nombre="${escaparHtml(
+                            archivo.nombre ||
+                            ""
+                        )}"
+
+                        ${
+                            seleccionado
+                                ? "selected"
+                                : ""
+                        }>
+
+                        ${escaparHtml(
+                            archivo.nombre ||
+                            "Canto"
+                        )}
+
+                    </option>
+                `
+
+            );
+
+        }
+    );
+
+
+    // Compatibilidad con cantos antiguos.
+    if (
+        nombreActual &&
+        !existeActual
+    ) {
+
+        opciones.push(
+
+            `
+                <option
+
+                    value="__legacy__"
+
+                    data-nombre="${escaparHtml(
+                        nombreActual
+                    )}"
+
+                    selected>
+
+                    ${escaparHtml(
+                        nombreActual
+                    )}
+
+                    ·
+
+                    ${
+                        idActual
+                            ? "archivo actual"
+                            : "sin enlace"
+                    }
+
+                </option>
+            `
+
+        );
+
+    }
+
+
+       if (
+        !archivos.length &&
+        !nombreActual
+    ) {
+
+        opciones.push(
+
+            `
+                <option
+                    value=""
+                    disabled>
+
+                    No hay cantos disponibles para
+                    ${escaparHtml(momento)}
+
+                </option>
+            `
+
+        );
+
+    }
+
+
+    return opciones.join("");
+
+}
+
+
+// ======================================================
+// CAMBIAR INPUT POR SELECT
+// ======================================================
+
+function v35CrearSelectDesdeInput(
+
+    input,
+    datosArchivos,
+    idArchivoActual = "",
+    cantoActual = ""
+
+) {
+
+    const select =
+        document.createElement(
+            "select"
+        );
+
+
+    const momento =
+        input.dataset.momento ||
+        "";
+
+
+    if (
+        input.classList.contains(
+            "editar-esquema-canto-input"
+        )
+    ) {
+
+        select.className =
+            "editar-esquema-canto-select";
+
+    } else {
+
+        select.className =
+            "esquema-canto-select";
+
+    }
+
+
+    select.dataset.momento =
+        momento;
+
+    select.dataset.idArchivoActual =
+        String(
+            idArchivoActual ||
+            ""
+        );
+
+    select.dataset.cantoActual =
+        String(
+            cantoActual ||
+            input.value ||
+            ""
+        );
+
+
+    select.innerHTML =
+        v35OpcionesCanto(
+
+            momento,
+            datosArchivos,
+            idArchivoActual,
+            cantoActual ||
+            input.value ||
+            ""
+
+        );
+
+
+    input.replaceWith(
+        select
+    );
+
+}
+
+
+// ======================================================
+// CONVERTIR FORMULARIO NUEVO
+// ======================================================
+
+async function v35ConvertirFormularioNuevo() {
+
+    const inputs =
+        Array.from(
+
+            document.querySelectorAll(
+                ".esquema-canto-input"
+            )
+
+        );
+
+
+    if (!inputs.length) {
+
+        return;
+
+    }
+
+
+    const datosArchivos =
+        await v35ObtenerArchivosCantos();
+
+
+    inputs.forEach(
+        input => {
+
+            if (
+                !document.body.contains(
+                    input
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            v35CrearSelectDesdeInput(
+                input,
+                datosArchivos
+            );
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// CONVERTIR FORMULARIO EDITAR
+// ======================================================
+
+async function v35ConvertirFormularioEditar(
+    idEsquema
+) {
+
+    const inputs =
+        Array.from(
+
+            document.querySelectorAll(
+                ".editar-esquema-canto-input"
+            )
+
+        );
+
+
+    if (!inputs.length) {
+
+        return;
+
+    }
+
+
+    const resultados =
+        await Promise.all([
+
+            v35ObtenerArchivosCantos(),
+
+            obtenerDatosAdminEsquemas()
+
+        ]);
+
+
+    const datosArchivos =
+        resultados[0];
+
+    const datosAdmin =
+        resultados[1];
+
+
+    const esquema =
+        (
+            datosAdmin.esquemas ||
+            []
+        )
+        .find(
+
+            item =>
+                String(
+                    item.idEsquema
+                ) ===
+                String(
+                    idEsquema
+                )
+
+        );
+
+
+    const detalles =
+        Array.isArray(
+            esquema &&
+            esquema.detalles
+        )
+            ? esquema.detalles
+            : [];
+
+
+    inputs.forEach(
+        input => {
+
+            if (
+                !document.body.contains(
+                    input
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const momento =
+                input.dataset.momento ||
+                "";
+
+
+            const detalle =
+                detalles.find(
+
+                    item =>
+
+                        normalizarTextoEsquema(
+                            item.momento
+                        )
+
+                        ===
+
+                        normalizarTextoEsquema(
+                            momento
+                        )
+
+                ) ||
+                {};
+
+
+            v35CrearSelectDesdeInput(
+
+                input,
+                datosArchivos,
+
+                detalle.idArchivo ||
+                "",
+
+                detalle.canto ||
+                input.value ||
+                ""
+
+            );
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// ADMIN ESQUEMAS
+// PRECARGAR CANTOS SIN BLOQUEAR
+// ======================================================
+
+const v35AbrirAdminEsquemasOriginal =
+    abrirAdminEsquemas;
+
+
+abrirAdminEsquemas =
+    async function(
+        datosPrecargados = null
+    ) {
+
+        const resultado =
+            await v35AbrirAdminEsquemasOriginal(
+                datosPrecargados
+            );
+
+
+        v35PrecalentarArchivosCantos();
+
+
+        return resultado;
+
+    };
+
+
+// ======================================================
+// NUEVO ESQUEMA
+// ======================================================
+
+const v35AbrirNuevoOriginal =
+    abrirFormularioNuevoEsquema;
+
+
+abrirFormularioNuevoEsquema =
+    async function() {
+
+        const resultado =
+            await v35AbrirNuevoOriginal();
+
+
+        try {
+
+            await v35ConvertirFormularioNuevo();
+
+        } catch(error) {
+
+            console.error(
+                "Error cargando cantos en Nuevo esquema:",
+                error
+            );
+
+
+            mostrarMensajeNuevoEsquema(
+
+                "No fue posible cargar los cantos de Drive.",
+
+                "error"
+
+            );
+
+        }
+
+
+        return resultado;
+
+    };
+
+
+// ======================================================
+// EDITAR ESQUEMA
+// ======================================================
+
+const v35EditarEsquemaOriginal =
+    editarEsquemaAdmin;
+
+
+editarEsquemaAdmin =
+    async function(
+        idEsquema
+    ) {
+
+        const resultado =
+            await v35EditarEsquemaOriginal(
+                idEsquema
+            );
+
+
+        try {
+
+            await v35ConvertirFormularioEditar(
+                idEsquema
+            );
+
+        } catch(error) {
+
+            console.error(
+                "Error cargando cantos en Editar esquema:",
+                error
+            );
+
+
+            mostrarMensajeEditarEsquema(
+
+                "No fue posible cargar los cantos de Drive.",
+
+                "error"
+
+            );
+
+        }
+
+
+        return resultado;
+
+    };
+
+
+// ======================================================
+// GUARDAR NUEVO ESQUEMA
+// ======================================================
+
+guardarNuevoEsquema =
+    async function() {
+
+        const tipoEsquema =
+            document
+                .getElementById(
+                    "nuevoEsquemaTipo"
+                )
+                ?.value
+                .trim();
+
+
+        const descripcion =
+            document
+                .getElementById(
+                    "nuevoEsquemaDescripcion"
+                )
+                ?.value
+                .trim();
+
+
+        const observaciones =
+            document
+                .getElementById(
+                    "nuevoEsquemaObservaciones"
+                )
+                ?.value
+                .trim() ||
+            "";
+
+
+        const idEventoCelebracion =
+            document
+                .getElementById(
+                    "nuevoEsquemaCelebracion"
+                )
+                ?.value
+                .trim() ||
+            "";
+
+
+        const boton =
+            document.getElementById(
+                "btnGuardarNuevoEsquema"
+            );
+
+
+        if (!tipoEsquema) {
+
+            mostrarMensajeNuevoEsquema(
+
+                "Selecciona el tipo de esquema.",
+
+                "error"
+
+            );
+
+            return;
+
+        }
+
+
+        if (!descripcion) {
+
+            mostrarMensajeNuevoEsquema(
+
+                "Escribe la descripción del esquema.",
+
+                "error"
+
+            );
+
+            return;
+
+        }
+
+
+        const detalles =
+            [];
+
+
+        document
+            .querySelectorAll(
+                ".esquema-canto-select"
+            )
+            .forEach(
+
+                select => {
+
+                    const idArchivo =
+                        String(
+                            select.value ||
+                            ""
+                        ).trim();
+
+
+                    if (
+                        !idArchivo ||
+                        idArchivo ===
+                        "__legacy__"
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const opcion =
+                        select.options[
+                            select.selectedIndex
+                        ];
+
+
+                    const canto =
+                        String(
+
+                            opcion &&
+                            opcion.dataset &&
+                            opcion.dataset.nombre
+
+                            ||
+
+                            opcion &&
+                            opcion.textContent
+
+                            ||
+
+                            ""
+
+                        )
+                        .trim();
+
+
+                    if (!canto) {
+
+                        return;
+
+                    }
+
+
+                    const momento =
+                        select.dataset.momento ||
+                        "";
+
+
+                    const contenedor =
+                        select.closest(
+                            ".admin-esquema-momento"
+                        );
+
+
+                    const observacionesInput =
+                        contenedor &&
+                        contenedor.querySelector(
+                            ".esquema-canto-observaciones"
+                        );
+
+
+                    detalles.push({
+
+                        momento:
+                            momento,
+
+                        canto:
+                            canto,
+
+                        observaciones:
+                            observacionesInput
+                                ?.value
+                                .trim() ||
+                            "",
+
+                        idArchivo:
+                            idArchivo
+
+                    });
+
+                }
+            );
+
+
+        if (boton) {
+
+            boton.disabled =
+                true;
+
+            boton.textContent =
+                "Guardando...";
+
+        }
+
+
+        mostrarMensajeNuevoEsquema(
+
+            "Guardando esquema...",
+
+            "validando"
+
+        );
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+
+                    URL_API,
+
+                    {
+
+                        method:
+                            "POST",
+
+                        body:
+                            JSON.stringify({
+
+                                accion:
+                                    "crearEsquema",
+
+                                credential:
+                                    adminCredential,
+
+                                esquema: {
+
+                                    tipoEsquema:
+                                        tipoEsquema,
+
+                                    descripcion:
+                                        descripcion,
+
+                                    observaciones:
+                                        observaciones,
+
+                                    idEventoCelebracion:
+                                        idEventoCelebracion,
+
+                                    idsEventosEnsayo:
+                                        [],
+
+                                    detalles:
+                                        detalles
+
+                                }
+
+                            })
+
+                    }
+
+                );
+
+
+            const resultado =
+                await respuesta.json();
+
+
+            if (!resultado.ok) {
+
+                throw new Error(
+
+                    resultado.error ||
+
+                    "No fue posible crear el esquema."
+
+                );
+
+            }
+
+
+            invalidarDatosAdminEsquemas();
+
+            invalidarDatosApp();
+
+
+            const promesaPublica =
+                obtenerDatosApp(
+                    true
+                )
+                .then(
+
+                    data => {
+
+                        renderizarInicio(
+                            data
+                        );
+
+                        renderizarEsquemas(
+                            data
+                        );
+
+                        renderizarCantos(
+                            data
+                        );
+
+                        renderizarCalendario(
+                            data
+                        );
+
+
+                        return data;
+
+                    }
+
+                )
+                .catch(
+
+                    error => {
+
+                        console.warn(
+
+                            "No fue posible precargar la parte pública:",
+
+                            error
+
+                        );
+
+
+                        return null;
+
+                    }
+
+                );
+
+
+            const datosAdmin =
+                await obtenerDatosAdminEsquemas(
+                    true
+                );
+
+
+            await abrirAdminEsquemas(
+                datosAdmin
+            );
+
+
+            void promesaPublica;
+
+
+            const pantalla =
+                document.querySelector(
+                    ".admin-esquemas"
+                );
+
+
+            if (pantalla) {
+
+                pantalla.insertAdjacentHTML(
+
+                    "afterbegin",
+
+                    `
+
+                        <div class="admin-exito">
+
+                            ✅ Esquema creado correctamente.
+
+                        </div>
+
+                    `
+
+                );
+
+            }
+
+
+        } catch(error) {
+
+            console.error(
+                "Error creando esquema:",
+                error
+            );
+
+
+            mostrarMensajeNuevoEsquema(
+
+                error.message ||
+
+                "No fue posible crear el esquema.",
+
+                "error"
+
+            );
+
+
+            if (boton) {
+
+                boton.disabled =
+                    false;
+
+                boton.textContent =
+                    "Guardar esquema";
+
+            }
+
+        }
+
+    };
+
+
+// ======================================================
+// GUARDAR CAMBIOS DE ESQUEMA
+// ======================================================
+
+guardarCambiosEsquema =
+    async function(
+        idEsquema
+    ) {
+
+        const tipoEsquema =
+            document
+                .getElementById(
+                    "editarEsquemaTipo"
+                )
+                ?.value
+                .trim();
+
+
+        const descripcion =
+            document
+                .getElementById(
+                    "editarEsquemaDescripcion"
+                )
+                ?.value
+                .trim();
+
+
+        const observaciones =
+            document
+                .getElementById(
+                    "editarEsquemaObservaciones"
+                )
+                ?.value
+                .trim() ||
+            "";
+
+
+        const idEventoCelebracion =
+            document
+                .getElementById(
+                    "editarEsquemaCelebracion"
+                )
+                ?.value
+                .trim() ||
+            "";
+
+
+        const boton =
+            document.getElementById(
+                "btnGuardarCambiosEsquema"
+            );
+
+
+        if (!tipoEsquema) {
+
+            mostrarMensajeEditarEsquema(
+
+                "Selecciona el tipo de esquema.",
+
+                "error"
+
+            );
+
+            return;
+
+        }
+
+
+        if (!descripcion) {
+
+            mostrarMensajeEditarEsquema(
+
+                "Escribe la descripción del esquema.",
+
+                "error"
+
+            );
+
+            return;
+
+        }
+
+
+        const detalles =
+            [];
+
+
+        document
+            .querySelectorAll(
+                ".editar-esquema-canto-select"
+            )
+            .forEach(
+
+                select => {
+
+                    const valor =
+                        String(
+                            select.value ||
+                            ""
+                        ).trim();
+
+
+                    if (!valor) {
+
+                        return;
+
+                    }
+
+
+                    const opcion =
+                        select.options[
+                            select.selectedIndex
+                        ];
+
+
+                    const canto =
+                        String(
+
+                            opcion &&
+                            opcion.dataset &&
+                            opcion.dataset.nombre
+
+                            ||
+
+                            select.dataset.cantoActual
+
+                            ||
+
+                            opcion &&
+                            opcion.textContent
+
+                            ||
+
+                            ""
+
+                        )
+                        .trim();
+
+
+                    if (!canto) {
+
+                        return;
+
+                    }
+
+
+                    const idArchivo =
+                        valor ===
+                        "__legacy__"
+
+                            ? String(
+                                select.dataset.idArchivoActual ||
+                                ""
+                            )
+                            .trim()
+
+                            : valor;
+
+
+                    const momento =
+                        select.dataset.momento ||
+                        "";
+
+
+                    const contenedor =
+                        select.closest(
+                            ".admin-esquema-momento"
+                        );
+
+
+                    const observacionesInput =
+                        contenedor &&
+                        contenedor.querySelector(
+                            ".editar-esquema-canto-observaciones"
+                        );
+
+
+                    detalles.push({
+
+                        momento:
+                            momento,
+
+                        canto:
+                            canto,
+
+                        observaciones:
+                            observacionesInput
+                                ?.value
+                                .trim() ||
+                            "",
+
+                        idArchivo:
+                            idArchivo
+
+                    });
+
+                }
+            );
+
+
+        if (boton) {
+
+            boton.disabled =
+                true;
+
+            boton.textContent =
+                "Guardando...";
+
+        }
+
+
+        mostrarMensajeEditarEsquema(
+
+            "Guardando cambios...",
+
+            "validando"
+
+        );
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+
+                    URL_API,
+
+                    {
+
+                        method:
+                            "POST",
+
+                        body:
+                            JSON.stringify({
+
+                                accion:
+                                    "editarEsquema",
+
+                                credential:
+                                    adminCredential,
+
+                                esquema: {
+
+                                    idEsquema:
+                                        idEsquema,
+
+                                    tipoEsquema:
+                                        tipoEsquema,
+
+                                    descripcion:
+                                        descripcion,
+
+                                    observaciones:
+                                        observaciones,
+
+                                    idEventoCelebracion:
+                                        idEventoCelebracion,
+
+                                    detalles:
+                                        detalles
+
+                                }
+
+                            })
+
+                    }
+
+                );
+
+
+            const resultado =
+                await respuesta.json();
+
+
+            if (!resultado.ok) {
+
+                throw new Error(
+
+                    resultado.error ||
+
+                    "No fue posible actualizar el esquema."
+
+                );
+
+            }
+
+
+            invalidarDatosAdminEsquemas();
+
+            invalidarDatosApp();
+
+
+            const promesaPublica =
+                obtenerDatosApp(
+                    true
+                )
+                .then(
+
+                    data => {
+
+                        renderizarInicio(
+                            data
+                        );
+
+                        renderizarEsquemas(
+                            data
+                        );
+
+                        renderizarCantos(
+                            data
+                        );
+
+                        renderizarCalendario(
+                            data
+                        );
+
+
+                        return data;
+
+                    }
+
+                )
+                .catch(
+
+                    error => {
+
+                        console.warn(
+
+                            "No fue posible precargar la parte pública:",
+
+                            error
+
+                        );
+
+
+                        return null;
+
+                    }
+
+                );
+
+
+            const datosAdmin =
+                await obtenerDatosAdminEsquemas(
+                    true
+                );
+
+
+            await abrirAdminEsquemas(
+                datosAdmin
+            );
+
+
+            void promesaPublica;
+
+
+            const pantalla =
+                document.querySelector(
+                    ".admin-esquemas"
+                );
+
+
+            if (pantalla) {
+
+                pantalla.insertAdjacentHTML(
+
+                    "afterbegin",
+
+                    `
+
+                        <div class="admin-exito">
+
+                            ✅ Esquema actualizado correctamente.
+
+                        </div>
+
+                    `
+
+                );
+
+            }
+
+
+        } catch(error) {
+
+            console.error(
+
+                "Error actualizando esquema:",
+
+                error
+
+            );
+
+
+            mostrarMensajeEditarEsquema(
+
+                error.message ||
+
+                "No fue posible actualizar el esquema.",
+
+                "error"
+
+            );
+
+
+            if (boton) {
+
+                boton.disabled =
+                    false;
+
+                boton.textContent =
+                    "Guardar cambios";
+
+            }
+
+        }
+
+    };
+
+
+// ======================================================
+// ESQUEMAS PÚBLICOS
+// AGRUPADOS EN MEMORIA + CANTO CLICABLE
+// ======================================================
+
+renderizarEsquemas =
+    function(
+        data
+    ) {
+
+        const contenedor =
+            document.getElementById(
+                "listaEsquemas"
+            );
+
+
+        if (!contenedor) {
+
+            return;
+
+        }
+
+
+        const esquemas =
+            Array.isArray(
+                data &&
+                data.esquemas
+            )
+                ? data.esquemas
+                : [];
+
+
+        if (!esquemas.length) {
+
+            v35EsquemasAgrupadosFuente =
+                data;
+
+            v35EsquemasAgrupadosCache =
+                [];
+
+            fechasDisponibles =
+                [];
+
+
+            contenedor.innerHTML = `
+
+                <div class="card">
+
+                    No hay esquemas disponibles.
+
+                </div>
+
+            `;
+
+
+            return;
+
+        }
+
+
+        if (
+            v35EsquemasAgrupadosFuente !==
+            data
+        ) {
+
+            const mapa =
+                new Map();
+
+
+            esquemas.forEach(
+
+                item => {
+
+                    const clave =
+                        `${item.fecha}-${item.hora}-${item.descripcion}`;
+
+
+                    if (
+                        !mapa.has(
+                            clave
+                        )
+                    ) {
+
+                        mapa.set(
+
+                            clave,
+
+                            {
+
+                                clave:
+                                    clave,
+
+                                fecha:
+                                    item.fecha,
+
+                                hora:
+                                    item.hora,
+
+                                descripcion:
+                                    item.descripcion,
+
+                                items:
+                                    []
+
+                            }
+
+                        );
+
+                    }
+
+
+                    mapa
+                        .get(
+                            clave
+                        )
+                        .items
+                        .push(
+                            item
+                        );
+
+                }
+
+            );
+
+
+            v35EsquemasAgrupadosFuente =
+                data;
+
+
+            v35EsquemasAgrupadosCache =
+                Array.from(
+                    mapa.values()
+                );
+
+
+            fechasDisponibles =
+                v35EsquemasAgrupadosCache
+                    .map(
+
+                        grupo => ({
+
+                            clave:
+                                grupo.clave,
+
+                            fecha:
+                                grupo.fecha,
+
+                            hora:
+                                grupo.hora,
+
+                            descripcion:
+                                grupo.descripcion
+
+                        })
+
+                    );
+
+        }
+
+
+        if (
+            indiceEsquema >
+            v35EsquemasAgrupadosCache.length -
+            1
+        ) {
+
+            indiceEsquema =
+                v35EsquemasAgrupadosCache.length -
+                1;
+
+        }
+
+
+        if (
+            indiceEsquema <
+            0
+        ) {
+
+            indiceEsquema =
+                0;
+
+        }
+
+
+        const grupoActual =
+            v35EsquemasAgrupadosCache[
+                indiceEsquema
+            ];
+
+
+        if (!grupoActual) {
+
+            return;
+
+        }
+
+
+        const filas =
+            grupoActual.items
+                .map(
+
+                    item => {
+
+                        const idArchivo =
+                            String(
+                                item.idArchivo ||
+                                ""
+                            )
+                            .trim();
+
+
+                        const canto =
+
+                            item.canto &&
+                            item.canto.trim() !== ""
+
+                                ? `🎵 ${
+                                    escaparHtml(
+                                        item.canto
+                                    )
+                                }${
+                                    idArchivo
+
+                                        ? ` <span aria-hidden="true">
+                                            ›
+                                           </span>`
+
+                                        : ""
+                                }`
+
+                                : `
+
+                                    <span class="canto-vacio">
+
+                                        Pendiente
+
+                                    </span>
+
+                                `;
+
+
+                        const contenido = `
+
+                            <span class="momento">
+
+                                ${
+                                    escaparHtml(
+                                        item.momento
+                                    )
+                                } :
+
+                            </span>
+
+
+                            <span class="canto">
+
+                                ${canto}
+
+                            </span>
+
+                        `;
+
+
+                        if (idArchivo) {
+
+                            const url =
+                                "https://drive.google.com/open?id=" +
+                                encodeURIComponent(
+                                    idArchivo
+                                );
+
+
+                            return `
+
+                                <a
+
+                                    class="linea-canto"
+
+                                    href="${escaparHtml(
+                                        url
+                                    )}"
+
+                                    target="_blank"
+
+                                    rel="noopener noreferrer"
+
+                                    style="
+                                        text-decoration:none;
+                                        color:inherit;
+                                        cursor:pointer;
+                                    ">
+
+                                    ${contenido}
+
+                                </a>
+
+                            `;
+
+                        }
+
+
+                        return `
+
+                            <div class="linea-canto">
+
+                                ${contenido}
+
+                            </div>
+
+                        `;
+
+                    }
+
+                )
+                .join("");
+
+
+        contenedor.innerHTML = `
+
+            <div class="navegacion-esquema">
+
+                <button
+
+                    onclick="cambiarEsquema(-1)"
+
+                    ${
+                        indiceEsquema ===
+                        0
+
+                            ? "disabled"
+
+                            : ""
+                    }>
+
+                    ◀
+
+                </button>
+
+
+                <div class="titulo-esquema">
+
+                    <h2>
+
+                        📅 Esquema del
+                        ${grupoActual.fecha}
+
+                    </h2>
+
+                    <p>
+
+                        🕒
+                        ${grupoActual.hora}
+
+                    </p>
+
+                </div>
+
+
+                <button
+
+                    onclick="cambiarEsquema(1)"
+
+                    ${
+                        indiceEsquema ===
+                        v35EsquemasAgrupadosCache.length -
+                        1
+
+                            ? "disabled"
+
+                            : ""
+                    }>
+
+                    ▶
+
+                </button>
+
+            </div>
+
+
+            <p class="descripcion-esquema">
+
+                ${escaparHtml(
+                    grupoActual.descripcion
+                )}
+
+            </p>
+
+
+            <div
+                class="card"
+                id="cardEsquema">
+
+                ${filas}
+
+            </div>
+
+        `;
+
+    };
+
+
+// ======================================================
+// CANTOS
+// UNA SOLA ESCRITURA AL DOM
+// ======================================================
+
+renderizarCantos =
+    function(
+        data
+    ) {
+
+        const lista =
+            document.getElementById(
+                "listaCantos"
+            );
+
+
+        if (!lista) {
+
+            return;
+
+        }
+
+
+        const cantos =
+            Array.isArray(
+                data &&
+                data.cantos
+            )
+                ? data.cantos
+                : [];
+
+
+        if (!cantos.length) {
+
+            lista.innerHTML = `
+
+                <li class="cantos-vacio">
+
+                    🎵 No hay categorías disponibles
+
+                </li>
+
+            `;
+
+
+            return;
+
+        }
+
+
+        lista.innerHTML =
+            cantos
+                .map(
+
+                    categoria => `
+
+                        <li class="canto-categoria">
+
+                            <a
+
+                                href="${escaparHtml(
+                                    categoria.url
+                                )}"
+
+                                target="_blank"
+
+                                rel="noopener noreferrer">
+
+
+                                <div class="canto-categoria-icono">
+
+                                    🎵
+
+                                </div>
+
+
+                                <div class="canto-categoria-info">
+
+                                    <strong>
+
+                                        ${escaparHtml(
+                                            categoria.categoria
+                                        )}
+
+                                    </strong>
+
+                                    <span>
+
+                                        Abrir carpeta de cantos
+
+                                    </span>
+
+                                </div>
+
+
+                                <div class="canto-categoria-flecha">
+
+                                    ›
+
+                                </div>
+
+                            </a>
+
+                        </li>
+
+                    `
+
+                )
+                .join("");
+
+    };
+
+
+console.log(
+    "✅ AppCorus V3.5 - Cantos directos y rendimiento cargado"
+);
