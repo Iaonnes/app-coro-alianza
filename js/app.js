@@ -3,7 +3,6 @@
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
-
 // ======================================================
 // CONFIGURACIÓN
 // ======================================================
@@ -15,6 +14,46 @@ const URL_API =
 const GOOGLE_CLIENT_ID =
 "765205397306-q1qna5aj3j5ifk62j28us4lqrgjk7ig8.apps.googleusercontent.com";
 
+// ======================================================
+// VERSIÓN DE APPCORUS
+// ======================================================
+
+const APPCORUS_VERSION = {
+    major: 3,
+    minor: 5,
+    patch: 0
+};
+
+function obtenerVersionAppCorus() {
+
+    return (
+        "V" +
+        APPCORUS_VERSION.major +
+        "." +
+        APPCORUS_VERSION.minor +
+        "." +
+        APPCORUS_VERSION.patch
+    );
+
+}
+
+function mostrarVersionAppCorus() {
+
+    const elemento =
+        document.getElementById(
+            "appVersion"
+        );
+
+    if (!elemento) {
+        return;
+    }
+
+    elemento.innerHTML = `
+        <strong>AppCorus</strong>
+        <span>${obtenerVersionAppCorus()}</span>
+    `;
+
+}
 
 let googleLoginInicializado = false;
 
@@ -9412,6 +9451,9 @@ async function inicializarAppCorus() {
         );
 
         appCorusInicializada = true;
+        
+        //Mostrar version de la App
+        mostrarVersionAppCorus();
 
         // El resto se prepara después sin otro fetch.
         const prepararSeccionesSecundarias =
@@ -11618,3 +11660,4 @@ renderizarCantos =
 console.log(
     "✅ AppCorus V3.5 - Cantos directos y rendimiento cargado"
 );
+
