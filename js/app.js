@@ -7286,12 +7286,14 @@ async function eliminarEsquemaAdmin(
 
 
 // ======================================================
-// NAVEGACIÓN
+// NAVEGACIÓN PRINCIPAL
 // ======================================================
 
-function mostrarSeccion(
-    id
-) {
+function mostrarSeccion(id) {
+
+    // ==========================================
+    // CAMBIAR SECCIÓN VISIBLE
+    // ==========================================
 
     document
         .querySelectorAll(
@@ -7308,18 +7310,61 @@ function mostrarSeccion(
         );
 
 
-    document
-        .getElementById(
+    const seccionDestino =
+        document.getElementById(
             id
-        )
-        ?.classList
-        .add(
-            "activa"
         );
 
+
+    if (seccionDestino) {
+
+        seccionDestino
+            .classList
+            .add(
+                "activa"
+            );
+
+    }
+
+
+    // ==========================================
+    // ACTUALIZAR NAVEGACIÓN INFERIOR
+    // ==========================================
+
+    const botonesNav =
+        document.querySelectorAll(
+            ".bottom-nav .nav-item"
+        );
+
+
+    botonesNav.forEach(
+        boton => {
+
+            boton.classList.remove(
+                "activo"
+            );
+
+        }
+    );
+
+
+    const botonActivo =
+        document.querySelector(
+            `.bottom-nav .nav-item[data-seccion="${id}"]`
+        );
+
+
+    if (botonActivo) {
+
+        botonActivo
+            .classList
+            .add(
+                "activo"
+            );
+
+    }
+
 }
-
-
 // ======================================================
 // INICIO
 // ======================================================
