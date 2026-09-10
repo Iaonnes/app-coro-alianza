@@ -2,27 +2,102 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
     <title>AppCorus</title>
-    
-	<link rel="icon" type="image/png" href="assets/logoAppCorus.png"/>
-	<link rel="apple-touch-icon" href="assets/IconAppCorus.png"/>
-	<link rel="manifest" href="Manifest.json">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
+
+
+    <!-- =========================
+         ESTILOS
+    ========================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css">
+
+
+    <!-- =========================
+         ICONOS DE LA APP
+    ========================== -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="assets/logoAppCorus.png">
+
+    <link
+        rel="apple-touch-icon"
+        href="assets/IconAppCorus.png">
+
+    <link
+        rel="manifest"
+        href="Manifest.json">
+
+
+    <!-- =========================
+         GOOGLE LOGIN
+    ========================== -->
+
+    <script
+        src="https://accounts.google.com/gsi/client"
+        async
+        defer>
+    </script>
+
 </head>
+
+
 <body>
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
     <header class="app-header">
 
-        <!-- Decoración de fondo -->
-        <div class="header-orbe header-orbe-1"></div>
-        <div class="header-orbe header-orbe-2"></div>
+
+        <!-- Decoración -->
+
+        <div
+            class="header-orbe header-orbe-1">
+        </div>
+
+        <div
+            class="header-orbe header-orbe-2">
+        </div>
+
+
+        <!-- ==============================================
+             ACCESO ADMINISTRACIÓN
+        =============================================== -->
+
+        <button
+            type="button"
+            class="btn-administracion"
+            onclick="mostrarSeccion('administracion')"
+            aria-label="Abrir administración"
+            title="Administración">
+
+            ⚙️
+
+        </button>
+
+
+        <!-- ==============================================
+             CONTENIDO HEADER
+        =============================================== -->
 
         <div class="header-contenido">
 
+
             <!-- LOGO -->
+
             <div class="header-logo-box">
 
                 <img
@@ -32,84 +107,145 @@
 
             </div>
 
+
             <!-- VERSIÓN DINÁMICA -->
+
             <div
                 id="appVersion"
                 class="app-version">
             </div>
 
-            <!-- CORO -->
+
+            <!-- IDENTIDAD DEL CORO -->
+
             <div class="header-identidad">
 
+
                 <div class="header-titulo-linea">
+
 
                     <span class="header-nota">
                         ♪
                     </span>
 
+
                     <h1>
                         Coro Nueva Alianza con Cristo
                     </h1>
+
 
                     <span class="header-nota">
                         ♫
                     </span>
 
+
                 </div>
 
+
                 <p class="header-lema">
-                    Ofreciendo nuestra juventud a través del canto.
+
+                    Ofreciendo nuestra juventud
+                    a través del canto.
+
                 </p>
+
 
             </div>
 
+
         </div>
+
 
     </header>
 
+
+
+    <!-- =====================================================
+         CONTENIDO
+    ====================================================== -->
+
     <main>
 
-        <!-- INICIO -->
-        <section id="inicio" class="seccion activa">
+
+        <!-- =================================================
+             INICIO
+        ================================================== -->
+
+        <section
+            id="inicio"
+            class="seccion activa">
 
             <div id="inicioEventos"></div>
 
         </section>
 
-        <!-- CALENDARIO -->
-        <section id="ensayos" class="seccion">
+
+
+        <!-- =================================================
+             CALENDARIO
+        ================================================== -->
+
+        <section
+            id="ensayos"
+            class="seccion">
 
             <div id="calendarioEventos"></div>
-            
+
             <div id="detalleFecha"></div>
 
         </section>
 
-        <!-- ESQUEMAS -->
-        <section id="esquemas" class="seccion">
+
+
+        <!-- =================================================
+             ESQUEMAS
+        ================================================== -->
+
+        <section
+            id="esquemas"
+            class="seccion">
 
             <div id="listaEsquemas"></div>
 
         </section>
 
-        <!-- CANTOS -->
-       <section id="cantos" class="seccion">
+
+
+        <!-- =================================================
+             CANTOS
+        ================================================== -->
+
+        <section
+            id="cantos"
+            class="seccion">
+
 
             <div class="cantos-encabezado">
 
-                <h2>🎵 Biblioteca de Cantos</h2>
+
+                <h2>
+                    🎵 Biblioteca de Cantos
+                </h2>
+
 
                 <p>
-                    Consulta las categorías de cantos del coro
+                    Consulta las categorías
+                    de cantos del coro
                 </p>
+
 
             </div>
 
-            <div class="buscador cantos-buscador">
+
+
+            <div
+                class="buscador cantos-buscador">
+
 
                 <span class="buscador-icono">
                     🔎
                 </span>
+
 
                 <input
                     type="text"
@@ -117,62 +253,136 @@
                     placeholder="Buscar categoría..."
                     onkeyup="filtrarCantos()">
 
+
             </div>
+
 
             <ul id="listaCantos"></ul>
 
+
         </section>
-        
-        <section id="administracion" class="seccion">
 
-    <div class="admin-acceso">
 
-        <div class="admin-icono">
-            🔐
-        </div>
 
-        <h2>Administración</h2>
+        <!-- =================================================
+             ADMINISTRACIÓN
+        ================================================== -->
 
-        <p>
-            Inicia sesión con una cuenta autorizada
-            para administrar AppCorus.
-        </p>
+        <section
+            id="administracion"
+            class="seccion">
 
-        <div id="googleLoginButton"></div>
 
-        <div id="adminMensaje"></div>
+            <div class="admin-acceso">
 
-    </div>
 
-</section>
+                <div class="admin-icono">
+                    🔐
+                </div>
+
+
+                <h2>
+                    Administración
+                </h2>
+
+
+                <p>
+
+                    Inicia sesión con una cuenta autorizada
+                    para administrar AppCorus.
+
+                </p>
+
+
+                <div id="googleLoginButton"></div>
+
+
+                <div id="adminMensaje"></div>
+
+
+            </div>
+
+
+        </section>
+
 
     </main>
 
-    <script src="js/boot.js"></script>
-    
+
+
+    <!-- =====================================================
+         NAVEGACIÓN INFERIOR
+    ====================================================== -->
+
     <footer class="bottom-nav">
 
-    <button onclick="mostrarSeccion('inicio')">
-        🏠
-        <span>Inicio</span>
-    </button>
 
-    <button onclick="mostrarSeccion('esquemas')">
-        📖
-        <span>Esquemas</span>
-    </button>
+        <button
+            type="button"
+            onclick="mostrarSeccion('inicio')">
 
-    <button onclick="mostrarSeccion('ensayos')">
-        📅
-        <span>Calendario</span>
-    </button>
+            🏠
 
-    <button onclick="mostrarSeccion('cantos')">
-        🎵
-        <span>Cantos</span>
-    </button>
+            <span>
+                Inicio
+            </span>
 
-</footer>
+        </button>
+
+
+
+        <button
+            type="button"
+            onclick="mostrarSeccion('esquemas')">
+
+            📖
+
+            <span>
+                Esquemas
+            </span>
+
+        </button>
+
+
+
+        <button
+            type="button"
+            onclick="mostrarSeccion('ensayos')">
+
+            📅
+
+            <span>
+                Calendario
+            </span>
+
+        </button>
+
+
+
+        <button
+            type="button"
+            onclick="mostrarSeccion('cantos')">
+
+            🎵
+
+            <span>
+                Cantos
+            </span>
+
+        </button>
+
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         ARRANQUE APPCORUS
+    ====================================================== -->
+
+    <script src="js/boot.js"></script>
+
 
 </body>
+
 </html>
