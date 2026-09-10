@@ -312,66 +312,130 @@
     <!-- =====================================================
          NAVEGACIÓN INFERIOR
     ====================================================== -->
+        <footer class="bottom-nav">
 
-    <footer class="bottom-nav">
+            <!-- INICIO -->
+            <button
+                type="button"
+                class="nav-item activo"
+                data-seccion="inicio"
+                onclick="mostrarSeccion('inicio')"
+                aria-label="Inicio">
 
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
 
-        <button
-            type="button"
-            onclick="mostrarSeccion('inicio')">
+                    <path
+                        d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
+                </svg>
 
-            🏠
+                <span>Inicio</span>
 
-            <span>
-                Inicio
-            </span>
-
-        </button>
-
-
-
-        <button
-            type="button"
-            onclick="mostrarSeccion('esquemas')">
-
-            📖
-
-            <span>
-                Esquemas
-            </span>
-
-        </button>
+            </button>
 
 
+            <!-- ESQUEMAS -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="esquemas"
+                onclick="mostrarSeccion('esquemas')"
+                aria-label="Esquemas">
 
-        <button
-            type="button"
-            onclick="mostrarSeccion('ensayos')">
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
 
-            📅
+                    <path
+                        d="M4 4.5c3.2-.7 5.7-.1 8 1.7v14c-2.3-1.8-4.8-2.4-8-1.7z"/>
 
-            <span>
-                Calendario
-            </span>
+                    <path
+                        d="M20 4.5c-3.2-.7-5.7-.1-8 1.7v14c2.3-1.8 4.8-2.4 8-1.7z"/>
 
-        </button>
+                    <path
+                        d="M15.5 8.5v5.1"/>
 
+                    <path
+                        d="M15.5 13.6c-.5-.3-1.2-.2-1.6.2-.4.4-.4 1 0 1.4.5.4 1.2.4 1.7 0 .3-.3.4-.8.3-1.2"/>
+                </svg>
 
+                <span>Esquemas</span>
 
-        <button
-            type="button"
-            onclick="mostrarSeccion('cantos')">
-
-            🎵
-
-            <span>
-                Cantos
-            </span>
-
-        </button>
+            </button>
 
 
-    </footer>
+            <!-- CALENDARIO -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="ensayos"
+                onclick="mostrarSeccion('ensayos')"
+                aria-label="Calendario">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="16"
+                        rx="2"/>
+
+                    <path d="M7 3v4"/>
+                    <path d="M17 3v4"/>
+                    <path d="M3 10h18"/>
+
+                    <path d="M8 14h2"/>
+                    <path d="M14 14h2"/>
+                    <path d="M8 18h2"/>
+                    <path d="M14 18h2"/>
+                </svg>
+
+                <span>Calendario</span>
+
+            </button>
+
+
+            <!-- CANTOS -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="cantos"
+                onclick="mostrarSeccion('cantos')"
+                aria-label="Cantos">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <path
+                        d="M9 18V6l10-2v12"/>
+
+                    <ellipse
+                        cx="6.5"
+                        cy="18"
+                        rx="2.5"
+                        ry="2"/>
+
+                    <ellipse
+                        cx="16.5"
+                        cy="16"
+                        rx="2.5"
+                        ry="2"/>
+                </svg>
+
+                <span>Cantos</span>
+
+            </button>
+
+</footer>
 
 
 
