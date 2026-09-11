@@ -11706,3 +11706,741 @@ console.log(
     "✅ AppCorus V3.5 - Cantos directos y rendimiento cargado"
 );
 
+// ======================================================
+// APPCORUS V3.5 - ACTUALIZACIÓN INTELIGENTE DE CANTOS
+// ======================================================
+
+let v35UltimaActualizacionForzadaCantos = 0;
+let v35RefrescoCantosEnCurso = null;
+
+const V35_INTERVALO_REFRESCO_FONDO =
+    5 * 60 * 1000;
+
+
+// ======================================================
+// ESTILOS
+// ======================================================
+
+function v35InyectarEstilosActualizacionCantos() {
+
+    if (
+        document.getElementById(
+            "v35EstilosActualizarCantos"
+        )
+    ) {
+        return;
+    }
+
+    const estilo =
+        document.createElement(
+            "style"
+        );
+
+    estilo.id =
+        "v35EstilosActualizarCantos";
+
+    estilo.textContent = `
+
+        .v35-cantos-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            margin: 10px 0 14px;
+            padding: 10px 12px;
+
+            border: 1px solid #dbe7f5;
+            border-radius: 12px;
+
+            background: #f8fbff;
+        }
+
+
+        .v35-cantos-estado {
+            flex: 1 1 180px;
+            min-width: 0;
+
+            color: #607086;
+
+            font-size: .82rem;
+            line-height: 1.35;
+        }
+
+
+        .v35-cantos-estado.ok {
+            color: #26734d;
+        }
+
+
+        .v35-cantos-estado.error {
+            color: #b42318;
+        }
+
+
+        .v35-cantos-estado.cargando {
+            color: #1565c0;
+        }
+
+
+        .v35-btn-actualizar-cantos {
+            appearance: none;
+
+            border: 1px solid #b8d2f1;
+            border-radius: 999px;
+
+            background: #ffffff;
+            color: #1565c0;
+
+            min-height: 38px;
+
+            padding: 8px 14px;
+
+            font: inherit;
+            font-size: .84rem;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 3px 10px
+                rgba(21, 101, 192, .08);
+
+            transition:
+                background-color .18s ease,
+                border-color .18s ease,
+                transform .18s ease,
+                opacity .18s ease;
+        }
+
+
+        .v35-btn-actualizar-cantos:hover:not(:disabled) {
+            background: #eef6ff;
+            border-color: #82b1e8;
+
+            transform:
+                translateY(-1px);
+        }
+
+
+        .v35-btn-actualizar-cantos:disabled {
+            cursor: wait;
+            opacity: .65;
+        }
+
+
+        @media (max-width: 600px) {
+
+            .v35-cantos-toolbar {
+                align-items: stretch;
+            }
+
+            .v35-btn-actualizar-cantos {
+                width: 100%;
+            }
+
+        }
+
+    `;
+
+    document.head.appendChild(
+        estilo
+    );
+}
+
+
+// ======================================================
+// BUSCAR SECCIÓN CANTOS
+// ======================================================
+
+function v35ObtenerSeccionCantosFormulario() {
+
+    return Array
+        .from(
+            document.querySelectorAll(
+                ".admin-esquema-seccion"
+            )
+        )
+        .find(
+            seccion => {
+
+                const titulo =
+                    seccion.querySelector(
+                        "h3"
+                    );
+
+                return (
+                    titulo &&
+                    normalizarTextoEsquema(
+                        titulo.textContent
+                    )
+                    .includes(
+                        "cantos"
+                    )
+                );
+
+            }
+        ) ||
+        null;
+}
+
+
+// ======================================================
+// MOSTRAR ESTADO
+// ======================================================
+
+function v35MostrarEstadoActualizacionCantos(
+    texto,
+    tipo = ""
+) {
+
+    const estado =
+        document.getElementById(
+            "v35EstadoCantos"
+        );
+
+    if (!estado) {
+        return;
+    }
+
+    estado.className =
+        "v35-cantos-estado" +
+        (
+            tipo
+                ? " " + tipo
+                : ""
+        );
+
+    estado.textContent =
+        texto || "";
+}
+
+
+// ======================================================
+// BOTÓN ACTUALIZAR CANTOS
+// ======================================================
+
+function v35InsertarControlActualizarCantos() {
+
+    v35InyectarEstilosActualizacionCantos();
+
+    const seccion =
+        v35ObtenerSeccionCantosFormulario();
+
+    if (
+        !seccion ||
+        seccion.querySelector(
+            "#v35ToolbarCantos"
+        )
+    ) {
+        return;
+    }
+
+    const ayuda =
+        seccion.querySelector(
+            ".admin-esquema-ayuda"
+        );
+
+    const toolbar =
+        document.createElement(
+            "div"
+        );
+
+    toolbar.id =
+        "v35ToolbarCantos";
+
+    toolbar.className =
+        "v35-cantos-toolbar";
+
+    toolbar.innerHTML = `
+
+        <span
+            id="v35EstadoCantos"
+            class="v35-cantos-estado">
+
+            Catálogo de cantos listo.
+
+        </span>
+
+        <button
+            id="btnV35ActualizarCantos"
+            class="v35-btn-actualizar-cantos"
+            type="button">
+
+            ↻ Actualizar cantos
+
+        </button>
+
+    `;
+
+    if (ayuda) {
+
+        ayuda.insertAdjacentElement(
+            "afterend",
+            toolbar
+        );
+
+    } else {
+
+        seccion.prepend(
+            toolbar
+        );
+    }
+
+    document
+        .getElementById(
+            "btnV35ActualizarCantos"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                v35RefrescarCantosDrive(
+                    true
+                )
+                .catch(
+                    () => {}
+                );
+
+            }
+        );
+}
+
+
+// ======================================================
+// OBTENER NOMBRE SELECCIONADO
+// ======================================================
+
+function v35ObtenerNombreSeleccionado(
+    select
+) {
+
+    if (!select) {
+        return "";
+    }
+
+    const opcion =
+        select.options[
+            select.selectedIndex
+        ] ||
+        null;
+
+    if (!opcion) {
+
+        return (
+            select.dataset.cantoActual ||
+            ""
+        );
+    }
+
+    return String(
+
+        opcion.dataset.nombre ||
+
+        (
+            select.value
+                ? opcion.textContent
+                : ""
+        ) ||
+
+        select.dataset.cantoActual ||
+
+        ""
+
+    )
+    .replace(
+        /\s+·\s+(archivo actual|sin enlace)\s*$/i,
+        ""
+    )
+    .trim();
+}
+
+
+// ======================================================
+// ACTUALIZAR SELECTS SIN PERDER SELECCIÓN
+// ======================================================
+
+function v35ActualizarSelectsConCatalogo(
+    datosArchivos
+) {
+
+    const selects =
+        document.querySelectorAll(
+
+            ".esquema-canto-select, " +
+            ".editar-esquema-canto-select"
+
+        );
+
+    selects.forEach(
+        select => {
+
+            const momento =
+                select.dataset.momento ||
+                "";
+
+            let idActual =
+                String(
+                    select.value ||
+                    ""
+                )
+                .trim();
+
+            if (
+                idActual ===
+                "__legacy__"
+            ) {
+
+                idActual =
+                    String(
+                        select.dataset
+                            .idArchivoActual ||
+                        ""
+                    )
+                    .trim();
+            }
+
+            const nombreActual =
+                v35ObtenerNombreSeleccionado(
+                    select
+                );
+
+            select.innerHTML =
+                v35OpcionesCanto(
+
+                    momento,
+                    datosArchivos,
+                    idActual,
+                    nombreActual
+
+                );
+
+            if (
+                idActual &&
+                Array
+                    .from(
+                        select.options
+                    )
+                    .some(
+                        opcion =>
+                            opcion.value ===
+                            idActual
+                    )
+            ) {
+
+                select.value =
+                    idActual;
+            }
+
+            select.dataset.idArchivoActual =
+                idActual;
+
+            select.dataset.cantoActual =
+                nombreActual;
+
+            select.disabled =
+                false;
+        }
+    );
+}
+
+
+// ======================================================
+// REFRESCAR GOOGLE DRIVE
+// ======================================================
+
+async function v35RefrescarCantosDrive(
+    forzar = true
+) {
+
+    if (
+        v35RefrescoCantosEnCurso
+    ) {
+
+        return v35RefrescoCantosEnCurso;
+    }
+
+    const boton =
+        document.getElementById(
+            "btnV35ActualizarCantos"
+        );
+
+    if (boton) {
+
+        boton.disabled =
+            true;
+
+        boton.textContent =
+            "Actualizando...";
+    }
+
+    v35MostrarEstadoActualizacionCantos(
+
+        "Revisando las carpetas de Google Drive...",
+
+        "cargando"
+
+    );
+
+    const consulta =
+        (
+            async () => {
+
+                try {
+
+                    const datosArchivos =
+                        await v35ObtenerArchivosCantos(
+                            forzar
+                        );
+
+                    if (
+                        document.querySelector(
+
+                            ".esquema-canto-select, " +
+                            ".editar-esquema-canto-select"
+
+                        )
+                    ) {
+
+                        v35ActualizarSelectsConCatalogo(
+                            datosArchivos
+                        );
+                    }
+
+                    v35UltimaActualizacionForzadaCantos =
+                        Date.now();
+
+                    const total =
+                        Number(
+
+                            datosArchivos
+                                .totalArchivos ||
+
+                            (
+                                Array.isArray(
+                                    datosArchivos.archivos
+                                )
+                                    ? datosArchivos
+                                        .archivos
+                                        .length
+                                    : 0
+                            )
+
+                        );
+
+                    v35MostrarEstadoActualizacionCantos(
+
+                        total
+                            ? (
+                                "✓ " +
+                                total +
+                                " cantos disponibles."
+                            )
+                            : "✓ Catálogo actualizado.",
+
+                        "ok"
+
+                    );
+
+                    return datosArchivos;
+
+                } catch(error) {
+
+                    console.error(
+
+                        "Error actualizando cantos de Drive:",
+
+                        error
+
+                    );
+
+                    v35MostrarEstadoActualizacionCantos(
+
+                        "No fue posible actualizar los cantos. " +
+                        "Puedes intentarlo nuevamente.",
+
+                        "error"
+
+                    );
+
+                    throw error;
+
+                } finally {
+
+                    const botonActual =
+                        document.getElementById(
+                            "btnV35ActualizarCantos"
+                        );
+
+                    if (botonActual) {
+
+                        botonActual.disabled =
+                            false;
+
+                        botonActual.textContent =
+                            "↻ Actualizar cantos";
+                    }
+                }
+
+            }
+        )();
+
+    v35RefrescoCantosEnCurso =
+        consulta;
+
+    try {
+
+        return await consulta;
+
+    } finally {
+
+        if (
+            v35RefrescoCantosEnCurso ===
+            consulta
+        ) {
+
+            v35RefrescoCantosEnCurso =
+                null;
+        }
+    }
+}
+
+
+// ======================================================
+// PREPARAR ACTUALIZACIÓN EN FORMULARIO
+// ======================================================
+
+function v35PrepararActualizacionCantosFormulario() {
+
+    v35InsertarControlActualizarCantos();
+
+    const totalActual =
+        Number(
+
+            v35ArchivosCantosCache &&
+
+            (
+                v35ArchivosCantosCache
+                    .totalArchivos ||
+
+                (
+                    Array.isArray(
+                        v35ArchivosCantosCache
+                            .archivos
+                    )
+
+                        ? v35ArchivosCantosCache
+                            .archivos
+                            .length
+
+                        : 0
+                )
+            )
+
+        );
+
+    if (totalActual) {
+
+        v35MostrarEstadoActualizacionCantos(
+
+            totalActual +
+            " cantos cargados. Verificando cambios...",
+
+            "cargando"
+
+        );
+    }
+
+    const requiereRefresco =
+
+        !v35UltimaActualizacionForzadaCantos ||
+
+        (
+            Date.now() -
+            v35UltimaActualizacionForzadaCantos
+        ) >
+        V35_INTERVALO_REFRESCO_FONDO;
+
+    if (
+        !requiereRefresco
+    ) {
+
+        v35MostrarEstadoActualizacionCantos(
+
+            totalActual
+                ? (
+                    "✓ " +
+                    totalActual +
+                    " cantos disponibles."
+                )
+                : "✓ Catálogo actualizado.",
+
+            "ok"
+
+        );
+
+        return;
+    }
+
+    setTimeout(
+        () => {
+
+            v35RefrescarCantosDrive(
+                true
+            )
+            .catch(
+                () => {}
+            );
+
+        },
+        0
+    );
+}
+
+
+// ======================================================
+// EXTENDER NUEVO ESQUEMA
+// ======================================================
+
+const v35AbrirNuevoConActualizacion =
+    abrirFormularioNuevoEsquema;
+
+abrirFormularioNuevoEsquema =
+    async function() {
+
+        const resultado =
+            await v35AbrirNuevoConActualizacion();
+
+        v35PrepararActualizacionCantosFormulario();
+
+        return resultado;
+    };
+
+
+// ======================================================
+// EXTENDER EDITAR ESQUEMA
+// ======================================================
+
+const v35EditarConActualizacion =
+    editarEsquemaAdmin;
+
+editarEsquemaAdmin =
+    async function(
+        idEsquema
+    ) {
+
+        const resultado =
+            await v35EditarConActualizacion(
+                idEsquema
+            );
+
+        v35PrepararActualizacionCantosFormulario();
+
+        return resultado;
+    };
+
+
+console.log(
+    "✅ AppCorus V3.5 - actualización inteligente de cantos activa"
+);
