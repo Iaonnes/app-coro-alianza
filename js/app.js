@@ -11709,6 +11709,16 @@ console.log(
 // ======================================================
 // APPCORUS V3.5 - ACTUALIZACIÓN INTELIGENTE DE CANTOS
 // ======================================================
+//
+// Objetivo:
+// 1) Mostrar de inmediato el catálogo que ya está en caché.
+// 2) Consultar Drive en segundo plano al entrar a Crear/Editar.
+// 3) Actualizar los selects sin borrar lo que el usuario eligió.
+// 4) Permitir una actualización manual con un solo botón.
+//
+// El backend ya soporta "forzar: true", por lo que esta lectura
+// evita el caché antiguo del servidor cuando necesitamos datos frescos.
+// ======================================================
 
 let v35UltimaActualizacionForzadaCantos = 0;
 let v35RefrescoCantosEnCurso = null;
@@ -11718,7 +11728,8 @@ const V35_INTERVALO_REFRESCO_FONDO =
 
 
 // ======================================================
-// ESTILOS
+// ESTILOS DEL CONTROL DE ACTUALIZACIÓN
+// Se inyectan desde JS para no obligar a modificar style.css.
 // ======================================================
 
 function v35InyectarEstilosActualizacionCantos() {
@@ -11728,85 +11739,70 @@ function v35InyectarEstilosActualizacionCantos() {
             "v35EstilosActualizarCantos"
         )
     ) {
+
         return;
+
     }
+
 
     const estilo =
         document.createElement(
             "style"
         );
 
+
     estilo.id =
         "v35EstilosActualizarCantos";
+
 
     estilo.textContent = `
 
         .v35-cantos-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-
-            margin: 10px 0 14px;
-            padding: 10px 12px;
-
-            border: 1px solid #dbe7f5;
-            border-radius: 12px;
-
-            background: #f8fbff;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:10px 0 14px;
+            padding:10px 12px;
+            border:1px solid #dbe7f5;
+            border-radius:12px;
+            background:#f8fbff;
         }
-
 
         .v35-cantos-estado {
-            flex: 1 1 180px;
-            min-width: 0;
-
-            color: #607086;
-
-            font-size: .82rem;
-            line-height: 1.35;
+            flex:1 1 180px;
+            min-width:0;
+            color:#607086;
+            font-size:.82rem;
+            line-height:1.35;
         }
-
 
         .v35-cantos-estado.ok {
-            color: #26734d;
+            color:#26734d;
         }
-
 
         .v35-cantos-estado.error {
-            color: #b42318;
+            color:#b42318;
         }
-
 
         .v35-cantos-estado.cargando {
-            color: #1565c0;
+            color:#1565c0;
         }
 
-
         .v35-btn-actualizar-cantos {
-            appearance: none;
-
-            border: 1px solid #b8d2f1;
-            border-radius: 999px;
-
-            background: #ffffff;
-            color: #1565c0;
-
-            min-height: 38px;
-
-            padding: 8px 14px;
-
-            font: inherit;
-            font-size: .84rem;
-            font-weight: 700;
-
-            cursor: pointer;
-
-            box-shadow:
-                0 3px 10px
-                rgba(21, 101, 192, .08);
-
+            appearance:none;
+            border:1px solid #b8d2f1;
+            border-radius:999px;
+            background:#ffffff;
+            color:#1565c0;
+            min-height:38px;
+            padding:8px 14px;
+            font:inherit;
+            font-size:.84rem;
+            font-weight:700;
+            cursor:pointer;
+            box-shadow:0 3px 10px rgba(21,101,192,.08);
             transition:
                 background-color .18s ease,
                 border-color .18s ease,
@@ -11814,44 +11810,45 @@ function v35InyectarEstilosActualizacionCantos() {
                 opacity .18s ease;
         }
 
-
         .v35-btn-actualizar-cantos:hover:not(:disabled) {
-            background: #eef6ff;
-            border-color: #82b1e8;
-
-            transform:
-                translateY(-1px);
+            background:#eef6ff;
+            border-color:#82b1e8;
+            transform:translateY(-1px);
         }
 
+        .v35-btn-actualizar-cantos:active:not(:disabled) {
+            transform:translateY(0);
+        }
 
         .v35-btn-actualizar-cantos:disabled {
-            cursor: wait;
-            opacity: .65;
+            cursor:wait;
+            opacity:.65;
         }
 
-
-        @media (max-width: 600px) {
+        @media (max-width:600px) {
 
             .v35-cantos-toolbar {
-                align-items: stretch;
+                align-items:stretch;
             }
 
             .v35-btn-actualizar-cantos {
-                width: 100%;
+                width:100%;
             }
 
         }
 
     `;
 
+
     document.head.appendChild(
         estilo
     );
+
 }
 
 
 // ======================================================
-// BUSCAR SECCIÓN CANTOS
+// BUSCAR LA SECCIÓN "CANTOS" DEL FORMULARIO ACTUAL
 // ======================================================
 
 function v35ObtenerSeccionCantosFormulario() {
@@ -11870,6 +11867,7 @@ function v35ObtenerSeccionCantosFormulario() {
                         "h3"
                     );
 
+
                 return (
                     titulo &&
                     normalizarTextoEsquema(
@@ -11883,11 +11881,12 @@ function v35ObtenerSeccionCantosFormulario() {
             }
         ) ||
         null;
+
 }
 
 
 // ======================================================
-// MOSTRAR ESTADO
+// ESTADO VISUAL
 // ======================================================
 
 function v35MostrarEstadoActualizacionCantos(
@@ -11900,9 +11899,13 @@ function v35MostrarEstadoActualizacionCantos(
             "v35EstadoCantos"
         );
 
+
     if (!estado) {
+
         return;
+
     }
+
 
     estado.className =
         "v35-cantos-estado" +
@@ -11912,46 +11915,62 @@ function v35MostrarEstadoActualizacionCantos(
                 : ""
         );
 
+
     estado.textContent =
         texto || "";
+
 }
 
 
 // ======================================================
-// BOTÓN ACTUALIZAR CANTOS
+// INSERTAR BOTÓN "ACTUALIZAR CANTOS"
 // ======================================================
 
 function v35InsertarControlActualizarCantos() {
 
     v35InyectarEstilosActualizacionCantos();
 
+
     const seccion =
         v35ObtenerSeccionCantosFormulario();
 
+
+    if (!seccion) {
+
+        return;
+
+    }
+
+
     if (
-        !seccion ||
         seccion.querySelector(
             "#v35ToolbarCantos"
         )
     ) {
+
         return;
+
     }
+
 
     const ayuda =
         seccion.querySelector(
             ".admin-esquema-ayuda"
         );
 
+
     const toolbar =
         document.createElement(
             "div"
         );
+
 
     toolbar.id =
         "v35ToolbarCantos";
 
     toolbar.className =
         "v35-cantos-toolbar";
+
 
     toolbar.innerHTML = `
 
@@ -11974,6 +11993,7 @@ function v35InsertarControlActualizarCantos() {
 
     `;
 
+
     if (ayuda) {
 
         ayuda.insertAdjacentElement(
@@ -11986,7 +12006,9 @@ function v35InsertarControlActualizarCantos() {
         seccion.prepend(
             toolbar
         );
+
     }
+
 
     document
         .getElementById(
@@ -11998,18 +12020,16 @@ function v35InsertarControlActualizarCantos() {
 
                 v35RefrescarCantosDrive(
                     true
-                )
-                .catch(
-                    () => {}
                 );
 
             }
         );
+
 }
 
 
 // ======================================================
-// OBTENER NOMBRE SELECCIONADO
+// OBTENER NOMBRE DEL CANTO SELECCIONADO
 // ======================================================
 
 function v35ObtenerNombreSeleccionado(
@@ -12017,8 +12037,11 @@ function v35ObtenerNombreSeleccionado(
 ) {
 
     if (!select) {
+
         return "";
+
     }
+
 
     const opcion =
         select.options[
@@ -12026,39 +12049,38 @@ function v35ObtenerNombreSeleccionado(
         ] ||
         null;
 
+
     if (!opcion) {
 
         return (
             select.dataset.cantoActual ||
             ""
         );
+
     }
 
+
     return String(
-
         opcion.dataset.nombre ||
-
         (
             select.value
                 ? opcion.textContent
                 : ""
         ) ||
-
         select.dataset.cantoActual ||
-
         ""
-
     )
     .replace(
         /\s+·\s+(archivo actual|sin enlace)\s*$/i,
         ""
     )
     .trim();
+
 }
 
 
 // ======================================================
-// ACTUALIZAR SELECTS SIN PERDER SELECCIÓN
+// ACTUALIZAR SELECTS SIN PERDER LO ELEGIDO
 // ======================================================
 
 function v35ActualizarSelectsConCatalogo(
@@ -12073,6 +12095,7 @@ function v35ActualizarSelectsConCatalogo(
 
         );
 
+
     selects.forEach(
         select => {
 
@@ -12080,13 +12103,16 @@ function v35ActualizarSelectsConCatalogo(
                 select.dataset.momento ||
                 "";
 
+
             let idActual =
                 String(
                     select.value ||
                     ""
-                )
-                .trim();
+                ).trim();
 
+
+            // Si es una opción legacy, el ID real está
+            // guardado en el dataset.
             if (
                 idActual ===
                 "__legacy__"
@@ -12094,17 +12120,18 @@ function v35ActualizarSelectsConCatalogo(
 
                 idActual =
                     String(
-                        select.dataset
-                            .idArchivoActual ||
+                        select.dataset.idArchivoActual ||
                         ""
-                    )
-                    .trim();
+                    ).trim();
+
             }
+
 
             const nombreActual =
                 v35ObtenerNombreSeleccionado(
                     select
                 );
+
 
             select.innerHTML =
                 v35OpcionesCanto(
@@ -12115,6 +12142,7 @@ function v35ActualizarSelectsConCatalogo(
                     nombreActual
 
                 );
+
 
             if (
                 idActual &&
@@ -12131,7 +12159,9 @@ function v35ActualizarSelectsConCatalogo(
 
                 select.value =
                     idActual;
+
             }
+
 
             select.dataset.idArchivoActual =
                 idActual;
@@ -12139,15 +12169,18 @@ function v35ActualizarSelectsConCatalogo(
             select.dataset.cantoActual =
                 nombreActual;
 
-            select.disabled =
-                false;
         }
     );
+
 }
 
 
 // ======================================================
-// REFRESCAR GOOGLE DRIVE
+// REFRESCAR DRIVE
+//
+// forzar = true:
+//   ignora caché del navegador y pide al backend una
+//   lectura fresca de las carpetas de Google Drive.
 // ======================================================
 
 async function v35RefrescarCantosDrive(
@@ -12159,12 +12192,15 @@ async function v35RefrescarCantosDrive(
     ) {
 
         return v35RefrescoCantosEnCurso;
+
     }
+
 
     const boton =
         document.getElementById(
             "btnV35ActualizarCantos"
         );
+
 
     if (boton) {
 
@@ -12173,121 +12209,126 @@ async function v35RefrescarCantosDrive(
 
         boton.textContent =
             "Actualizando...";
+
     }
 
+
     v35MostrarEstadoActualizacionCantos(
-
         "Revisando las carpetas de Google Drive...",
-
         "cargando"
-
     );
 
+
     const consulta =
-        (
-            async () => {
+        (async () => {
 
-                try {
+            try {
 
-                    const datosArchivos =
-                        await v35ObtenerArchivosCantos(
-                            forzar
-                        );
+                const datosArchivos =
+                    await v35ObtenerArchivosCantos(
+                        forzar
+                    );
 
-                    if (
-                        document.querySelector(
 
-                            ".esquema-canto-select, " +
-                            ".editar-esquema-canto-select"
+                // El usuario pudo cambiar de pantalla mientras
+                // Drive respondía. Sólo tocamos el formulario
+                // si todavía existen selects de cantos.
+                if (
+                    document.querySelector(
+                        ".esquema-canto-select, " +
+                        ".editar-esquema-canto-select"
+                    )
+                ) {
 
+                    v35ActualizarSelectsConCatalogo(
+                        datosArchivos
+                    );
+
+                }
+
+
+                v35UltimaActualizacionForzadaCantos =
+                    Date.now();
+
+
+                const total =
+                    Number(
+                        datosArchivos.totalArchivos ||
+                        (
+                            Array.isArray(
+                                datosArchivos.archivos
+                            )
+                                ? datosArchivos.archivos.length
+                                : 0
                         )
-                    ) {
-
-                        v35ActualizarSelectsConCatalogo(
-                            datosArchivos
-                        );
-                    }
-
-                    v35UltimaActualizacionForzadaCantos =
-                        Date.now();
-
-                    const total =
-                        Number(
-
-                            datosArchivos
-                                .totalArchivos ||
-
-                            (
-                                Array.isArray(
-                                    datosArchivos.archivos
-                                )
-                                    ? datosArchivos
-                                        .archivos
-                                        .length
-                                    : 0
-                            )
-
-                        );
-
-                    v35MostrarEstadoActualizacionCantos(
-
-                        total
-                            ? (
-                                "✓ " +
-                                total +
-                                " cantos disponibles."
-                            )
-                            : "✓ Catálogo actualizado.",
-
-                        "ok"
-
                     );
 
-                    return datosArchivos;
 
-                } catch(error) {
+                v35MostrarEstadoActualizacionCantos(
 
-                    console.error(
+                    total
+                        ? (
+                            "✓ " +
+                            total +
+                            " cantos disponibles."
+                        )
+                        : "✓ Catálogo actualizado.",
 
-                        "Error actualizando cantos de Drive:",
+                    "ok"
 
-                        error
+                );
 
+
+                return datosArchivos;
+
+
+            } catch(error) {
+
+                console.error(
+                    "Error actualizando cantos de Drive:",
+                    error
+                );
+
+
+                v35MostrarEstadoActualizacionCantos(
+
+                    "No fue posible actualizar los cantos. " +
+                    "Puedes intentarlo nuevamente.",
+
+                    "error"
+
+                );
+
+
+                throw error;
+
+
+            } finally {
+
+                const botonActual =
+                    document.getElementById(
+                        "btnV35ActualizarCantos"
                     );
 
-                    v35MostrarEstadoActualizacionCantos(
 
-                        "No fue posible actualizar los cantos. " +
-                        "Puedes intentarlo nuevamente.",
+                if (botonActual) {
 
-                        "error"
+                    botonActual.disabled =
+                        false;
 
-                    );
+                    botonActual.textContent =
+                        "↻ Actualizar cantos";
 
-                    throw error;
-
-                } finally {
-
-                    const botonActual =
-                        document.getElementById(
-                            "btnV35ActualizarCantos"
-                        );
-
-                    if (botonActual) {
-
-                        botonActual.disabled =
-                            false;
-
-                        botonActual.textContent =
-                            "↻ Actualizar cantos";
-                    }
                 }
 
             }
-        )();
+
+        })();
+
 
     v35RefrescoCantosEnCurso =
         consulta;
+
 
     try {
 
@@ -12302,43 +12343,43 @@ async function v35RefrescarCantosDrive(
 
             v35RefrescoCantosEnCurso =
                 null;
+
         }
+
     }
+
 }
 
 
 // ======================================================
-// PREPARAR ACTUALIZACIÓN EN FORMULARIO
+// PREPARAR FORMULARIO
+//
+// El usuario ve primero el catálogo en caché.
+// Después hacemos una comprobación fresca en segundo plano.
+// Sólo se fuerza una vez cada 5 minutos durante la sesión;
+// el botón permite forzarla cuando se necesite.
 // ======================================================
 
 function v35PrepararActualizacionCantosFormulario() {
 
     v35InsertarControlActualizarCantos();
 
+
     const totalActual =
         Number(
-
             v35ArchivosCantosCache &&
-
             (
-                v35ArchivosCantosCache
-                    .totalArchivos ||
-
+                v35ArchivosCantosCache.totalArchivos ||
                 (
                     Array.isArray(
-                        v35ArchivosCantosCache
-                            .archivos
+                        v35ArchivosCantosCache.archivos
                     )
-
-                        ? v35ArchivosCantosCache
-                            .archivos
-                            .length
-
+                        ? v35ArchivosCantosCache.archivos.length
                         : 0
                 )
             )
-
         );
+
 
     if (totalActual) {
 
@@ -12350,21 +12391,20 @@ function v35PrepararActualizacionCantosFormulario() {
             "cargando"
 
         );
+
     }
 
+
     const requiereRefresco =
-
         !v35UltimaActualizacionForzadaCantos ||
-
         (
             Date.now() -
             v35UltimaActualizacionForzadaCantos
         ) >
         V35_INTERVALO_REFRESCO_FONDO;
 
-    if (
-        !requiereRefresco
-    ) {
+
+    if (!requiereRefresco) {
 
         v35MostrarEstadoActualizacionCantos(
 
@@ -12380,9 +12420,13 @@ function v35PrepararActualizacionCantosFormulario() {
 
         );
 
+
         return;
+
     }
 
+
+    // Dejamos que el formulario termine de pintar primero.
     setTimeout(
         () => {
 
@@ -12396,6 +12440,7 @@ function v35PrepararActualizacionCantosFormulario() {
         },
         0
     );
+
 }
 
 
@@ -12406,15 +12451,19 @@ function v35PrepararActualizacionCantosFormulario() {
 const v35AbrirNuevoConActualizacion =
     abrirFormularioNuevoEsquema;
 
+
 abrirFormularioNuevoEsquema =
     async function() {
 
         const resultado =
             await v35AbrirNuevoConActualizacion();
 
+
         v35PrepararActualizacionCantosFormulario();
 
+
         return resultado;
+
     };
 
 
@@ -12424,6 +12473,7 @@ abrirFormularioNuevoEsquema =
 
 const v35EditarConActualizacion =
     editarEsquemaAdmin;
+
 
 editarEsquemaAdmin =
     async function(
@@ -12435,12 +12485,1396 @@ editarEsquemaAdmin =
                 idEsquema
             );
 
+
         v35PrepararActualizacionCantosFormulario();
 
+
         return resultado;
+
     };
 
 
 console.log(
     "✅ AppCorus V3.5 - actualización inteligente de cantos activa"
+);
+
+
+
+// ======================================================
+// APPCORUS V3.6 - ETAPA 1
+// ESTADOS DE EVENTOS: PROGRAMADO / CANCELADO / ELIMINADO
+// ======================================================
+//
+// Esta etapa prepara la base para las notificaciones:
+//
+// - Programado: participa como próximo evento.
+// - Cancelado: permanece visible en Calendario y Administración,
+//              pero ya no participa como próximo evento.
+// - Eliminado: se desactiva y deja de mostrarse.
+//
+// Las notificaciones push todavía NO se envían en esta etapa.
+// El endpoint "cancelarEvento" queda listo para conectarlo a FCM.
+// ======================================================
+
+
+// ======================================================
+// NORMALIZAR ESTADO DE EVENTO
+// ======================================================
+
+function v36ObtenerEstadoEvento(
+    evento
+) {
+
+    const valor =
+        String(
+            evento &&
+            evento.estado ||
+            "Programado"
+        )
+        .trim()
+        .toLowerCase()
+        .normalize(
+            "NFD"
+        )
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        );
+
+
+    if (
+        valor ===
+        "cancelado"
+    ) {
+
+        return "Cancelado";
+
+    }
+
+
+    if (
+        valor ===
+        "eliminado"
+    ) {
+
+        return "Eliminado";
+
+    }
+
+
+    return "Programado";
+
+}
+
+
+function v36EventoEstaCancelado(
+    evento
+) {
+
+    return (
+        v36ObtenerEstadoEvento(
+            evento
+        ) ===
+        "Cancelado"
+    );
+
+}
+
+
+// ======================================================
+// ESTILOS VISUALES DE ESTADO
+// ======================================================
+
+function v36InyectarEstilosEventos() {
+
+    if (
+        document.getElementById(
+            "v36EstilosEventos"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const estilo =
+        document.createElement(
+            "style"
+        );
+
+
+    estilo.id =
+        "v36EstilosEventos";
+
+
+    estilo.textContent = `
+
+        .admin-evento-card.v36-evento-cancelado {
+            opacity: .82;
+            border-left: 4px solid #d92d20;
+        }
+
+        .v36-evento-estado {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            width: fit-content;
+            margin-top: 7px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .03em;
+        }
+
+        .v36-evento-estado.cancelado {
+            background: #fff1f0;
+            color: #b42318;
+            border: 1px solid #f3b7b1;
+        }
+
+        .admin-evento-acciones {
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .admin-evento-cancelar,
+        .admin-evento-restaurar {
+            border: 0;
+            border-radius: 10px;
+            padding: 8px 11px;
+            font: inherit;
+            font-size: .78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .admin-evento-cancelar {
+            background: #fff4e8;
+            color: #9a4c00;
+        }
+
+        .admin-evento-restaurar {
+            background: #ecfdf3;
+            color: #067647;
+        }
+
+        .v36-calendar-day-cancelado {
+            outline: 2px solid rgba(217, 45, 32, .55);
+            outline-offset: -3px;
+        }
+
+        .card-evento-calendario.v36-evento-cancelado {
+            opacity: .82;
+            border-left: 4px solid #d92d20;
+        }
+
+        .v36-cancelado-chip {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            margin: 0 0 8px;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #fff1f0;
+            color: #b42318;
+            border: 1px solid #f3b7b1;
+            font-size: .72rem;
+            font-weight: 800;
+        }
+
+        @media (max-width: 600px) {
+
+            .admin-evento-acciones button {
+                flex: 1 1 auto;
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        estilo
+    );
+
+}
+
+
+// ======================================================
+// INICIO
+//
+// Los cancelados NO pueden convertirse en el próximo evento.
+// ======================================================
+
+const v36RenderizarInicioBase =
+    renderizarInicio;
+
+
+renderizarInicio =
+    function(
+        data
+    ) {
+
+        const datos =
+            data || {};
+
+
+        const eventos =
+            Array.isArray(
+                datos.eventos
+            )
+
+                ? datos.eventos.filter(
+                    evento =>
+                        !v36EventoEstaCancelado(
+                            evento
+                        )
+                )
+
+                : [];
+
+
+        return v36RenderizarInicioBase({
+
+            ...datos,
+            eventos
+
+        });
+
+    };
+
+
+// ======================================================
+// ADMINISTRACIÓN - LISTADO DE EVENTOS
+// ======================================================
+
+renderizarAdminEventos =
+    function(
+        eventos
+    ) {
+
+        v36InyectarEstilosEventos();
+
+
+        const contenedor =
+            document.getElementById(
+                "adminListaEventos"
+            );
+
+
+        if (!contenedor) {
+
+            return;
+
+        }
+
+
+        const lista =
+            Array.isArray(
+                eventos
+            )
+
+                ? eventos
+
+                : [];
+
+
+        if (!lista.length) {
+
+            contenedor.innerHTML = `
+
+                <div class="admin-eventos-vacio">
+
+                    <div class="admin-eventos-vacio-icono">
+                        📅
+                    </div>
+
+                    <h3>
+                        No hay eventos registrados
+                    </h3>
+
+                    <p>
+                        Crea el primer evento desde
+                        “Nuevo evento”.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        const ahora =
+            new Date();
+
+
+        const programados =
+            lista.filter(
+                evento =>
+                    !v36EventoEstaCancelado(
+                        evento
+                    )
+            );
+
+
+        const cancelados =
+            lista.filter(
+                evento =>
+                    v36EventoEstaCancelado(
+                        evento
+                    )
+            );
+
+
+        const proximos =
+            programados.filter(
+                evento =>
+                    obtenerFechaHoraAdmin(
+                        evento
+                    ) >=
+                    ahora
+            );
+
+
+        const anteriores =
+            programados.filter(
+                evento =>
+                    obtenerFechaHoraAdmin(
+                        evento
+                    ) <
+                    ahora
+            );
+
+
+        let html =
+            "";
+
+
+        if (
+            proximos.length
+        ) {
+
+            html += `
+
+                <div class="admin-eventos-grupo">
+
+                    <h3 class="admin-eventos-subtitulo">
+                        Próximos eventos
+                    </h3>
+
+                    ${
+                        proximos
+                            .map(
+                                evento =>
+                                    crearTarjetaAdminEvento(
+                                        evento
+                                    )
+                            )
+                            .join("")
+                    }
+
+                </div>
+
+            `;
+
+        }
+
+
+        if (
+            cancelados.length
+        ) {
+
+            html += `
+
+                <details
+                    class="admin-eventos-anteriores"
+                    open>
+
+                    <summary>
+                        Eventos cancelados
+                        (${cancelados.length})
+                    </summary>
+
+                    <div
+                        class="
+                            admin-eventos-grupo
+                            admin-eventos-grupo-anteriores
+                        ">
+
+                        ${
+                            cancelados
+                                .map(
+                                    evento =>
+                                        crearTarjetaAdminEvento(
+                                            evento,
+                                            obtenerFechaHoraAdmin(
+                                                evento
+                                            ) <
+                                            ahora
+                                        )
+                                )
+                                .join("")
+                        }
+
+                    </div>
+
+                </details>
+
+            `;
+
+        }
+
+
+        if (
+            anteriores.length
+        ) {
+
+            html += `
+
+                <details class="admin-eventos-anteriores">
+
+                    <summary>
+                        Ver eventos anteriores
+                        (${anteriores.length})
+                    </summary>
+
+                    <div
+                        class="
+                            admin-eventos-grupo
+                            admin-eventos-grupo-anteriores
+                        ">
+
+                        ${
+                            anteriores
+                                .slice()
+                                .reverse()
+                                .map(
+                                    evento =>
+                                        crearTarjetaAdminEvento(
+                                            evento,
+                                            true
+                                        )
+                                )
+                                .join("")
+                        }
+
+                    </div>
+
+                </details>
+
+            `;
+
+        }
+
+
+        if (!html) {
+
+            html = `
+
+                <div class="admin-eventos-vacio">
+
+                    <h3>
+                        No hay eventos programados
+                    </h3>
+
+                </div>
+
+            `;
+
+        }
+
+
+        contenedor.innerHTML =
+            html;
+
+    };
+
+
+// ======================================================
+// TARJETA ADMIN DE EVENTO
+// ======================================================
+
+crearTarjetaAdminEvento =
+    function(
+        evento,
+        esAnterior = false
+    ) {
+
+        const estilo =
+            obtenerEstiloEvento(
+                evento.tipo
+            );
+
+
+        const fecha =
+            obtenerFechaAdmin(
+                evento
+            );
+
+
+        const cancelado =
+            v36EventoEstaCancelado(
+                evento
+            );
+
+
+        const idEvento =
+            escaparHtml(
+                evento.idEvento ||
+                ""
+            );
+
+
+        const tipo =
+            escaparHtml(
+                evento.tipo ||
+                "Evento"
+            );
+
+
+        const titulo =
+            escaparHtml(
+                evento.titulo ||
+                evento.tipo ||
+                "Evento"
+            );
+
+
+        const hora =
+            escaparHtml(
+
+                String(
+                    evento.hora ||
+                    ""
+                )
+                .substring(
+                    0,
+                    5
+                )
+
+            );
+
+
+        const lugar =
+            escaparHtml(
+                evento.lugar ||
+                ""
+            );
+
+
+        const botonesEstado =
+            cancelado
+
+                ? `
+
+                    <button
+                        class="admin-evento-restaurar"
+                        type="button"
+                        onclick="restaurarEventoAdmin('${idEvento}')">
+
+                        Restaurar
+
+                    </button>
+
+                `
+
+                : `
+
+                    <button
+                        class="admin-evento-cancelar"
+                        type="button"
+                        onclick="cancelarEventoAdmin('${idEvento}')">
+
+                        Cancelar
+
+                    </button>
+
+                `;
+
+
+        return `
+
+            <article
+                class="
+                    admin-evento-card
+                    ${estilo.clase}
+                    ${
+                        esAnterior
+                            ? "admin-evento-anterior"
+                            : ""
+                    }
+                    ${
+                        cancelado
+                            ? "v36-evento-cancelado"
+                            : ""
+                    }
+                ">
+
+
+                <div class="admin-evento-fecha">
+
+                    <strong>
+                        ${fecha.dia}
+                    </strong>
+
+                    <span>
+                        ${fecha.mes}
+                    </span>
+
+                </div>
+
+
+                <div class="admin-evento-info">
+
+                    <div class="admin-evento-tipo">
+
+                        ${estilo.icono}
+                        ${tipo}
+
+                    </div>
+
+
+                    <h3>
+                        ${titulo}
+                    </h3>
+
+
+                    ${
+                        cancelado
+                            ? `
+
+                                <span
+                                    class="
+                                        v36-evento-estado
+                                        cancelado
+                                    ">
+
+                                    🚫 Cancelado
+
+                                </span>
+
+                            `
+                            : ""
+                    }
+
+
+                    <div class="admin-evento-meta">
+
+                        ${
+                            hora
+                                ? `
+
+                                    <span>
+                                        🕒 ${hora}
+                                    </span>
+
+                                `
+                                : ""
+                        }
+
+                        ${
+                            lugar
+                                ? `
+
+                                    <span>
+                                        📍 ${lugar}
+                                    </span>
+
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-evento-acciones">
+
+                    <button
+                        class="admin-evento-editar"
+                        type="button"
+                        onclick="editarEventoAdmin('${idEvento}')">
+
+                        Editar
+
+                    </button>
+
+
+                    ${botonesEstado}
+
+
+                    <button
+                        class="admin-evento-eliminar"
+                        type="button"
+                        onclick="eliminarEventoAdmin('${idEvento}')">
+
+                        Eliminar
+
+                    </button>
+
+                </div>
+
+            </article>
+
+        `;
+
+    };
+
+
+// ======================================================
+// ACCIÓN DE ESTADO DE EVENTO
+// ======================================================
+
+async function v36CambiarEstadoEventoAdmin(
+    idEvento,
+    accion,
+    tituloConfirmacion,
+    textoConfirmacion,
+    mensajeExito
+) {
+
+    if (
+        !adminUsuario ||
+        !adminCredential
+    ) {
+
+        abrirAccesoAdministracion();
+
+        return;
+
+    }
+
+
+    try {
+
+        const data =
+            await obtenerDatosApp();
+
+
+        const eventos =
+            Array.isArray(
+                data.eventos
+            )
+
+                ? data.eventos
+
+                : [];
+
+
+        const evento =
+            eventos.find(
+                item =>
+                    String(
+                        item.idEvento ||
+                        ""
+                    ) ===
+                    String(
+                        idEvento ||
+                        ""
+                    )
+            );
+
+
+        if (!evento) {
+
+            alert(
+                "No fue posible encontrar el evento."
+            );
+
+            return;
+
+        }
+
+
+        const confirmar =
+            window.confirm(
+
+                `${tituloConfirmacion}\n\n` +
+
+                `${evento.titulo || evento.tipo}\n` +
+
+                `${evento.fecha || ""} · ${evento.hora || ""}\n\n` +
+
+                textoConfirmacion
+
+            );
+
+
+        if (!confirmar) {
+
+            return;
+
+        }
+
+
+        const respuesta =
+            await fetch(
+
+                URL_API,
+
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion,
+                            credential:
+                                adminCredential,
+                            idEvento:
+                                evento.idEvento
+
+                        })
+
+                }
+
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (!resultado.ok) {
+
+            throw new Error(
+
+                resultado.error ||
+                "No fue posible actualizar el evento."
+
+            );
+
+        }
+
+
+        invalidarDatosAdminEsquemas();
+
+
+        const datosActualizados =
+            await refrescarDatosApp();
+
+
+        renderizarInicio(
+            datosActualizados
+        );
+
+
+        renderizarCalendario(
+            datosActualizados
+        );
+
+
+        renderizarEsquemas(
+            datosActualizados
+        );
+
+
+        await abrirAdminEventos(
+            datosActualizados
+        );
+
+
+        const pantalla =
+            document.querySelector(
+                ".admin-eventos"
+            );
+
+
+        if (pantalla) {
+
+            pantalla.insertAdjacentHTML(
+
+                "afterbegin",
+
+                `
+
+                    <div class="admin-exito">
+
+                        ${escaparHtml(
+                            mensajeExito
+                        )}
+
+                    </div>
+
+                `
+
+            );
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error cambiando estado del evento:",
+            error
+        );
+
+
+        alert(
+
+            error.message ||
+            "No fue posible actualizar el evento."
+
+        );
+
+    }
+
+}
+
+
+// ======================================================
+// CANCELAR EVENTO
+//
+// Más adelante esta acción será la que dispare la
+// notificación inmediata a los dispositivos suscritos.
+// ======================================================
+
+async function cancelarEventoAdmin(
+    idEvento
+) {
+
+    return v36CambiarEstadoEventoAdmin(
+
+        idEvento,
+
+        "cancelarEvento",
+
+        "¿Cancelar el evento?",
+
+        "El evento permanecerá visible como CANCELADO. " +
+        "Cuando activemos las notificaciones, esta acción " +
+        "enviará el aviso inmediatamente.",
+
+        "🚫 Evento cancelado correctamente."
+
+    );
+
+}
+
+
+// ======================================================
+// RESTAURAR EVENTO
+// ======================================================
+
+async function restaurarEventoAdmin(
+    idEvento
+) {
+
+    return v36CambiarEstadoEventoAdmin(
+
+        idEvento,
+
+        "restaurarEvento",
+
+        "¿Restaurar el evento?",
+
+        "Volverá a considerarse un evento programado.",
+
+        "✅ Evento restaurado correctamente."
+
+    );
+
+}
+
+
+// ======================================================
+// ELIMINAR EVENTO
+//
+// Eliminar NO equivale a cancelar y NO generará
+// notificación push.
+// ======================================================
+
+eliminarEventoAdmin =
+    async function(
+        idEvento
+    ) {
+
+        return v36CambiarEstadoEventoAdmin(
+
+            idEvento,
+
+            "eliminarEvento",
+
+            "¿Eliminar el evento?",
+
+            "El evento dejará de mostrarse en AppCorus. " +
+            "Eliminar no enviará ninguna notificación.",
+
+            "✅ Evento eliminado correctamente."
+
+        );
+
+    };
+
+
+// ======================================================
+// CALENDARIO
+//
+// Los cancelados permanecen visibles para que exista
+// historial, pero se distinguen claramente.
+// ======================================================
+
+const v36RenderizarCalendarioBase =
+    renderizarCalendario;
+
+
+renderizarCalendario =
+    function(
+        data
+    ) {
+
+        v36InyectarEstilosEventos();
+
+
+        const resultado =
+            v36RenderizarCalendarioBase(
+                data
+            );
+
+
+        document
+            .querySelectorAll(
+                ".calendar-day.has-event"
+            )
+            .forEach(
+                elemento => {
+
+                    const dia =
+                        Number(
+                            elemento.dataset.day
+                        );
+
+
+                    const eventosDia =
+                        obtenerEventosDia(
+                            dia
+                        );
+
+
+                    if (
+                        eventosDia.length &&
+                        eventosDia.every(
+                            evento =>
+                                v36EventoEstaCancelado(
+                                    evento
+                                )
+                        )
+                    ) {
+
+                        elemento.classList.add(
+                            "v36-calendar-day-cancelado"
+                        );
+
+                    }
+
+                }
+            );
+
+
+        return resultado;
+
+    };
+
+
+// ======================================================
+// DETALLE DEL DÍA EN CALENDARIO
+// ======================================================
+
+mostrarEventosDia =
+    function(
+        dia
+    ) {
+
+        document
+            .querySelectorAll(
+                ".calendar-day"
+            )
+            .forEach(
+                elemento => {
+
+                    elemento.classList.remove(
+                        "selected"
+                    );
+
+                }
+            );
+
+
+        document
+            .querySelector(
+                `.calendar-day[data-day="${dia}"]`
+            )
+            ?.classList
+            .add(
+                "selected"
+            );
+
+
+        const detalle =
+            document.getElementById(
+                "detalleFecha"
+            );
+
+
+        if (!detalle) {
+
+            return;
+
+        }
+
+
+        const lista =
+            obtenerEventosDia(
+                dia
+            );
+
+
+        const meses = [
+
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre"
+
+        ];
+
+
+        const cancelados =
+            lista.filter(
+                evento =>
+                    v36EventoEstaCancelado(
+                        evento
+                    )
+            )
+            .length;
+
+
+        const programados =
+            lista.length -
+            cancelados;
+
+
+        detalle.innerHTML = `
+
+            <div class="card card-dia-seleccionado">
+
+                <h2>
+
+                    📅 ${dia} de
+                    ${meses[mesActual]}
+
+                </h2>
+
+                <p>
+
+                    ${programados}
+                    programado(s)
+
+                    ${
+                        cancelados
+                            ? ` · ${cancelados} cancelado(s)`
+                            : ""
+                    }
+
+                </p>
+
+            </div>
+
+        `;
+
+
+        lista.forEach(
+            evento => {
+
+                const estilo =
+                    obtenerEstiloCalendario(
+                        evento.tipo
+                    );
+
+
+                const cancelado =
+                    v36EventoEstaCancelado(
+                        evento
+                    );
+
+
+                detalle.innerHTML += `
+
+                    <div
+                        class="
+                            card
+                            card-evento-calendario
+                            ${
+                                cancelado
+                                    ? "v36-evento-cancelado"
+                                    : ""
+                            }
+                        ">
+
+                        <div
+                            class="
+                                tipo-chip
+                                ${estilo.clase}
+                            ">
+
+                            ${estilo.etiqueta}
+
+                        </div>
+
+
+                        <div class="evento-contenido">
+
+                            ${
+                                cancelado
+                                    ? `
+
+                                        <div class="v36-cancelado-chip">
+                                            🚫 EVENTO CANCELADO
+                                        </div>
+
+                                    `
+                                    : ""
+                            }
+
+
+                            <h3>
+
+                                ${
+                                    escaparHtml(
+                                        evento.titulo ||
+                                        evento.tipo ||
+                                        "Evento"
+                                    )
+                                }
+
+                            </h3>
+
+
+                            <p>
+
+                                ⏰ ${
+                                    escaparHtml(
+                                        evento.hora
+                                    )
+                                }
+
+                            </p>
+
+
+                            <p>
+
+                                📍 ${
+                                    evento.lugar
+
+                                        ? escaparHtml(
+                                            evento.lugar
+                                        )
+
+                                        : "Sin ubicación"
+                                }
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+    };
+
+
+// ======================================================
+// FORMULARIOS
+//
+// "activo" queda como campo interno. El usuario administra
+// los estados mediante Cancelar / Restaurar / Eliminar.
+// ======================================================
+
+const v36RenderizarFormularioNuevoEventoBase =
+    renderizarFormularioNuevoEvento;
+
+
+renderizarFormularioNuevoEvento =
+    function(
+        tiposEvento,
+        lugares
+    ) {
+
+        const resultado =
+            v36RenderizarFormularioNuevoEventoBase(
+                tiposEvento,
+                lugares
+            );
+
+
+        document
+            .getElementById(
+                "eventoActivo"
+            )
+            ?.closest(
+                ".admin-form-activo"
+            )
+            ?.remove();
+
+
+        return resultado;
+
+    };
+
+
+const v36AbrirFormularioEditarEventoBase =
+    abrirFormularioEditarEvento;
+
+
+abrirFormularioEditarEvento =
+    function(
+        evento,
+        data
+    ) {
+
+        const resultado =
+            v36AbrirFormularioEditarEventoBase(
+                evento,
+                data
+            );
+
+
+        document
+            .getElementById(
+                "editarEventoActivo"
+            )
+            ?.closest(
+                ".admin-form-activo"
+            )
+            ?.remove();
+
+
+        return resultado;
+
+    };
+
+
+console.log(
+    "✅ AppCorus V3.6 etapa 1 - estados de eventos activos"
 );
