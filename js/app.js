@@ -14313,6 +14313,10 @@ async function activarNotificacionesAppCorus() {
             "appcorus_fcm_token",
             token
         );
+        
+        await registrarTokenPushEnBackend(
+        token
+        );
 
 
         console.log(
@@ -14384,4 +14388,87 @@ if (
 } else {
 
     mostrarControlNotificacionesAppCorus();
+}
+// ======================================================
+// APPCORUS V3.6
+// REGISTRAR TOKEN PUSH EN BACKEND
+// ======================================================
+
+async function registrarTokenPushEnBackend(
+    token
+) {
+
+    const tokenLimpio =
+        String(
+            token || ""
+        )
+        .trim();
+
+
+    if (
+        !tokenLimpio
+    ) {
+        return false;
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                URL_API,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "registrarDispositivoPush",
+
+                            token:
+                                tokenLimpio
+
+                        })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (
+            !resultado.ok
+        ) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible registrar el dispositivo."
+            );
+        }
+
+
+        console.log(
+            resultado.existente
+                ? "✅ Dispositivo push actualizado"
+                : "✅ Dispositivo push registrado",
+            resultado.idDispositivo || ""
+        );
+
+
+        return true;
+
+
+    } catch(error) {
+
+        console.error(
+            "❌ Error registrando dispositivo push:",
+            error
+        );
+
+
+        return false;
+    }
 }
