@@ -13878,9 +13878,10 @@ abrirFormularioEditarEvento =
 console.log(
     "✅ AppCorus V3.6 etapa 1 - estados de eventos activos"
 );
+
 // ======================================================
 // APPCORUS V3.6 - FIREBASE CLOUD MESSAGING
-// Inicialización básica
+// NOTIFICACIONES PUSH + REGISTRO DE DISPOSITIVO
 // ======================================================
 
 const APPCORUS_FIREBASE_CONFIG = {
@@ -13906,9 +13907,208 @@ const APPCORUS_FIREBASE_CONFIG = {
 };
 
 
-let appCorusFirebaseApp = null;
-let appCorusFirebaseMessaging = null;
-let appCorusFirebaseServiceWorker = null;
+const APPCORUS_VAPID_PUBLIC_KEY =
+    "BNVa9lqWGbYhvQgO-RZdWwNJd_nrdK_yXvSn0MtBr0UVbNrrocHWpNdvFbr-1l4VHMJK0sgkEvYX9rg5IFniHao";
+
+
+let appCorusFirebaseApp =
+    null;
+
+let appCorusFirebaseMessaging =
+    null;
+
+let appCorusFirebaseServiceWorker =
+    null;
+
+let appCorusFirebaseInicializando =
+    null;
+
+
+// ======================================================
+// REGISTRAR TOKEN PUSH EN BACKEND
+// ======================================================
+
+async function registrarTokenPushEnBackend(
+    token
+) {
+
+    const tokenLimpio =
+        String(
+            token || ""
+        )
+        .trim();
+
+
+    if (
+        !tokenLimpio
+    ) {
+
+        return false;
+
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                URL_API,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "registrarDispositivoPush",
+
+                            token:
+                                tokenLimpio
+
+                        })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (
+            !resultado.ok
+        ) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible registrar el dispositivo."
+            );
+
+        }
+
+
+        console.log(
+            resultado.existente
+                ? "✅ Dispositivo push actualizado"
+                : "✅ Dispositivo push registrado",
+            resultado.idDispositivo || ""
+        );
+
+
+        return true;
+
+
+    } catch(error) {
+
+        console.error(
+            "❌ Error registrando dispositivo push:",
+            error
+        );
+
+
+        return false;
+
+    }
+
+}
+
+
+// ======================================================
+// OBTENER TOKEN FCM
+// ======================================================
+
+async function obtenerTokenPushAppCorus() {
+
+    if (
+        !appCorusFirebaseMessaging
+    ) {
+
+        return "";
+
+    }
+
+
+    const registro =
+        appCorusFirebaseServiceWorker ||
+        await navigator.serviceWorker.ready;
+
+
+    const token =
+        await appCorusFirebaseMessaging.getToken({
+
+            vapidKey:
+                APPCORUS_VAPID_PUBLIC_KEY,
+
+            serviceWorkerRegistration:
+                registro
+
+        });
+
+
+    return String(
+        token || ""
+    )
+    .trim();
+
+}
+
+
+// ======================================================
+// SINCRONIZAR TOKEN YA AUTORIZADO
+// ======================================================
+
+async function sincronizarTokenPushAppCorus() {
+
+    if (
+        !("Notification" in window) ||
+        Notification.permission !==
+            "granted"
+    ) {
+
+        return false;
+
+    }
+
+
+    try {
+
+        const token =
+            await obtenerTokenPushAppCorus();
+
+
+        if (
+            !token
+        ) {
+
+            return false;
+
+        }
+
+
+        localStorage.setItem(
+            "appcorus_fcm_token",
+            token
+        );
+
+
+        return await registrarTokenPushEnBackend(
+            token
+        );
+
+
+    } catch(error) {
+
+        console.warn(
+            "No fue posible sincronizar automáticamente el token push:",
+            error
+        );
+
+
+        return false;
+
+    }
+
+}
 
 
 // ======================================================
@@ -13917,90 +14117,134 @@ let appCorusFirebaseServiceWorker = null;
 
 async function inicializarFirebaseAppCorus() {
 
+    if (
+        appCorusFirebaseInicializando
+    ) {
+
+        return appCorusFirebaseInicializando;
+
+    }
+
+
+    const inicializacion =
+        (
+            async () => {
+
+                try {
+
+                    if (
+                        typeof firebase ===
+                        "undefined"
+                    ) {
+
+                        console.warn(
+                            "Firebase SDK aún no está disponible."
+                        );
+
+                        return false;
+
+                    }
+
+
+                    if (
+                        !firebase.apps.length
+                    ) {
+
+                        appCorusFirebaseApp =
+                            firebase.initializeApp(
+                                APPCORUS_FIREBASE_CONFIG
+                            );
+
+                    } else {
+
+                        appCorusFirebaseApp =
+                            firebase.app();
+
+                    }
+
+
+                    appCorusFirebaseMessaging =
+                        firebase.messaging();
+
+
+                    if (
+                        "serviceWorker" in navigator
+                    ) {
+
+                        appCorusFirebaseServiceWorker =
+                            await navigator.serviceWorker.register(
+                                "./firebase-messaging-sw.js"
+                            );
+
+
+                        console.log(
+                            "✅ Service Worker AppCorus registrado",
+                            appCorusFirebaseServiceWorker.scope
+                        );
+
+                    }
+
+
+                    console.log(
+                        "✅ Firebase Messaging inicializado en AppCorus"
+                    );
+
+
+                    // Si el usuario ya había autorizado notificaciones,
+                    // renovamos / sincronizamos el token en segundo plano.
+                    if (
+                        "Notification" in window &&
+                        Notification.permission ===
+                            "granted"
+                    ) {
+
+                        sincronizarTokenPushAppCorus()
+                            .then(
+                                () =>
+                                    actualizarEstadoNotificacionesAppCorus()
+                            )
+                            .catch(
+                                () => {}
+                            );
+
+                    }
+
+
+                    return true;
+
+
+                } catch(error) {
+
+                    console.error(
+                        "❌ Error inicializando Firebase:",
+                        error
+                    );
+
+
+                    return false;
+
+                }
+
+            }
+        )();
+
+
+    appCorusFirebaseInicializando =
+        inicializacion;
+
+
     try {
 
-        if (
-            typeof firebase ===
-            "undefined"
-        ) {
+        return await inicializacion;
 
-            console.warn(
-                "Firebase SDK aún no está disponible."
-            );
+    } finally {
 
-            return false;
-        }
+        appCorusFirebaseInicializando =
+            null;
 
-
-        if (
-            !firebase.apps.length
-        ) {
-
-            appCorusFirebaseApp =
-                firebase.initializeApp(
-                    APPCORUS_FIREBASE_CONFIG
-                );
-
-        } else {
-
-            appCorusFirebaseApp =
-                firebase.app();
-        }
-
-
-        appCorusFirebaseMessaging =
-            firebase.messaging();
-
-
-        if (
-            "serviceWorker" in navigator
-        ) {
-
-            appCorusFirebaseServiceWorker =
-                await navigator.serviceWorker.register(
-                    "./firebase-messaging-sw.js"
-                );
-
-            console.log(
-                "✅ Service Worker AppCorus registrado",
-                appCorusFirebaseServiceWorker.scope
-            );
-        }
-
-
-        console.log(
-            "✅ Firebase Messaging inicializado en AppCorus"
-        );
-
-        return true;
-
-    } catch(error) {
-
-        console.error(
-            "❌ Error inicializando Firebase:",
-            error
-        );
-
-        return false;
     }
+
 }
-
-
-// ======================================================
-// ARRANQUE FIREBASE
-// ======================================================
-
-inicializarFirebaseAppCorus();
-
-// ======================================================
-// APPCORUS V3.6 - ACTIVAR NOTIFICACIONES PUSH
-// ======================================================
-
-// Pega aquí la clave que copiaste en:
-// Firebase > Configuración > Cloud Messaging
-// > Certificados push web
-const APPCORUS_VAPID_PUBLIC_KEY =
-    "BNVa9lqWGbYhvQgO-RZdWwNJd_nrdK_yXvSn0MtBr0UVbNrrocHWpNdvFbr-1l4VHMJK0sgkEvYX9rg5IFniHao";
 
 
 // ======================================================
@@ -14014,7 +14258,11 @@ function mostrarControlNotificacionesAppCorus() {
             "appCorusNotificaciones"
         )
     ) {
+
+        actualizarEstadoNotificacionesAppCorus();
+
         return;
+
     }
 
 
@@ -14024,8 +14272,12 @@ function mostrarControlNotificacionesAppCorus() {
         );
 
 
-    if (!inicioEventos) {
+    if (
+        !inicioEventos
+    ) {
+
         return;
+
     }
 
 
@@ -14120,6 +14372,7 @@ function mostrarControlNotificacionesAppCorus() {
 
 
     actualizarEstadoNotificacionesAppCorus();
+
 }
 
 
@@ -14134,6 +14387,7 @@ function actualizarEstadoNotificacionesAppCorus() {
             "appCorusEstadoNotificaciones"
         );
 
+
     const boton =
         document.getElementById(
             "btnActivarNotificacionesAppCorus"
@@ -14144,42 +14398,38 @@ function actualizarEstadoNotificacionesAppCorus() {
         !estado ||
         !boton
     ) {
+
         return;
+
     }
 
 
-    if (
-        !("Notification" in window)
-    ) {
+    boton.disabled =
+        false;
 
-        estado.textContent =
-            "Este navegador no admite notificaciones.";
-
-        boton.disabled =
-            true;
-
-        return;
-    }
+    boton.style.background =
+        "#1976d2";
 
 
     if (
-        Notification.permission ===
-        "granted"
+        !("Notification" in window) ||
+        !("serviceWorker" in navigator)
     ) {
 
         estado.textContent =
-            "✓ Notificaciones activadas en este dispositivo.";
+            "Este navegador no admite notificaciones push.";
 
         boton.textContent =
-            "✓ Activadas";
+            "No disponible";
 
         boton.disabled =
             true;
 
         boton.style.background =
-            "#2e7d32";
+            "#8b949e";
 
         return;
+
     }
 
 
@@ -14201,11 +14451,65 @@ function actualizarEstadoNotificacionesAppCorus() {
             "#8b949e";
 
         return;
+
+    }
+
+
+    const tokenGuardado =
+        String(
+            localStorage.getItem(
+                "appcorus_fcm_token"
+            ) ||
+            ""
+        )
+        .trim();
+
+
+    if (
+        Notification.permission ===
+            "granted" &&
+        tokenGuardado
+    ) {
+
+        estado.textContent =
+            "✓ Notificaciones activadas en este dispositivo.";
+
+        boton.textContent =
+            "✓ Activadas";
+
+        boton.disabled =
+            true;
+
+        boton.style.background =
+            "#2e7d32";
+
+        return;
+
+    }
+
+
+    if (
+        Notification.permission ===
+        "granted"
+    ) {
+
+        estado.textContent =
+            "Permiso concedido. Falta completar el registro del dispositivo.";
+
+        boton.textContent =
+            "🔔 Completar activación";
+
+        return;
+
     }
 
 
     estado.textContent =
         "Recibe avisos de tus próximos eventos.";
+
+    boton.textContent =
+        "🔔 Activar notificaciones";
+
 }
 
 
@@ -14219,6 +14523,7 @@ async function activarNotificacionesAppCorus() {
         document.getElementById(
             "btnActivarNotificacionesAppCorus"
         );
+
 
     const estado =
         document.getElementById(
@@ -14236,39 +14541,61 @@ async function activarNotificacionesAppCorus() {
             throw new Error(
                 "Este dispositivo no admite notificaciones push."
             );
+
         }
 
 
-        boton.disabled =
-            true;
-
-        boton.textContent =
-            "Activando...";
-
-
-        // Si Firebase todavía no terminó de iniciar,
-        // esperamos su inicialización.
         if (
-            !appCorusFirebaseMessaging
+            boton
         ) {
 
-            const firebaseOk =
-                await inicializarFirebaseAppCorus();
+            boton.disabled =
+                true;
 
+            boton.textContent =
+                "Activando...";
 
-            if (!firebaseOk) {
-
-                throw new Error(
-                    "Firebase no pudo inicializarse."
-                );
-            }
         }
 
 
-        // El permiso siempre se solicita
-        // después de que el usuario pulse el botón.
-        const permiso =
-            await Notification.requestPermission();
+        if (
+            estado
+        ) {
+
+            estado.textContent =
+                "Registrando este dispositivo...";
+
+        }
+
+
+        const firebaseOk =
+            await inicializarFirebaseAppCorus();
+
+
+        if (
+            !firebaseOk
+        ) {
+
+            throw new Error(
+                "Firebase no pudo inicializarse."
+            );
+
+        }
+
+
+        let permiso =
+            Notification.permission;
+
+
+        if (
+            permiso ===
+            "default"
+        ) {
+
+            permiso =
+                await Notification.requestPermission();
+
+        }
 
 
         if (
@@ -14279,44 +14606,46 @@ async function activarNotificacionesAppCorus() {
             actualizarEstadoNotificacionesAppCorus();
 
             return;
+
         }
 
 
-        const registro =
-            appCorusFirebaseServiceWorker ||
-            await navigator.serviceWorker.ready;
-
-
         const token =
-            await appCorusFirebaseMessaging.getToken({
-
-                vapidKey:
-                    APPCORUS_VAPID_PUBLIC_KEY,
-
-                serviceWorkerRegistration:
-                    registro
-
-            });
+            await obtenerTokenPushAppCorus();
 
 
-        if (!token) {
+        if (
+            !token
+        ) {
 
             throw new Error(
                 "Firebase no devolvió un token de notificaciones."
             );
+
         }
 
 
-        // Por ahora lo guardamos en este dispositivo.
-        // Después lo enviaremos a nuestro backend.
         localStorage.setItem(
             "appcorus_fcm_token",
             token
         );
-        
-        await registrarTokenPushEnBackend(
-        token
-        );
+
+
+        const registrado =
+            await registrarTokenPushEnBackend(
+                token
+            );
+
+
+        if (
+            !registrado
+        ) {
+
+            throw new Error(
+                "El token se creó, pero no pudo registrarse en AppCorus."
+            );
+
+        }
 
 
         console.log(
@@ -14325,21 +14654,7 @@ async function activarNotificacionesAppCorus() {
         );
 
 
-        if (estado) {
-
-            estado.textContent =
-                "✓ Notificaciones activadas en este dispositivo.";
-        }
-
-
-        boton.textContent =
-            "✓ Activadas";
-
-        boton.style.background =
-            "#2e7d32";
-
-        boton.disabled =
-            true;
+        actualizarEstadoNotificacionesAppCorus();
 
 
     } catch(error) {
@@ -14350,29 +14665,43 @@ async function activarNotificacionesAppCorus() {
         );
 
 
-        if (estado) {
+        if (
+            estado
+        ) {
 
             estado.textContent =
                 error.message ||
                 "No fue posible activar las notificaciones.";
+
         }
 
 
-        if (boton) {
+        if (
+            boton
+        ) {
 
             boton.disabled =
                 false;
 
             boton.textContent =
                 "🔔 Intentar nuevamente";
+
         }
+
     }
+
 }
 
 
 // ======================================================
-// CARGAR CONTROL
+// ARRANQUE FIREBASE / CONTROL PUSH
 // ======================================================
+
+inicializarFirebaseAppCorus()
+    .catch(
+        () => {}
+    );
+
 
 if (
     document.readyState ===
@@ -14382,93 +14711,19 @@ if (
     document.addEventListener(
         "DOMContentLoaded",
         mostrarControlNotificacionesAppCorus,
-        { once: true }
+        {
+            once: true
+        }
     );
 
 } else {
 
     mostrarControlNotificacionesAppCorus();
+
 }
-// ======================================================
-// APPCORUS V3.6
-// REGISTRAR TOKEN PUSH EN BACKEND
-// ======================================================
-
-async function registrarTokenPushEnBackend(
-    token
-) {
-
-    const tokenLimpio =
-        String(
-            token || ""
-        )
-        .trim();
 
 
-    if (
-        !tokenLimpio
-    ) {
-        return false;
-    }
+console.log(
+    "✅ AppCorus V3.6 - Firebase Push listo"
+);
 
-
-    try {
-
-        const respuesta =
-            await fetch(
-                URL_API,
-                {
-                    method:
-                        "POST",
-
-                    body:
-                        JSON.stringify({
-
-                            accion:
-                                "registrarDispositivoPush",
-
-                            token:
-                                tokenLimpio
-
-                        })
-                }
-            );
-
-
-        const resultado =
-            await respuesta.json();
-
-
-        if (
-            !resultado.ok
-        ) {
-
-            throw new Error(
-                resultado.error ||
-                "No fue posible registrar el dispositivo."
-            );
-        }
-
-
-        console.log(
-            resultado.existente
-                ? "✅ Dispositivo push actualizado"
-                : "✅ Dispositivo push registrado",
-            resultado.idDispositivo || ""
-        );
-
-
-        return true;
-
-
-    } catch(error) {
-
-        console.error(
-            "❌ Error registrando dispositivo push:",
-            error
-        );
-
-
-        return false;
-    }
-}
