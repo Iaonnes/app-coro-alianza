@@ -13878,3 +13878,116 @@ abrirFormularioEditarEvento =
 console.log(
     "✅ AppCorus V3.6 etapa 1 - estados de eventos activos"
 );
+// ======================================================
+// APPCORUS V3.6 - FIREBASE CLOUD MESSAGING
+// Inicialización básica
+// ======================================================
+
+const APPCORUS_FIREBASE_CONFIG = {
+
+    apiKey:
+        "AIzaSyCI6KNesshXevS2bUHKwGvUpUR8pDjl3cY",
+
+    authDomain:
+        "appcorus-42c1c.firebaseapp.com",
+
+    projectId:
+        "appcorus-42c1c",
+
+    storageBucket:
+        "appcorus-42c1c.firebasestorage.app",
+
+    messagingSenderId:
+        "925195621904",
+
+    appId:
+        "1:925195621904:web:19999aa2d52c188c5a5c95"
+
+};
+
+
+let appCorusFirebaseApp = null;
+let appCorusFirebaseMessaging = null;
+let appCorusFirebaseServiceWorker = null;
+
+
+// ======================================================
+// INICIALIZAR FIREBASE
+// ======================================================
+
+async function inicializarFirebaseAppCorus() {
+
+    try {
+
+        if (
+            typeof firebase ===
+            "undefined"
+        ) {
+
+            console.warn(
+                "Firebase SDK aún no está disponible."
+            );
+
+            return false;
+        }
+
+
+        if (
+            !firebase.apps.length
+        ) {
+
+            appCorusFirebaseApp =
+                firebase.initializeApp(
+                    APPCORUS_FIREBASE_CONFIG
+                );
+
+        } else {
+
+            appCorusFirebaseApp =
+                firebase.app();
+        }
+
+
+        appCorusFirebaseMessaging =
+            firebase.messaging();
+
+
+        if (
+            "serviceWorker" in navigator
+        ) {
+
+            appCorusFirebaseServiceWorker =
+                await navigator.serviceWorker.register(
+                    "./firebase-messaging-sw.js"
+                );
+
+            console.log(
+                "✅ Service Worker AppCorus registrado",
+                appCorusFirebaseServiceWorker.scope
+            );
+        }
+
+
+        console.log(
+            "✅ Firebase Messaging inicializado en AppCorus"
+        );
+
+        return true;
+
+    } catch(error) {
+
+        console.error(
+            "❌ Error inicializando Firebase:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+// ======================================================
+// ARRANQUE FIREBASE
+// ======================================================
+
+inicializarFirebaseAppCorus();
