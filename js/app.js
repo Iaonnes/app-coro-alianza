@@ -13991,3 +13991,397 @@ async function inicializarFirebaseAppCorus() {
 // ======================================================
 
 inicializarFirebaseAppCorus();
+
+// ======================================================
+// APPCORUS V3.6 - ACTIVAR NOTIFICACIONES PUSH
+// ======================================================
+
+// Pega aquí la clave que copiaste en:
+// Firebase > Configuración > Cloud Messaging
+// > Certificados push web
+const APPCORUS_VAPID_PUBLIC_KEY =
+    "BNVa9lqWGbYhvQgO-RZdWwNJd_nrdK_yXvSn0MtBr0UVbNrrocHWpNdvFbr-1l4VHMJK0sgkEvYX9rg5IFniHao";
+
+
+// ======================================================
+// MOSTRAR CONTROL DE NOTIFICACIONES
+// ======================================================
+
+function mostrarControlNotificacionesAppCorus() {
+
+    if (
+        document.getElementById(
+            "appCorusNotificaciones"
+        )
+    ) {
+        return;
+    }
+
+
+    const inicioEventos =
+        document.getElementById(
+            "inicioEventos"
+        );
+
+
+    if (!inicioEventos) {
+        return;
+    }
+
+
+    const panel =
+        document.createElement(
+            "div"
+        );
+
+
+    panel.id =
+        "appCorusNotificaciones";
+
+
+    panel.style.cssText = `
+        margin: 16px 20px;
+        padding: 16px;
+        border: 1px solid #d9e7f7;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 4px 14px rgba(0,0,0,.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    `;
+
+
+    panel.innerHTML = `
+
+        <div style="
+            flex:1;
+            min-width:200px;
+        ">
+
+            <strong style="
+                display:block;
+                color:#1d3557;
+                margin-bottom:4px;
+            ">
+                🔔 Notificaciones AppCorus
+            </strong>
+
+            <span
+                id="appCorusEstadoNotificaciones"
+                style="
+                    font-size:.88rem;
+                    color:#65758b;
+                ">
+
+                Recibe avisos de tus próximos eventos.
+
+            </span>
+
+        </div>
+
+
+        <button
+            id="btnActivarNotificacionesAppCorus"
+            type="button"
+            style="
+                border:none;
+                border-radius:999px;
+                background:#1976d2;
+                color:#ffffff;
+                padding:10px 16px;
+                font-weight:700;
+                cursor:pointer;
+            ">
+
+            🔔 Activar notificaciones
+
+        </button>
+
+    `;
+
+
+    inicioEventos.insertAdjacentElement(
+        "beforebegin",
+        panel
+    );
+
+
+    document
+        .getElementById(
+            "btnActivarNotificacionesAppCorus"
+        )
+        ?.addEventListener(
+            "click",
+            activarNotificacionesAppCorus
+        );
+
+
+    actualizarEstadoNotificacionesAppCorus();
+}
+
+
+// ======================================================
+// ESTADO VISUAL
+// ======================================================
+
+function actualizarEstadoNotificacionesAppCorus() {
+
+    const estado =
+        document.getElementById(
+            "appCorusEstadoNotificaciones"
+        );
+
+    const boton =
+        document.getElementById(
+            "btnActivarNotificacionesAppCorus"
+        );
+
+
+    if (
+        !estado ||
+        !boton
+    ) {
+        return;
+    }
+
+
+    if (
+        !("Notification" in window)
+    ) {
+
+        estado.textContent =
+            "Este navegador no admite notificaciones.";
+
+        boton.disabled =
+            true;
+
+        return;
+    }
+
+
+    if (
+        Notification.permission ===
+        "granted"
+    ) {
+
+        estado.textContent =
+            "✓ Notificaciones activadas en este dispositivo.";
+
+        boton.textContent =
+            "✓ Activadas";
+
+        boton.disabled =
+            true;
+
+        boton.style.background =
+            "#2e7d32";
+
+        return;
+    }
+
+
+    if (
+        Notification.permission ===
+        "denied"
+    ) {
+
+        estado.textContent =
+            "Las notificaciones están bloqueadas en este navegador.";
+
+        boton.textContent =
+            "Notificaciones bloqueadas";
+
+        boton.disabled =
+            true;
+
+        boton.style.background =
+            "#8b949e";
+
+        return;
+    }
+
+
+    estado.textContent =
+        "Recibe avisos de tus próximos eventos.";
+}
+
+
+// ======================================================
+// ACTIVAR NOTIFICACIONES
+// ======================================================
+
+async function activarNotificacionesAppCorus() {
+
+    const boton =
+        document.getElementById(
+            "btnActivarNotificacionesAppCorus"
+        );
+
+    const estado =
+        document.getElementById(
+            "appCorusEstadoNotificaciones"
+        );
+
+
+    try {
+
+        if (
+            !("Notification" in window) ||
+            !("serviceWorker" in navigator)
+        ) {
+
+            throw new Error(
+                "Este dispositivo no admite notificaciones push."
+            );
+        }
+
+
+        boton.disabled =
+            true;
+
+        boton.textContent =
+            "Activando...";
+
+
+        // Si Firebase todavía no terminó de iniciar,
+        // esperamos su inicialización.
+        if (
+            !appCorusFirebaseMessaging
+        ) {
+
+            const firebaseOk =
+                await inicializarFirebaseAppCorus();
+
+
+            if (!firebaseOk) {
+
+                throw new Error(
+                    "Firebase no pudo inicializarse."
+                );
+            }
+        }
+
+
+        // El permiso siempre se solicita
+        // después de que el usuario pulse el botón.
+        const permiso =
+            await Notification.requestPermission();
+
+
+        if (
+            permiso !==
+            "granted"
+        ) {
+
+            actualizarEstadoNotificacionesAppCorus();
+
+            return;
+        }
+
+
+        const registro =
+            appCorusFirebaseServiceWorker ||
+            await navigator.serviceWorker.ready;
+
+
+        const token =
+            await appCorusFirebaseMessaging.getToken({
+
+                vapidKey:
+                    APPCORUS_VAPID_PUBLIC_KEY,
+
+                serviceWorkerRegistration:
+                    registro
+
+            });
+
+
+        if (!token) {
+
+            throw new Error(
+                "Firebase no devolvió un token de notificaciones."
+            );
+        }
+
+
+        // Por ahora lo guardamos en este dispositivo.
+        // Después lo enviaremos a nuestro backend.
+        localStorage.setItem(
+            "appcorus_fcm_token",
+            token
+        );
+
+
+        console.log(
+            "✅ Token FCM AppCorus:",
+            token
+        );
+
+
+        if (estado) {
+
+            estado.textContent =
+                "✓ Notificaciones activadas en este dispositivo.";
+        }
+
+
+        boton.textContent =
+            "✓ Activadas";
+
+        boton.style.background =
+            "#2e7d32";
+
+        boton.disabled =
+            true;
+
+
+    } catch(error) {
+
+        console.error(
+            "❌ Error activando notificaciones AppCorus:",
+            error
+        );
+
+
+        if (estado) {
+
+            estado.textContent =
+                error.message ||
+                "No fue posible activar las notificaciones.";
+        }
+
+
+        if (boton) {
+
+            boton.disabled =
+                false;
+
+            boton.textContent =
+                "🔔 Intentar nuevamente";
+        }
+    }
+}
+
+
+// ======================================================
+// CARGAR CONTROL
+// ======================================================
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        mostrarControlNotificacionesAppCorus,
+        { once: true }
+    );
+
+} else {
+
+    mostrarControlNotificacionesAppCorus();
+}
