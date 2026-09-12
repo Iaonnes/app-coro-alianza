@@ -18,8 +18,8 @@ importScripts(
 
 firebase.initializeApp({
 
-    apiKey:
-		"AIzaSyCI6KNesshXevS2bUHKwGvUnUB8pDjl3cY",
+	apiKey:
+		"AIzaSyCI6KNesshXevS2bUHKwGyUnUB8pDjJ3cY",
 
     authDomain:
         "appcorus-42c1c.firebaseapp.com",

@@ -13886,7 +13886,7 @@ console.log(
 const APPCORUS_FIREBASE_CONFIG = {
 
     apiKey:
-        "AIzaSyCI6KNesshXevS2bUHKwGvUnUB8pDjl3cY",
+        "AIzaSyCI6KNesshXevS2bUHKwGyUnUB8pDjJ3cY",
 
     authDomain:
         "appcorus-42c1c.firebaseapp.com",
