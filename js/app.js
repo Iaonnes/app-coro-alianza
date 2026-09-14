@@ -11190,6 +11190,137 @@ guardarCambiosEsquema =
 
 // ======================================================
 // ESQUEMAS PÚBLICOS
+// SELECCIÓN AUTOMÁTICA DEL ESQUEMA MÁS PRÓXIMO
+// ======================================================
+
+function obtenerFechaHoraEsquemaPublico(
+    esquema
+) {
+
+    const fechaISO =
+        String(
+            esquema &&
+            esquema.fechaISO ||
+            ""
+        )
+        .trim();
+
+
+    const hora =
+        String(
+            esquema &&
+            esquema.hora ||
+            "00:00"
+        )
+        .substring(
+            0,
+            5
+        );
+
+
+    if (!fechaISO) {
+
+        return null;
+
+    }
+
+
+    const fechaHora =
+        new Date(
+            `${fechaISO}T${hora || "00:00"}:00`
+        );
+
+
+    if (
+        isNaN(
+            fechaHora.getTime()
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    return fechaHora;
+
+}
+
+
+function obtenerIndiceEsquemaMasProximo(
+    grupos
+) {
+
+    if (
+        !Array.isArray(grupos) ||
+        !grupos.length
+    ) {
+
+        return 0;
+
+    }
+
+
+    const ahora =
+        new Date();
+
+
+    const indiceFuturo =
+        grupos.findIndex(
+            grupo => {
+
+                const fechaHora =
+                    obtenerFechaHoraEsquemaPublico(
+                        grupo
+                    );
+
+
+                return (
+                    fechaHora &&
+                    fechaHora >= ahora
+                );
+
+            }
+        );
+
+
+    if (
+        indiceFuturo >= 0
+    ) {
+
+        return indiceFuturo;
+
+    }
+
+
+    // Si ya no hay esquemas futuros, mostramos
+    // el último esquema válido en lugar del más antiguo.
+    for (
+        let i = grupos.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        if (
+            obtenerFechaHoraEsquemaPublico(
+                grupos[i]
+            )
+        ) {
+
+            return i;
+
+        }
+
+    }
+
+
+    return 0;
+
+}
+
+
+// ======================================================
+// ESQUEMAS PÚBLICOS
 // AGRUPADOS EN MEMORIA + CANTO CLICABLE
 // ======================================================
 
@@ -11283,6 +11414,10 @@ renderizarEsquemas =
                                 fecha:
                                     item.fecha,
 
+                                fechaISO:
+                                    item.fechaISO ||
+                                    "",
+
                                 hora:
                                     item.hora,
 
@@ -11320,6 +11455,62 @@ renderizarEsquemas =
             v35EsquemasAgrupadosCache =
                 Array.from(
                     mapa.values()
+                )
+                .sort(
+                    (a, b) => {
+
+                        const fechaA =
+                            obtenerFechaHoraEsquemaPublico(
+                                a
+                            );
+
+
+                        const fechaB =
+                            obtenerFechaHoraEsquemaPublico(
+                                b
+                            );
+
+
+                        if (
+                            fechaA &&
+                            fechaB
+                        ) {
+
+                            return (
+                                fechaA.getTime() -
+                                fechaB.getTime()
+                            );
+
+                        }
+
+
+                        if (fechaA) {
+
+                            return -1;
+
+                        }
+
+
+                        if (fechaB) {
+
+                            return 1;
+
+                        }
+
+
+                        return 0;
+
+                    }
+                );
+
+
+            // Cada vez que llega una versión nueva de los datos,
+            // iniciamos en el esquema futuro más cercano a hoy.
+            // Las flechas siguen funcionando porque al navegar
+            // renderizamos usando la misma fuente en memoria.
+            indiceEsquema =
+                obtenerIndiceEsquemaMasProximo(
+                    v35EsquemasAgrupadosCache
                 );
 
 
@@ -11334,6 +11525,9 @@ renderizarEsquemas =
 
                             fecha:
                                 grupo.fecha,
+
+                            fechaISO:
+                                grupo.fechaISO,
 
                             hora:
                                 grupo.hora,
@@ -13923,6 +14117,151 @@ let appCorusFirebaseServiceWorker =
 let appCorusFirebaseInicializando =
     null;
 
+let appCorusFirebaseForegroundListenerRegistrado =
+    false;
+
+
+// ======================================================
+// RECIBIR PUSH CUANDO APPCORUS ESTÁ ABIERTA
+// ======================================================
+//
+// FCM no muestra automáticamente una notificación del
+// sistema cuando la página está en primer plano.
+// Este listener recibe el mensaje y utiliza el Service
+// Worker para mostrarlo como una notificación real.
+// ======================================================
+
+function registrarRecepcionPushPrimerPlanoAppCorus() {
+
+    if (
+        !appCorusFirebaseMessaging ||
+        appCorusFirebaseForegroundListenerRegistrado
+    ) {
+
+        return;
+
+    }
+
+
+    appCorusFirebaseForegroundListenerRegistrado =
+        true;
+
+
+    appCorusFirebaseMessaging.onMessage(
+
+        async payload => {
+
+            console.log(
+                "🔔 Push recibido con AppCorus abierta:",
+                payload
+            );
+
+
+            try {
+
+                if (
+                    !("Notification" in window) ||
+                    Notification.permission !==
+                        "granted"
+                ) {
+
+                    return;
+
+                }
+
+
+                const titulo =
+                    payload?.notification?.title ||
+                    payload?.data?.title ||
+                    "AppCorus";
+
+
+                const cuerpo =
+                    payload?.notification?.body ||
+                    payload?.data?.body ||
+                    "Tienes una nueva notificación.";
+
+
+                const registro =
+                    appCorusFirebaseServiceWorker ||
+                    await navigator.serviceWorker.ready;
+
+
+                const idEvento =
+                    String(
+                        payload?.data?.idEvento ||
+                        ""
+                    )
+                    .trim();
+
+
+                const tipo =
+                    String(
+                        payload?.data?.tipo ||
+                        "push"
+                    )
+                    .trim();
+
+
+                await registro.showNotification(
+
+                    titulo,
+
+                    {
+
+                        body:
+                            cuerpo,
+
+                        icon:
+                            "https://iaonnes.github.io/app-coro-alianza/assets/IconAppCorus.png",
+
+                        badge:
+                            "https://iaonnes.github.io/app-coro-alianza/assets/IconAppCorus.png",
+
+                        tag:
+                            idEvento
+                                ? `appcorus-${tipo}-${idEvento}`
+                                : `appcorus-${tipo}`,
+
+                        data:
+                            {
+
+                                url:
+                                    "https://iaonnes.github.io/app-coro-alianza/",
+
+                                tipo:
+                                    tipo,
+
+                                idEvento:
+                                    idEvento
+
+                            }
+
+                    }
+
+                );
+
+
+                console.log(
+                    "✅ Notificación mostrada con AppCorus abierta"
+                );
+
+
+            } catch(error) {
+
+                console.error(
+                    "❌ Error mostrando push en primer plano:",
+                    error
+                );
+
+            }
+
+        }
+
+    );
+
+}
+
 
 // ======================================================
 // REGISTRAR TOKEN PUSH EN BACKEND
@@ -14188,6 +14527,11 @@ async function inicializarFirebaseAppCorus() {
                     console.log(
                         "✅ Firebase Messaging inicializado en AppCorus"
                     );
+
+
+                    // Recibir mensajes también cuando AppCorus
+                    // está abierta en primer plano.
+                    registrarRecepcionPushPrimerPlanoAppCorus();
 
 
                     // Si el usuario ya había autorizado notificaciones,
@@ -14724,6 +15068,6 @@ if (
 
 
 console.log(
-    "✅ AppCorus V3.6 - Firebase Push listo"
+    "✅ AppCorus V3.6 - Firebase Push listo (foreground + background)"
 );
 
