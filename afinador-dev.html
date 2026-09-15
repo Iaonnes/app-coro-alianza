@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Afinador - AppCorus
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 16px;
+
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #eef6ff 0%,
+                    #f8fbff 100%
+                );
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            color: #172033;
+        }
+
+        .afinador {
+            width: 100%;
+            max-width: 460px;
+
+            margin-top: 20px;
+
+            background: white;
+
+            border-radius: 28px;
+
+            padding: 26px 20px 30px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(15, 23, 42, .12);
+
+            text-align: center;
+        }
+
+        .afinador-titulo {
+            margin: 0;
+
+            color: #1565c0;
+
+            font-size: 1.6rem;
+        }
+
+        .afinador-subtitulo {
+            margin:
+                7px
+                0
+                28px;
+
+            color: #718096;
+
+            font-size: .9rem;
+        }
+
+        .afinador-nota {
+            min-height: 120px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 6rem;
+            font-weight: 800;
+
+            line-height: 1;
+
+            color: #172033;
+        }
+
+        .afinador-frecuencia {
+            margin-top: 4px;
+
+            font-size: 1.1rem;
+
+            color: #607086;
+        }
+
+        .afinador-medidor {
+            position: relative;
+
+            height: 70px;
+
+            margin:
+                34px
+                10px
+                10px;
+        }
+
+        .afinador-linea {
+            position: absolute;
+
+            left: 0;
+            right: 0;
+
+            top: 25px;
+
+            height: 5px;
+
+            border-radius: 999px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #ef5350,
+                    #ffca28,
+                    #43a047,
+                    #ffca28,
+                    #ef5350
+                );
+        }
+
+        .afinador-centro {
+            position: absolute;
+
+            left: 50%;
+            top: 15px;
+
+            width: 3px;
+            height: 25px;
+
+            background: #172033;
+
+            transform:
+                translateX(-50%);
+        }
+
+        .afinador-aguja {
+            position: absolute;
+
+            left: 50%;
+            top: 12px;
+
+            width: 18px;
+            height: 18px;
+
+            border-radius: 50%;
+
+            background: #1565c0;
+
+            box-shadow:
+                0 3px 10px
+                rgba(21, 101, 192, .35);
+
+            transform:
+                translateX(-50%);
+
+            transition:
+                left .12s ease;
+        }
+
+        .afinador-extremos {
+            position: absolute;
+
+            left: 0;
+            right: 0;
+
+            top: 42px;
+
+            display: flex;
+            justify-content: space-between;
+
+            color: #718096;
+
+            font-size: .9rem;
+            font-weight: 700;
+        }
+
+        .afinador-cents {
+            margin-top: 2px;
+
+            font-size: 1.05rem;
+
+            font-weight: 700;
+
+            color: #526273;
+        }
+
+        .afinador-estado {
+            margin:
+                18px
+                auto
+                22px;
+
+            min-height: 26px;
+
+            font-weight: 700;
+
+            color: #66788a;
+        }
+
+        .afinador-boton {
+            width: 100%;
+
+            min-height: 52px;
+
+            border: 0;
+            border-radius: 16px;
+
+            background: #1976d2;
+
+            color: white;
+
+            font-size: 1rem;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 7px 18px
+                rgba(25, 118, 210, .25);
+        }
+
+        .afinador-boton:active {
+            transform:
+                scale(.98);
+        }
+
+        .afinador-ayuda {
+            margin-top: 18px;
+
+            color: #8291a6;
+
+            font-size: .82rem;
+
+            line-height: 1.5;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <main class="afinador">
+
+        <h1 class="afinador-titulo">
+            🎵 Afinador
+        </h1>
+
+        <p class="afinador-subtitulo">
+            Afinador cromático AppCorus
+        </p>
+
+
+        <div
+            id="afinadorNota"
+            class="afinador-nota">
+
+            —
+
+        </div>
+
+
+        <div
+            id="afinadorFrecuencia"
+            class="afinador-frecuencia">
+
+            -- Hz
+
+        </div>
+
+
+        <div class="afinador-medidor">
+
+            <div class="afinador-linea"></div>
+
+            <div class="afinador-centro"></div>
+
+            <div
+                id="afinadorAguja"
+                class="afinador-aguja">
+            </div>
+
+            <div class="afinador-extremos">
+
+                <span>
+                    ♭ Grave
+                </span>
+
+                <span>
+                    Agudo ♯
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="afinadorCents"
+            class="afinador-cents">
+
+            0 cents
+
+        </div>
+
+
+        <div
+            id="afinadorEstado"
+            class="afinador-estado">
+
+            Afinador detenido
+
+        </div>
+
+
+        <button
+            id="btnAfinador"
+            class="afinador-boton"
+            type="button">
+
+            🎤 Iniciar afinador
+
+        </button>
+
+
+        <div class="afinador-ayuda">
+
+            Toca o canta una nota cerca del micrófono.
+            <br>
+            La referencia inicial será
+            <strong>A4 = 440 Hz</strong>.
+
+        </div>
+
+    </main>
+
+
+    <script src="js/afinador.js"></script>
+
+</body>
+
+</html>

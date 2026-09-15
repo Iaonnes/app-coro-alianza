@@ -20,8 +20,8 @@ const GOOGLE_CLIENT_ID =
 
 const APPCORUS_VERSION = {
     major: 3,
-    minor: 5,
-    patch: 0
+    minor: 6,
+    patch: 1
 };
 
 function obtenerVersionAppCorus() {
@@ -7290,7 +7290,18 @@ async function eliminarEsquemaAdmin(
 // ======================================================
 
 function mostrarSeccion(id) {
+    // ==================================================
+    // APAGAR AFINADOR AL SALIR DE SU SECCIÓN
+    // ==================================================
 
+    if (
+        id !== "afinador" &&
+        typeof detenerAfinador === "function"
+    ) {
+
+        detenerAfinador();
+
+    }
     // ==========================================
     // CAMBIAR SECCIÓN VISIBLE
     // ==========================================

@@ -208,7 +208,114 @@
 
         </section>
 
+        <!-- =====================================================
+             AFINADOR
+        ====================================================== -->
 
+        <section
+            id="afinador"
+            class="seccion">
+
+            <div class="afinador">
+
+                <h2 class="afinador-titulo">
+                    🎵 Afinador
+                </h2>
+
+                <p class="afinador-subtitulo">
+                    Afinador cromático AppCorus
+                </p>
+
+
+                <div
+                    id="afinadorNota"
+                    class="afinador-nota">
+
+                    —
+
+                </div>
+
+
+                <div
+                    id="afinadorFrecuencia"
+                    class="afinador-frecuencia">
+
+                    -- Hz
+
+                </div>
+
+
+                <div class="afinador-medidor">
+
+                    <div class="afinador-linea"></div>
+
+                    <div class="afinador-centro"></div>
+
+                    <div
+                        id="afinadorAguja"
+                        class="afinador-aguja">
+                    </div>
+
+
+                    <div class="afinador-extremos">
+
+                        <span>
+                            ♭ Grave
+                        </span>
+
+                        <span>
+                            Agudo ♯
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="afinadorCents"
+                    class="afinador-cents">
+
+                    0 cents
+
+                </div>
+
+
+                <div
+                    id="afinadorEstado"
+                    class="afinador-estado">
+
+                    Afinador detenido
+
+                </div>
+
+
+                <button
+                    id="btnAfinador"
+                    class="afinador-boton"
+                    type="button">
+
+                    🎤 Iniciar afinador
+
+                </button>
+
+
+                <div class="afinador-ayuda">
+
+                    Toca o canta una nota cerca del micrófono.
+
+                    <br>
+
+                    Referencia:
+                    <strong>
+                        A4 = 440 Hz
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
 
         <!-- =================================================
              CANTOS
@@ -366,6 +473,30 @@
 
             </button>
 
+            <!-- AFINADOR -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="afinador"
+                onclick="mostrarSeccion('afinador')"
+                aria-label="Afinador">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <!-- Diapasón -->
+                    <path d="M8 3v6"/>
+                    <path d="M16 3v6"/>
+                    <path d="M8 9c0 3 2 5 4 5s4-2 4-5"/>
+                    <path d="M12 14v7"/>
+
+                </svg>
+
+                <span>Afinador</span>
+
+            </button>
 
             <!-- CALENDARIO -->
             <button
@@ -447,6 +578,7 @@
         <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-messaging-compat.js"></script>
 
         <script src="js/boot.js"></script>
+        <script src="js/afinador.js"></script>
 
 
 </body>
