@@ -1,0 +1,13 @@
+{
+  "name": "AppCorus",
+  "short_name": "AppCorus",
+  "start_url": "./",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "assets/logoAppCorus.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -3768,14 +3768,13 @@ header .app-version span,
 }
 /* =========================================================
    APPCORUS - AFINADOR
-   Ajuste visual del medidor.
-   Se conserva la estructura HTML y la lógica existente.
 ========================================================= */
 
 #afinador{
     max-width:900px;
     margin:auto;
 }
+
 
 .afinador{
     width:100%;
@@ -3801,95 +3800,121 @@ header .app-version span,
     text-align:center;
 }
 
+
 .afinador-titulo{
     margin:0;
+
     color:#1565c0;
+
     font-size:1.6rem;
 }
+
 
 .afinador-subtitulo{
     margin:
         7px
         0
-        22px;
+        28px;
 
     color:#718096;
+
     font-size:.9rem;
 }
 
+
 .afinador-nota{
-    min-height:98px;
+    min-height:120px;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
-    font-size:4.95rem;
-    letter-spacing:-.05em;
-    font-family:"Segoe UI", Arial, Helvetica, sans-serif;
+    font-size:6rem;
     font-weight:800;
+
     line-height:1;
 
     color:#172033;
 }
 
+
 .afinador-frecuencia{
     margin-top:4px;
+
     font-size:1.1rem;
+
     color:#607086;
 }
+
 
 .afinador-medidor{
     position:relative;
 
-    width:100%;
-    height:198px;
+    height:70px;
 
     margin:
-        6px auto
-        4px;
-
-    overflow:visible;
+        34px
+        10px
+        10px;
 }
+
 
 .afinador-linea{
     position:absolute;
 
-    left:50%;
-    bottom:40px;
+    left:0;
+    right:0;
 
-    width:min(100%, 370px);
-    height:158px;
+    top:25px;
 
-    transform:translateX(-50%);
+    height:5px;
 
-    /*
-       Escala más abierta y limpia.
-       Solo cambia la presentación; el JS conserva su rango actual.
-    */
-    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20360%20170%22%3E%3Cline%20x1%3D%2273.9%22%20y1%3D%2266.9%22%20x2%3D%2295.1%22%20y2%3D%2284.6%22%20stroke%3D%22%23ff3045%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2283.6%22%20y1%3D%2259.5%22%20x2%3D%22102.9%22%20y2%3D%2278.6%22%20stroke%3D%22%23ff3045%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2294.0%22%20y1%3D%2252.8%22%20x2%3D%22111.2%22%20y2%3D%2273.3%22%20stroke%3D%22%23ff3045%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22105.0%22%20y1%3D%2246.9%22%20x2%3D%22120.0%22%20y2%3D%2268.5%22%20stroke%3D%22%23ff8a00%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22116.6%22%20y1%3D%2241.8%22%20x2%3D%22129.3%22%20y2%3D%2264.5%22%20stroke%3D%22%23ff8a00%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22128.7%22%20y1%3D%2237.6%22%20x2%3D%22139.0%22%20y2%3D%2261.1%22%20stroke%3D%22%23ffd000%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22141.2%22%20y1%3D%2234.3%22%20x2%3D%22148.9%22%20y2%3D%2258.4%22%20stroke%3D%22%23ffd000%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22154.0%22%20y1%3D%2231.9%22%20x2%3D%22159.2%22%20y2%3D%2256.5%22%20stroke%3D%22%2335d520%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22166.9%22%20y1%3D%2230.5%22%20x2%3D%22169.5%22%20y2%3D%2255.4%22%20stroke%3D%22%2335d520%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22180.0%22%20y1%3D%2224.0%22%20x2%3D%22180.0%22%20y2%3D%2260.0%22%20stroke%3D%22%2335d520%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22193.1%22%20y1%3D%2230.5%22%20x2%3D%22190.5%22%20y2%3D%2255.4%22%20stroke%3D%22%2335d520%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22206.0%22%20y1%3D%2231.9%22%20x2%3D%22200.8%22%20y2%3D%2256.5%22%20stroke%3D%22%2335d520%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22218.8%22%20y1%3D%2234.3%22%20x2%3D%22211.1%22%20y2%3D%2258.4%22%20stroke%3D%22%23ffd000%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22231.3%22%20y1%3D%2237.6%22%20x2%3D%22221.0%22%20y2%3D%2261.1%22%20stroke%3D%22%23ffd000%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22243.4%22%20y1%3D%2241.8%22%20x2%3D%22230.7%22%20y2%3D%2264.5%22%20stroke%3D%22%23ff8a00%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22255.0%22%20y1%3D%2246.9%22%20x2%3D%22240.0%22%20y2%3D%2268.5%22%20stroke%3D%22%23ff8a00%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22266.0%22%20y1%3D%2252.8%22%20x2%3D%22248.8%22%20y2%3D%2273.3%22%20stroke%3D%22%23ff3045%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22276.4%22%20y1%3D%2259.5%22%20x2%3D%22257.1%22%20y2%3D%2278.6%22%20stroke%3D%22%23ff3045%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22286.1%22%20y1%3D%2266.9%22%20x2%3D%22264.9%22%20y2%3D%2284.6%22%20stroke%3D%22%23ff3045%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat:no-repeat;
-    background-position:center;
-    background-size:100% 100%;
+    border-radius:999px;
 
-    pointer-events:none;
-    z-index:1;
+    background:
+        linear-gradient(
+            90deg,
+            #ef5350,
+            #ffca28,
+            #43a047,
+            #ffca28,
+            #ef5350
+        );
 }
+
 
 .afinador-centro{
-    display:none;
+    position:absolute;
+
+    left:50%;
+    top:15px;
+
+    width:3px;
+    height:25px;
+
+    background:#172033;
+
+    transform:
+        translateX(-50%);
 }
+
 
 .afinador-aguja{
     position:absolute;
 
     left:50%;
-    bottom:42px;
+    bottom:14px;
 
-    width:16px;
-    height:98px;
+    width:4px;
+    height:58px;
 
-    background:transparent;
+    border-radius:999px 999px 2px 2px;
+
+    background:#1565c0;
+
+    box-shadow:
+        0 2px 5px
+        rgba(21,101,192,.35);
 
     transform-origin:
         50% 100%;
@@ -3904,43 +3929,30 @@ header .app-version span,
     z-index:3;
 }
 
-/* cuerpo afilado de la aguja */
+
+/* Punta de la aguja */
+
 .afinador-aguja::before{
     content:"";
 
     position:absolute;
 
+    top:-7px;
     left:50%;
-    bottom:0;
 
-    width:11px;
-    height:98px;
+    width:0;
+    height:0;
+
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-bottom:12px solid #1565c0;
 
     transform:
         translateX(-50%);
-
-    background:
-        linear-gradient(
-            90deg,
-            #0d47a1 0%,
-            #2196f3 48%,
-            #0d6fd1 100%
-        );
-
-    clip-path:
-        polygon(
-            50% 0%,
-            92% 100%,
-            8% 100%
-        );
-
-    filter:
-        drop-shadow(
-            0 2px 2px
-            rgba(21,101,192,.24)
-        );
 }
 
+
+/* Eje central */
 
 .afinador-aguja::after{
     content:"";
@@ -3948,33 +3960,33 @@ header .app-version span,
     position:absolute;
 
     left:50%;
-    bottom:-7px;
+    bottom:-8px;
 
-    width:12px;
-    height:12px;
+    width:17px;
+    height:17px;
 
     border-radius:50%;
 
     background:#1565c0;
 
-    border:2px solid white;
+    border:4px solid white;
 
     box-shadow:
-        0 1px 4px
-        rgba(0,0,0,.18);
+        0 2px 6px
+        rgba(0,0,0,.25);
 
     transform:
         translateX(-50%);
-
-    z-index:4;
 }
+
 
 .afinador-extremos{
     position:absolute;
 
     left:0;
     right:0;
-    bottom:23px;
+
+    top:42px;
 
     display:flex;
     justify-content:space-between;
@@ -3982,12 +3994,9 @@ header .app-version span,
     color:#718096;
 
     font-size:.9rem;
-    font-weight:800;
-    letter-spacing:.01em;
-
-    transition:
-        color .18s ease;
+    font-weight:700;
 }
+
 
 .afinador-cents{
     margin-top:2px;
@@ -3998,10 +4007,11 @@ header .app-version span,
     color:#526273;
 }
 
+
 .afinador-estado{
     margin:
-        20px auto
-        20px;
+        18px auto
+        22px;
 
     min-height:26px;
 
@@ -4010,10 +4020,11 @@ header .app-version span,
     color:#66788a;
 }
 
+
 .afinador-boton{
     width:100%;
 
-    min-height:56px;
+    min-height:52px;
 
     border:0;
     border-radius:16px;
@@ -4034,10 +4045,12 @@ header .app-version span,
         rgba(25,118,210,.25);
 }
 
+
 .afinador-boton:active{
     transform:
         scale(.98);
 }
+
 
 .afinador-ayuda{
     margin-top:18px;
@@ -4045,8 +4058,10 @@ header .app-version span,
     color:#8291a6;
 
     font-size:.82rem;
+
     line-height:1.5;
 }
+
 
 @media(max-width:600px){
 
@@ -4061,36 +4076,11 @@ header .app-version span,
         border-radius:22px;
     }
 
+
     .afinador-nota{
-        font-size:4.6rem;
-        min-height:90px;
-        letter-spacing:-.05em;
+        font-size:5rem;
+
+        min-height:105px;
     }
 
-    .afinador-medidor{
-        height:188px;
-    }
-
-    .afinador-linea{
-        width:min(98%, 350px);
-        height:152px;
-        bottom:40px;
-    }
-
-    .afinador-aguja{
-        bottom:42px;
-        height:91px;
-        width:16px;
-    }
-
-    .afinador-aguja::before{
-        height:91px;
-        width:10px;
-    }
-
-    .afinador-extremos{
-        bottom:23px;
-        font-size:.9rem;
-        font-weight:800;
-    }
 }

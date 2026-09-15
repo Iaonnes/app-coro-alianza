@@ -11,15 +11,10 @@ let afinadorAnalizador = null;
 let afinadorFuente = null;
 let afinadorAnimacion = null;
 let afinadorBuffer = null;
-let historialFrecuencias = [];
-let ultimaDeteccionAfinador = 0;
 
-/*
-   Suavizado visual del afinador.
-   No cambia el detector de frecuencia ni el acceso al micrófono.
-*/
-let centsSuavizados = null;
-let afinacionEstable = false;
+let historialFrecuencias = [];
+
+let ultimaDeteccionAfinador = 0;
 
 
 // ======================================================
@@ -57,22 +52,6 @@ const elementoAguja =
     );
 
 
-/*
-   Indicadores laterales Grave / Agudo.
-   Usa el HTML actual; no requiere modificar el index.
-*/
-const etiquetasExtremos =
-    document.querySelectorAll(
-        ".afinador-extremos span"
-    );
-
-const etiquetaGrave =
-    etiquetasExtremos[0] || null;
-
-const etiquetaAgudo =
-    etiquetasExtremos[1] || null;
-
-
 // ======================================================
 // NOTAS
 // ======================================================
@@ -91,107 +70,6 @@ const NOMBRES_NOTAS = [
     "A♯",
     "B"
 ];
-
-
-// ======================================================
-// COLOR DE GRAVE / AGUDO
-// ======================================================
-
-function actualizarColorExtremos(
-    cents = null,
-    afinado = false
-) {
-
-    const neutro =
-        "#66758d";
-
-    const verde =
-        "#2e7d32";
-
-    const rojo =
-        "#e53935";
-
-    const naranja =
-        "#ef6c00";
-
-
-    if (etiquetaGrave) {
-
-        etiquetaGrave.style.color =
-            neutro;
-
-    }
-
-
-    if (etiquetaAgudo) {
-
-        etiquetaAgudo.style.color =
-            neutro;
-
-    }
-
-
-    if (afinado) {
-
-        if (etiquetaGrave) {
-
-            etiquetaGrave.style.color =
-                verde;
-
-        }
-
-
-        if (etiquetaAgudo) {
-
-            etiquetaAgudo.style.color =
-                verde;
-
-        }
-
-
-        return;
-
-    }
-
-
-    if (
-        cents === null ||
-        !Number.isFinite(cents)
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        cents < 0
-    ) {
-
-        if (etiquetaGrave) {
-
-            etiquetaGrave.style.color =
-                Math.abs(cents) > 15
-                    ? rojo
-                    : naranja;
-
-        }
-
-    }
-    else if (
-        cents > 0
-    ) {
-
-        if (etiquetaAgudo) {
-
-            etiquetaAgudo.style.color =
-                naranja;
-
-        }
-
-    }
-
-}
 
 
 // ======================================================
@@ -508,10 +386,6 @@ function reiniciarPantallaAfinador() {
     }
 
 
-    centsSuavizados = null;
-    afinacionEstable = false;
-
-
     if (elementoAguja) {
 
     elementoAguja.style.transform =
@@ -529,9 +403,6 @@ function reiniciarPantallaAfinador() {
             "#66788a";
 
     }
-
-
-    actualizarColorExtremos();
 
 }
 
@@ -630,16 +501,8 @@ function mostrarEsperandoNota() {
         "0 cents";
 
 
-    centsSuavizados = null;
-    afinacionEstable = false;
-
-
-    elementoAguja.style.transform =
-        "translateX(-50%) rotate(0deg)";
-
-
-    afinacionEstable =
-        false;
+    elementoAguja.style.left =
+        "50%";
 
 
     elementoNota.style.color =
@@ -652,9 +515,6 @@ function mostrarEsperandoNota() {
 
     elementoEstado.textContent =
         "Escuchando...";
-
-
-    actualizarColorExtremos();
 
 }
 
@@ -938,7 +798,7 @@ function estabilizarFrecuencia(
 
     if (
         historialFrecuencias.length >
-        9
+        5
     ) {
 
         historialFrecuencias.shift();
@@ -1032,51 +892,9 @@ function mostrarFrecuencia(
         );
 
 
-    /*
-       Filtro exponencial para que la aguja no persiga
-       cada microvariación instantánea de la afinación.
-       0.22 mantiene buena respuesta sin hacerla nerviosa.
-    */
-    if (
-        centsSuavizados === null
-    ) {
-
-        centsSuavizados =
-            cents;
-
-    }
-    else {
-
-        centsSuavizados +=
-            (
-                cents -
-                centsSuavizados
-            ) *
-            0.22;
-
-    }
-
-
-    /*
-       Pequeña zona muerta alrededor del centro.
-       Si ya estamos prácticamente afinados, la aguja
-       se queda en el centro en vez de temblar.
-    */
-    if (
-        Math.abs(
-            centsSuavizados
-        ) <= 2
-    ) {
-
-        centsSuavizados =
-            0;
-
-    }
-
-
     const centsRedondeados =
         Math.round(
-            centsSuavizados
+            cents
         );
 
 
@@ -1106,7 +924,7 @@ function mostrarFrecuencia(
             -50,
             Math.min(
                 50,
-                centsSuavizados
+                cents
             )
         );
 
@@ -1124,7 +942,7 @@ function mostrarFrecuencia(
 
 
     actualizarEstadoAfinacion(
-        centsSuavizados
+        cents
     );
 
 }
@@ -1144,20 +962,9 @@ function actualizarEstadoAfinacion(
         );
 
 
-    const limiteAfinado =
-        afinacionEstable
-            ? 8
-            : 5;
-
-
     if (
-        desviacion <=
-        limiteAfinado
+        desviacion <= 5
     ) {
-
-        afinacionEstable =
-            true;
-
 
         elementoEstado.textContent =
             "✓ Afinado";
@@ -1171,49 +978,27 @@ function actualizarEstadoAfinacion(
             "#2e7d32";
 
 
-        actualizarColorExtremos(
-            cents,
-            true
-        );
-
-
         return;
 
     }
-
-
-    afinacionEstable =
-        false;
 
 
     elementoNota.style.color =
         "#172033";
 
 
+    elementoEstado.style.color =
+        "#ef6c00";
+
+
     if (
         cents < 0
     ) {
 
-        if (
+        elementoEstado.textContent =
             desviacion <= 15
-        ) {
-
-            elementoEstado.textContent =
-                "Un poco grave";
-
-            elementoEstado.style.color =
-                "#ef6c00";
-
-        }
-        else {
-
-            elementoEstado.textContent =
-                "♭ Demasiado grave";
-
-            elementoEstado.style.color =
-                "#e53935";
-
-        }
+                ? "Un poco grave"
+                : "♭ Demasiado grave";
 
     }
     else {
@@ -1223,16 +1008,7 @@ function actualizarEstadoAfinacion(
                 ? "Un poco agudo"
                 : "Demasiado agudo ♯";
 
-        elementoEstado.style.color =
-            "#ef6c00";
-
     }
-
-
-    actualizarColorExtremos(
-        cents,
-        false
-    );
 
 }
 

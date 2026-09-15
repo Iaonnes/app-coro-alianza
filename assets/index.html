@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>AppCorus</title>
+
+
+    <!-- =========================
+         ESTILOS
+    ========================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css">
+
+
+    <!-- =========================
+         ICONOS DE LA APP
+    ========================== -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="assets/logoAppCorus.png">
+
+    <link
+        rel="apple-touch-icon"
+        href="assets/IconAppCorus.png">
+
+    <link
+        rel="manifest"
+        href="Manifest.json">
+
+
+    <!-- =========================
+         GOOGLE LOGIN
+    ========================== -->
+
+    <script
+        src="https://accounts.google.com/gsi/client"
+        async
+        defer>
+    </script>
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="app-header">
+
+
+        <!-- Decoración -->
+
+        <div
+            class="header-orbe header-orbe-1">
+        </div>
+
+        <div
+            class="header-orbe header-orbe-2">
+        </div>
+
+
+        <!-- ==============================================
+             ACCESO ADMINISTRACIÓN
+        =============================================== -->
+
+            <button
+                type="button"
+                class="btn-administracion"
+                onclick="abrirAccesoAdministracion()"
+                aria-label="Abrir administración"
+                title="Administración">
+
+                ⚙️
+
+            </button>
+
+        <!-- ==============================================
+             CONTENIDO HEADER
+        =============================================== -->
+
+        <div class="header-contenido">
+
+
+            <!-- LOGO -->
+
+            <div class="header-logo-box">
+
+                <img
+                    src="assets/logoAppCorus.png"
+                    class="logo"
+                    alt="AppCorus">
+
+            </div>
+
+
+            <!-- VERSIÓN DINÁMICA -->
+
+            <div
+                id="appVersion"
+                class="app-version">
+            </div>
+
+
+            <!-- IDENTIDAD DEL CORO -->
+
+            <div class="header-identidad">
+
+
+                <div class="header-titulo-linea">
+
+
+                    <span class="header-nota">
+                        ♪
+                    </span>
+
+
+                    <h1>
+                        Coro Nueva Alianza con Cristo
+                    </h1>
+
+
+                    <span class="header-nota">
+                        ♫
+                    </span>
+
+
+                </div>
+
+
+                <p class="header-lema">
+
+                    Ofreciendo nuestra juventud
+                    a través del canto.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+    </header>
+
+
+
+    <!-- =====================================================
+         CONTENIDO
+    ====================================================== -->
+
+    <main>
+
+
+        <!-- =================================================
+             INICIO
+        ================================================== -->
+
+        <section
+            id="inicio"
+            class="seccion activa">
+
+            <div id="inicioEventos"></div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CALENDARIO
+        ================================================== -->
+
+        <section
+            id="ensayos"
+            class="seccion">
+
+            <div id="calendarioEventos"></div>
+
+            <div id="detalleFecha"></div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             ESQUEMAS
+        ================================================== -->
+
+        <section
+            id="esquemas"
+            class="seccion">
+
+            <div id="listaEsquemas"></div>
+
+        </section>
+
+        <!-- =====================================================
+             AFINADOR
+        ====================================================== -->
+
+        <section
+            id="afinador"
+            class="seccion">
+
+            <div class="afinador">
+
+                <h2 class="afinador-titulo">
+                    🎵 Afinador
+                </h2>
+
+                <p class="afinador-subtitulo">
+                    Afinador cromático AppCorus
+                </p>
+
+
+                <div
+                    id="afinadorNota"
+                    class="afinador-nota">
+
+                    —
+
+                </div>
+
+
+                <div
+                    id="afinadorFrecuencia"
+                    class="afinador-frecuencia">
+
+                    -- Hz
+
+                </div>
+
+
+                <div class="afinador-medidor">
+
+                    <div class="afinador-linea"></div>
+
+                    <div class="afinador-centro"></div>
+
+                    <div
+                        id="afinadorAguja"
+                        class="afinador-aguja">
+                    </div>
+
+
+                    <div class="afinador-extremos">
+
+                        <span>
+                            ♭ Grave
+                        </span>
+
+                        <span>
+                            Agudo ♯
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="afinadorCents"
+                    class="afinador-cents">
+
+                    0 cents
+
+                </div>
+
+
+                <div
+                    id="afinadorEstado"
+                    class="afinador-estado">
+
+                    Afinador detenido
+
+                </div>
+
+
+                <button
+                    id="btnAfinador"
+                    class="afinador-boton"
+                    type="button">
+
+                    🎤 Iniciar afinador
+
+                </button>
+
+
+                <div class="afinador-ayuda">
+
+                    Toca o canta una nota cerca del micrófono.
+
+                    <br>
+
+                    Referencia:
+                    <strong>
+                        A4 = 440 Hz
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- =================================================
+             CANTOS
+        ================================================== -->
+
+        <section
+            id="cantos"
+            class="seccion">
+
+
+            <div class="cantos-encabezado">
+
+
+                <h2>
+                    🎵 Biblioteca de Cantos
+                </h2>
+
+
+                <p>
+                    Consulta las categorías
+                    de cantos del coro
+                </p>
+
+
+            </div>
+
+
+
+            <div
+                class="buscador cantos-buscador">
+
+
+                <span class="buscador-icono">
+                    🔎
+                </span>
+
+
+                <input
+                    type="text"
+                    id="buscarCanto"
+                    placeholder="Buscar categoría..."
+                    onkeyup="filtrarCantos()">
+
+
+            </div>
+
+
+            <ul id="listaCantos"></ul>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             ADMINISTRACIÓN
+        ================================================== -->
+
+        <section
+            id="administracion"
+            class="seccion">
+
+
+            <div class="admin-acceso">
+
+
+                <div class="admin-icono">
+                    🔐
+                </div>
+
+
+                <h2>
+                    Administración
+                </h2>
+
+
+                <p>
+
+                    Inicia sesión con una cuenta autorizada
+                    para administrar AppCorus.
+
+                </p>
+
+
+                <div id="googleLoginButton"></div>
+
+
+                <div id="adminMensaje"></div>
+
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- =====================================================
+         NAVEGACIÓN INFERIOR
+    ====================================================== -->
+        <footer class="bottom-nav">
+
+            <!-- INICIO -->
+            <button
+                type="button"
+                class="nav-item activo"
+                data-seccion="inicio"
+                onclick="mostrarSeccion('inicio')"
+                aria-label="Inicio">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <path
+                        d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
+                </svg>
+
+                <span>Inicio</span>
+
+            </button>
+
+
+            <!-- ESQUEMAS -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="esquemas"
+                onclick="mostrarSeccion('esquemas')"
+                aria-label="Esquemas">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <path
+                        d="M4 4.5c3.2-.7 5.7-.1 8 1.7v14c-2.3-1.8-4.8-2.4-8-1.7z"/>
+
+                    <path
+                        d="M20 4.5c-3.2-.7-5.7-.1-8 1.7v14c2.3-1.8 4.8-2.4 8-1.7z"/>
+
+                    <path
+                        d="M15.5 8.5v5.1"/>
+
+                    <path
+                        d="M15.5 13.6c-.5-.3-1.2-.2-1.6.2-.4.4-.4 1 0 1.4.5.4 1.2.4 1.7 0 .3-.3.4-.8.3-1.2"/>
+                </svg>
+
+                <span>Esquemas</span>
+
+            </button>
+
+            <!-- AFINADOR -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="afinador"
+                onclick="mostrarSeccion('afinador')"
+                aria-label="Afinador">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <!-- Diapasón -->
+                    <path d="M8 3v6"/>
+                    <path d="M16 3v6"/>
+                    <path d="M8 9c0 3 2 5 4 5s4-2 4-5"/>
+                    <path d="M12 14v7"/>
+
+                </svg>
+
+                <span>Afinador</span>
+
+            </button>
+
+            <!-- CALENDARIO -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="ensayos"
+                onclick="mostrarSeccion('ensayos')"
+                aria-label="Calendario">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="16"
+                        rx="2"/>
+
+                    <path d="M7 3v4"/>
+                    <path d="M17 3v4"/>
+                    <path d="M3 10h18"/>
+
+                    <path d="M8 14h2"/>
+                    <path d="M14 14h2"/>
+                    <path d="M8 18h2"/>
+                    <path d="M14 18h2"/>
+                </svg>
+
+                <span>Calendario</span>
+
+            </button>
+
+
+            <!-- CANTOS -->
+            <button
+                type="button"
+                class="nav-item"
+                data-seccion="cantos"
+                onclick="mostrarSeccion('cantos')"
+                aria-label="Cantos">
+
+                <svg
+                    class="nav-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <path
+                        d="M9 18V6l10-2v12"/>
+
+                    <ellipse
+                        cx="6.5"
+                        cy="18"
+                        rx="2.5"
+                        ry="2"/>
+
+                    <ellipse
+                        cx="16.5"
+                        cy="16"
+                        rx="2.5"
+                        ry="2"/>
+                </svg>
+
+                <span>Cantos</span>
+
+            </button>
+
+</footer>
+
+
+
+    <!-- =====================================================
+         ARRANQUE APPCORUS
+    ====================================================== -->
+
+        <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-messaging-compat.js"></script>
+
+        <script src="js/boot.js"></script>
+        <script src="js/afinador.js"></script>
+
+
+</body>
+
+</html>
