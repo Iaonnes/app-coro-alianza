@@ -1,0 +1,6 @@
+# Credenciales privadas Firebase
+*-firebase-adminsdk-*.json
+
+# Credenciales / secretos
+service-account*.json
+credentials*.json
