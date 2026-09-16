@@ -21,6 +21,12 @@ let ultimaDeteccionAfinador = 0;
 let centsSuavizados = null;
 let afinacionEstable = false;
 
+/*
+   Limita únicamente la actualización visual de la aguja y lecturas.
+   El análisis del micrófono sigue ejecutándose normalmente.
+*/
+let ultimaActualizacionVisualAfinador = 0;
+
 
 // ======================================================
 // ELEMENTOS
@@ -510,6 +516,7 @@ function reiniciarPantallaAfinador() {
 
     centsSuavizados = null;
     afinacionEstable = false;
+    ultimaActualizacionVisualAfinador = 0;
 
 
     if (elementoAguja) {
@@ -632,6 +639,7 @@ function mostrarEsperandoNota() {
 
     centsSuavizados = null;
     afinacionEstable = false;
+    ultimaActualizacionVisualAfinador = 0;
 
 
     elementoAguja.style.transform =
@@ -938,7 +946,7 @@ function estabilizarFrecuencia(
 
     if (
         historialFrecuencias.length >
-        9
+        13
     ) {
 
         historialFrecuencias.shift();
@@ -975,6 +983,29 @@ function estabilizarFrecuencia(
 function mostrarFrecuencia(
     frecuencia
 ) {
+
+    const ahoraVisual =
+        performance.now();
+
+
+    /*
+       Evita que la interfaz intente redibujarse ~60 veces por segundo.
+       El audio sigue analizándose continuamente; solo la aguja y
+       los textos se actualizan a un ritmo más fácil de leer.
+    */
+    if (
+        ahoraVisual -
+        ultimaActualizacionVisualAfinador <
+        90
+    ) {
+
+        return;
+
+    }
+
+
+    ultimaActualizacionVisualAfinador =
+        ahoraVisual;
 
     const midi =
         Math.round(
@@ -1035,7 +1066,7 @@ function mostrarFrecuencia(
     /*
        Filtro exponencial para que la aguja no persiga
        cada microvariación instantánea de la afinación.
-       0.22 mantiene buena respuesta sin hacerla nerviosa.
+       0.12 prioriza estabilidad visual sin volver lenta la afinación.
     */
     if (
         centsSuavizados === null
@@ -1052,7 +1083,7 @@ function mostrarFrecuencia(
                 cents -
                 centsSuavizados
             ) *
-            0.22;
+            0.12;
 
     }
 
@@ -1065,7 +1096,7 @@ function mostrarFrecuencia(
     if (
         Math.abs(
             centsSuavizados
-        ) <= 2
+        ) <= 3
     ) {
 
         centsSuavizados =
@@ -1146,7 +1177,7 @@ function actualizarEstadoAfinacion(
 
     const limiteAfinado =
         afinacionEstable
-            ? 8
+            ? 9
             : 5;
 
 
