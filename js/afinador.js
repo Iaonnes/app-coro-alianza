@@ -1,6 +1,6 @@
 // ======================================================
 // APPCORUS
-// AFINADOR CROMÁTICO V1
+// AFINADOR CROMÁTICO V2 - MOTOR YIN
 // ======================================================
 
 let afinadorActivo = false;
@@ -13,19 +13,19 @@ let afinadorAnimacion = null;
 let afinadorBuffer = null;
 let historialFrecuencias = [];
 let ultimaDeteccionAfinador = 0;
+let ultimaAnalisisAfinador = 0;
+
+let midiActualAfinador = null;
+let midiCandidatoAfinador = null;
+let repeticionesMidiCandidato = 0;
+let ultimaFrecuenciaAceptada = null;
 
 /*
-   Suavizado visual del afinador.
-   No cambia el detector de frecuencia ni el acceso al micrófono.
+   Suavizado visual ligero.
+   La precisión principal ahora la aporta el detector YIN.
 */
 let centsSuavizados = null;
 let afinacionEstable = false;
-
-/*
-   Limita únicamente la actualización visual de la aguja y lecturas.
-   El análisis del micrófono sigue ejecutándose normalmente.
-*/
-let ultimaActualizacionVisualAfinador = 0;
 
 
 // ======================================================
@@ -97,6 +97,33 @@ const NOMBRES_NOTAS = [
     "A♯",
     "B"
 ];
+
+
+// ======================================================
+// REFERENCIA YIN / AFINACIÓN
+// ======================================================
+
+const FRECUENCIA_A4 =
+    440;
+
+const FRECUENCIA_MIN_AFINADOR =
+    55;
+
+const FRECUENCIA_MAX_AFINADOR =
+    1200;
+
+const UMBRAL_YIN =
+    0.15;
+
+const CONFIANZA_MINIMA_YIN =
+    0.85;
+
+/*
+   Ejecutar YIN unas 14 veces por segundo es suficiente para un afinador
+   y evita cargar innecesariamente el teléfono.
+*/
+const INTERVALO_ANALISIS_MS =
+    70;
 
 
 // ======================================================
@@ -335,6 +362,27 @@ async function iniciarAfinador() {
         ultimaDeteccionAfinador =
             0;
 
+        ultimaAnalisisAfinador =
+            0;
+
+        midiActualAfinador =
+            null;
+
+        midiCandidatoAfinador =
+            null;
+
+        repeticionesMidiCandidato =
+            0;
+
+        ultimaFrecuenciaAceptada =
+            null;
+
+        centsSuavizados =
+            null;
+
+        afinacionEstable =
+            false;
+
 
         btnAfinador.textContent =
             "■ Detener afinador";
@@ -467,6 +515,21 @@ function detenerAfinador() {
     ultimaDeteccionAfinador =
         0;
 
+    ultimaAnalisisAfinador =
+        0;
+
+    midiActualAfinador =
+        null;
+
+    midiCandidatoAfinador =
+        null;
+
+    repeticionesMidiCandidato =
+        0;
+
+    ultimaFrecuenciaAceptada =
+        null;
+
 
     if (btnAfinador) {
 
@@ -516,7 +579,13 @@ function reiniciarPantallaAfinador() {
 
     centsSuavizados = null;
     afinacionEstable = false;
-    ultimaActualizacionVisualAfinador = 0;
+    ultimaAnalisisAfinador = 0;
+
+    historialFrecuencias = [];
+    midiActualAfinador = null;
+    midiCandidatoAfinador = null;
+    repeticionesMidiCandidato = 0;
+    ultimaFrecuenciaAceptada = null;
 
 
     if (elementoAguja) {
@@ -561,13 +630,37 @@ function procesarAfinador() {
     }
 
 
+    const ahora =
+        performance.now();
+
+
+    if (
+        ahora -
+        ultimaAnalisisAfinador <
+        INTERVALO_ANALISIS_MS
+    ) {
+
+        afinadorAnimacion =
+            requestAnimationFrame(
+                procesarAfinador
+            );
+
+        return;
+
+    }
+
+
+    ultimaAnalisisAfinador =
+        ahora;
+
+
     afinadorAnalizador
         .getFloatTimeDomainData(
             afinadorBuffer
         );
 
 
-    const frecuencia =
+    const deteccion =
         detectarFrecuencia(
             afinadorBuffer,
             afinadorAudioContext.sampleRate
@@ -575,9 +668,13 @@ function procesarAfinador() {
 
 
     if (
-        frecuencia &&
-        frecuencia >= 45 &&
-        frecuencia <= 2000
+        deteccion &&
+        deteccion.frecuencia >=
+            FRECUENCIA_MIN_AFINADOR &&
+        deteccion.frecuencia <=
+            FRECUENCIA_MAX_AFINADOR &&
+        deteccion.confianza >=
+            CONFIANZA_MINIMA_YIN
     ) {
 
         ultimaDeteccionAfinador =
@@ -586,13 +683,20 @@ function procesarAfinador() {
 
         const frecuenciaEstable =
             estabilizarFrecuencia(
-                frecuencia
+                deteccion.frecuencia,
+                deteccion.confianza
             );
 
 
-        mostrarFrecuencia(
+        if (
             frecuenciaEstable
-        );
+        ) {
+
+            mostrarFrecuencia(
+                frecuenciaEstable
+            );
+
+        }
 
     }
     else {
@@ -637,17 +741,30 @@ function mostrarEsperandoNota() {
         "0 cents";
 
 
-    centsSuavizados = null;
-    afinacionEstable = false;
-    ultimaActualizacionVisualAfinador = 0;
+    centsSuavizados =
+        null;
+
+    afinacionEstable =
+        false;
+
+    historialFrecuencias =
+        [];
+
+    midiActualAfinador =
+        null;
+
+    midiCandidatoAfinador =
+        null;
+
+    repeticionesMidiCandidato =
+        0;
+
+    ultimaFrecuenciaAceptada =
+        null;
 
 
     elementoAguja.style.transform =
         "translateX(-50%) rotate(0deg)";
-
-
-    afinacionEstable =
-        false;
 
 
     elementoNota.style.color =
@@ -669,7 +786,7 @@ function mostrarEsperandoNota() {
 
 // ======================================================
 // DETECTOR DE FRECUENCIA
-// AUTOCORRELACIÓN
+// YIN - FUNDAMENTAL MONOFÓNICA
 // ======================================================
 
 function detectarFrecuencia(
@@ -679,6 +796,45 @@ function detectarFrecuencia(
 
     const tamaño =
         buffer.length;
+
+
+    if (
+        tamaño < 256
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+       Quitar componente DC y comprobar que la señal tenga energía
+       suficiente antes de buscar periodicidad.
+    */
+    let media =
+        0;
+
+
+    for (
+        let i = 0;
+        i < tamaño;
+        i++
+    ) {
+
+        media +=
+            buffer[i];
+
+    }
+
+
+    media /=
+        tamaño;
+
+
+    const señal =
+        new Float32Array(
+            tamaño
+        );
 
 
     let sumaCuadrados =
@@ -691,9 +847,18 @@ function detectarFrecuencia(
         i++
     ) {
 
+        const valor =
+            buffer[i] -
+            media;
+
+
+        señal[i] =
+            valor;
+
+
         sumaCuadrados +=
-            buffer[i] *
-            buffer[i];
+            valor *
+            valor;
 
     }
 
@@ -714,55 +879,37 @@ function detectarFrecuencia(
     }
 
 
-    let inicio =
-        0;
-
-
-    let fin =
-        tamaño - 1;
-
-
-    const limite =
-        0.02;
-
-
-    while (
-        inicio < tamaño / 2 &&
-        Math.abs(
-            buffer[inicio]
-        ) < limite
-    ) {
-
-        inicio++;
-
-    }
-
-
-    while (
-        fin > tamaño / 2 &&
-        Math.abs(
-            buffer[fin]
-        ) < limite
-    ) {
-
-        fin--;
-
-    }
-
-
-    const señal =
-        buffer.slice(
-            inicio,
-            fin + 1
+    /*
+       tau = sampleRate / frecuencia.
+       Restringir tau al rango musical que realmente nos interesa
+       reduce falsos armónicos y trabajo de CPU.
+    */
+    const tauMin =
+        Math.max(
+            2,
+            Math.floor(
+                sampleRate /
+                FRECUENCIA_MAX_AFINADOR
+            )
         );
 
 
-    const longitud =
-        señal.length;
+    const tauMax =
+        Math.min(
+            Math.floor(
+                sampleRate /
+                FRECUENCIA_MIN_AFINADOR
+            ),
+            Math.floor(
+                tamaño /
+                2
+            )
+        );
 
 
     if (
-        longitud < 100
+        tauMax <=
+        tauMin
     ) {
 
         return null;
@@ -770,16 +917,37 @@ function detectarFrecuencia(
     }
 
 
-    const correlaciones =
-        new Float32Array(
-            longitud
+    /*
+       Paso 1 de YIN:
+       función de diferencia cuadrática.
+       Usamos una ventana de comparación fija para que todos los tau
+       se evalúen con el mismo número de muestras.
+    */
+    const ventanaComparacion =
+        tamaño -
+        tauMax;
+
+
+    if (
+        ventanaComparacion <
+        128
+    ) {
+
+        return null;
+
+    }
+
+
+    const diferencia =
+        new Float64Array(
+            tauMax + 1
         );
 
 
     for (
-        let desplazamiento = 0;
-        desplazamiento < longitud;
-        desplazamiento++
+        let tau = 1;
+        tau <= tauMax;
+        tau++
     ) {
 
         let suma =
@@ -788,75 +956,109 @@ function detectarFrecuencia(
 
         for (
             let i = 0;
-            i <
-            longitud -
-            desplazamiento;
+            i < ventanaComparacion;
             i++
         ) {
 
-            suma +=
-                señal[i] *
+            const delta =
+                señal[i] -
                 señal[
                     i +
-                    desplazamiento
+                    tau
                 ];
+
+
+            suma +=
+                delta *
+                delta;
 
         }
 
 
-        correlaciones[
-            desplazamiento
-        ] =
+        diferencia[tau] =
             suma;
 
     }
 
 
-    let desplazamiento =
+    /*
+       Paso 2:
+       cumulative mean normalized difference (CMND).
+       Un mínimo cercano a 0 indica una periodicidad fuerte.
+    */
+    const cmnd =
+        new Float64Array(
+            tauMax + 1
+        );
+
+
+    cmnd[0] =
+        1;
+
+
+    let sumaAcumulada =
         0;
 
 
-    while (
-        desplazamiento + 1 <
-        longitud &&
-        correlaciones[
-            desplazamiento
-        ] >
-        correlaciones[
-            desplazamiento + 1
-        ]
+    for (
+        let tau = 1;
+        tau <= tauMax;
+        tau++
     ) {
 
-        desplazamiento++;
+        sumaAcumulada +=
+            diferencia[tau];
+
+
+        cmnd[tau] =
+            sumaAcumulada > 0
+                ? (
+                    diferencia[tau] *
+                    tau
+                ) /
+                sumaAcumulada
+                : 1;
 
     }
 
 
-    let mejorDesplazamiento =
+    /*
+       Paso 3:
+       tomar el primer mínimo local que cruza el umbral.
+       Elegir el primero ayuda a evitar errores de subarmónicos.
+    */
+    let tauEstimado =
         -1;
 
 
-    let mejorCorrelacion =
-        -Infinity;
-
-
     for (
-        let i = desplazamiento;
-        i < longitud;
-        i++
+        let tau = tauMin;
+        tau <= tauMax;
+        tau++
     ) {
 
         if (
-            correlaciones[i] >
-            mejorCorrelacion
+            cmnd[tau] <
+            UMBRAL_YIN
         ) {
 
-            mejorCorrelacion =
-                correlaciones[i];
+            while (
+                tau + 1 <= tauMax &&
+                cmnd[
+                    tau + 1
+                ] <
+                cmnd[tau]
+            ) {
+
+                tau++;
+
+            }
 
 
-            mejorDesplazamiento =
-                i;
+            tauEstimado =
+                tau;
+
+            break;
 
         }
 
@@ -864,7 +1066,7 @@ function detectarFrecuencia(
 
 
     if (
-        mejorDesplazamiento <= 0
+        tauEstimado < 0
     ) {
 
         return null;
@@ -872,45 +1074,80 @@ function detectarFrecuencia(
     }
 
 
-    let periodo =
-        mejorDesplazamiento;
+    const confianza =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                1 -
+                cmnd[
+                    tauEstimado
+                ]
+            )
+        );
 
 
     if (
-        mejorDesplazamiento > 0 &&
-        mejorDesplazamiento <
-        longitud - 1
+        confianza <
+        CONFIANZA_MINIMA_YIN
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+       Paso 4:
+       interpolación parabólica alrededor del mínimo para obtener
+       un periodo fraccional y mejorar la precisión en cents.
+    */
+    let periodo =
+        tauEstimado;
+
+
+    if (
+        tauEstimado >
+            tauMin &&
+        tauEstimado <
+            tauMax
     ) {
 
         const izquierda =
-            correlaciones[
-                mejorDesplazamiento - 1
+            cmnd[
+                tauEstimado -
+                1
             ];
 
 
         const centro =
-            correlaciones[
-                mejorDesplazamiento
+            cmnd[
+                tauEstimado
             ];
 
 
         const derecha =
-            correlaciones[
-                mejorDesplazamiento + 1
+            cmnd[
+                tauEstimado +
+                1
             ];
 
 
         const denominador =
             izquierda -
-            2 * centro +
+            2 *
+            centro +
             derecha;
 
 
         if (
-            denominador !== 0
+            Math.abs(
+                denominador
+            ) >
+            1e-12
         ) {
 
-            periodo +=
+            const correccion =
                 0.5 *
                 (
                     izquierda -
@@ -918,15 +1155,45 @@ function detectarFrecuencia(
                 ) /
                 denominador;
 
+
+            if (
+                Math.abs(
+                    correccion
+                ) <= 1
+            ) {
+
+                periodo +=
+                    correccion;
+
+            }
+
         }
 
     }
 
 
-    return (
+    const frecuencia =
         sampleRate /
-        periodo
-    );
+        periodo;
+
+
+    if (
+        !Number.isFinite(
+            frecuencia
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        frecuencia,
+        confianza
+
+    };
 
 }
 
@@ -936,17 +1203,126 @@ function detectarFrecuencia(
 // ======================================================
 
 function estabilizarFrecuencia(
-    frecuencia
+    frecuencia,
+    confianza
 ) {
+
+    const midiDetectado =
+        Math.round(
+
+            69 +
+            12 *
+            Math.log2(
+                frecuencia /
+                FRECUENCIA_A4
+            )
+
+        );
+
+
+    /*
+       Evita que un armónico aislado cambie la nota en pantalla.
+       Un cambio real se confirma con dos lecturas consecutivas.
+       Si YIN viene con una confianza excepcional, se permite
+       el cambio inmediato.
+    */
+    if (
+        midiActualAfinador ===
+        null
+    ) {
+
+        midiActualAfinador =
+            midiDetectado;
+
+        historialFrecuencias =
+            [];
+
+    }
+    else if (
+        midiDetectado !==
+        midiActualAfinador
+    ) {
+
+        if (
+            midiCandidatoAfinador ===
+            midiDetectado
+        ) {
+
+            repeticionesMidiCandidato++;
+
+        }
+        else {
+
+            midiCandidatoAfinador =
+                midiDetectado;
+
+            repeticionesMidiCandidato =
+                1;
+
+        }
+
+
+        const cambioConfirmado =
+            repeticionesMidiCandidato >=
+                2 ||
+            confianza >=
+                0.97;
+
+
+        if (
+            !cambioConfirmado
+        ) {
+
+            return (
+                ultimaFrecuenciaAceptada ||
+                null
+            );
+
+        }
+
+
+        midiActualAfinador =
+            midiDetectado;
+
+        midiCandidatoAfinador =
+            null;
+
+        repeticionesMidiCandidato =
+            0;
+
+        historialFrecuencias =
+            [];
+
+        centsSuavizados =
+            null;
+
+        afinacionEstable =
+            false;
+
+    }
+    else {
+
+        midiCandidatoAfinador =
+            null;
+
+        repeticionesMidiCandidato =
+            0;
+
+    }
+
 
     historialFrecuencias.push(
         frecuencia
     );
 
 
+    /*
+       Cinco lecturas son suficientes porque YIN ya rechazó
+       detecciones poco confiables. Una ventana grande añade retraso.
+    */
     if (
         historialFrecuencias.length >
-        13
+        5
     ) {
 
         historialFrecuencias.shift();
@@ -969,9 +1345,43 @@ function estabilizarFrecuencia(
         );
 
 
-    return ordenadas[
-        mitad
-    ];
+    let mediana;
+
+
+    if (
+        ordenadas.length %
+        2 ===
+        0
+    ) {
+
+        mediana =
+            (
+                ordenadas[
+                    mitad -
+                    1
+                ] +
+                ordenadas[
+                    mitad
+                ]
+            ) /
+            2;
+
+    }
+    else {
+
+        mediana =
+            ordenadas[
+                mitad
+            ];
+
+    }
+
+
+    ultimaFrecuenciaAceptada =
+        mediana;
+
+
+    return mediana;
 
 }
 
@@ -984,29 +1394,6 @@ function mostrarFrecuencia(
     frecuencia
 ) {
 
-    const ahoraVisual =
-        performance.now();
-
-
-    /*
-       Evita que la interfaz intente redibujarse ~60 veces por segundo.
-       El audio sigue analizándose continuamente; solo la aguja y
-       los textos se actualizan a un ritmo más fácil de leer.
-    */
-    if (
-        ahoraVisual -
-        ultimaActualizacionVisualAfinador <
-        90
-    ) {
-
-        return;
-
-    }
-
-
-    ultimaActualizacionVisualAfinador =
-        ahoraVisual;
-
     const midi =
         Math.round(
 
@@ -1014,7 +1401,7 @@ function mostrarFrecuencia(
             12 *
             Math.log2(
                 frecuencia /
-                440
+                FRECUENCIA_A4
             )
 
         );
@@ -1022,16 +1409,19 @@ function mostrarFrecuencia(
 
     const indiceNota =
         (
-            midi % 12 +
+            midi %
+            12 +
             12
-        ) % 12;
+        ) %
+        12;
 
 
     const octava =
         Math.floor(
             midi /
             12
-        ) - 1;
+        ) -
+        1;
 
 
     const nota =
@@ -1041,7 +1431,7 @@ function mostrarFrecuencia(
 
 
     const frecuenciaObjetivo =
-        440 *
+        FRECUENCIA_A4 *
         Math.pow(
 
             2,
@@ -1064,12 +1454,13 @@ function mostrarFrecuencia(
 
 
     /*
-       Filtro exponencial para que la aguja no persiga
-       cada microvariación instantánea de la afinación.
-       0.12 prioriza estabilidad visual sin volver lenta la afinación.
+       YIN ya estabiliza la detección, así que aquí solo suavizamos
+       ligeramente la animación. Un filtro demasiado fuerte haría
+       que el afinador pareciera preciso pero llegara tarde.
     */
     if (
-        centsSuavizados === null
+        centsSuavizados ===
+        null
     ) {
 
         centsSuavizados =
@@ -1083,20 +1474,20 @@ function mostrarFrecuencia(
                 cents -
                 centsSuavizados
             ) *
-            0.12;
+            0.35;
 
     }
 
 
     /*
-       Pequeña zona muerta alrededor del centro.
-       Si ya estamos prácticamente afinados, la aguja
-       se queda en el centro en vez de temblar.
+       Solo anulamos variaciones prácticamente imperceptibles.
+       Así no escondemos una desviación musical real de 2-3 cents.
     */
     if (
         Math.abs(
             centsSuavizados
-        ) <= 3
+        ) <=
+        1
     ) {
 
         centsSuavizados =
@@ -1112,11 +1503,20 @@ function mostrarFrecuencia(
 
 
     elementoNota.textContent =
-        nota + octava;
+        nota +
+        octava;
 
 
+    /*
+       Mostrar lectura real y frecuencia objetivo permite comprobar
+       visualmente la afinación sin agregar nuevos elementos al HTML.
+    */
     elementoFrecuencia.textContent =
         frecuencia.toFixed(
+            1
+        ) +
+        " Hz · Obj. " +
+        frecuenciaObjetivo.toFixed(
             1
         ) +
         " Hz";
@@ -1124,7 +1524,8 @@ function mostrarFrecuencia(
 
     elementoCents.textContent =
         (
-            centsRedondeados > 0
+            centsRedondeados >
+            0
                 ? "+"
                 : ""
         ) +
@@ -1177,8 +1578,8 @@ function actualizarEstadoAfinacion(
 
     const limiteAfinado =
         afinacionEstable
-            ? 9
-            : 5;
+            ? 5
+            : 3;
 
 
     if (
@@ -1346,5 +1747,5 @@ window.detenerAfinador =
 
 
 console.log(
-    "🎵 Afinador cromático AppCorus V1 listo"
+    "🎵 Afinador cromático AppCorus V2 YIN listo"
 );
