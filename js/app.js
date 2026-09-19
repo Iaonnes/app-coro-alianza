@@ -1,5 +1,5 @@
 // ======================================================
-// APPCORUS V3.2
+// APPCORUS V3.7
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
@@ -192,6 +192,64 @@ function mostrarVersionAppCorus() {
 
 }
 
+// ======================================================
+// IDENTIDAD VISUAL DEL CORO
+// ======================================================
+
+function actualizarIdentidadCoro(
+    data
+) {
+
+    const meta =
+        data &&
+        data.meta
+            ? data.meta
+            : {};
+
+
+    const nombreCoro =
+        String(
+            meta.nombreCoro ||
+            ""
+        )
+        .trim();
+
+
+    if (!nombreCoro) {
+
+        return;
+
+    }
+
+
+    const tituloVisible =
+        /^coro\s/i.test(
+            nombreCoro
+        )
+            ? nombreCoro
+            : "Coro " + nombreCoro;
+
+
+    const tituloHeader =
+        document.querySelector(
+            ".header-identidad h1"
+        );
+
+
+    if (tituloHeader) {
+
+        tituloHeader.textContent =
+            tituloVisible;
+
+    }
+
+
+    document.title =
+        `${tituloVisible} · AppCorus`;
+
+}
+
+
 let googleLoginInicializado = false;
 
 
@@ -370,9 +428,18 @@ async function refrescarDatosApp() {
     invalidarDatosApp();
 
 
-    return await obtenerDatosApp(
-        true
+    const data =
+        await obtenerDatosApp(
+            true
+        );
+
+
+    actualizarIdentidadCoro(
+        data
     );
+
+
+    return data;
 
 }
 
@@ -9684,6 +9751,13 @@ async function inicializarAppCorus() {
         // Una sola consulta para toda la app.
         const data =
             await obtenerDatosApp();
+
+
+        // Actualiza el nombre visible según el coro cargado.
+        actualizarIdentidadCoro(
+            data
+        );
+
 
         // Prioridad absoluta: Inicio.
         renderizarInicio(
