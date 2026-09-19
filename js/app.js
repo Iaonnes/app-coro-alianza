@@ -288,6 +288,86 @@ function actualizarIdentidadCoro(
 }
 
 
+// ======================================================
+// IDENTIDAD VISUAL DE ADMINISTRACIÓN
+// ======================================================
+
+function actualizarIdentidadAdministrador(
+    usuario
+) {
+
+    if (!usuario) {
+
+        return;
+
+    }
+
+
+    let tituloVisible = "";
+
+
+    if (
+        esAdministradorGeneral(
+            usuario
+        )
+    ) {
+
+        /*
+           El Administrador General no pertenece a un coro.
+           Por eso no debe heredar visualmente Alianza,
+           Genesis ni cualquier otro coro.
+        */
+        tituloVisible =
+            "Administración General AppCorus";
+
+    }
+    else {
+
+        const nombreCoro =
+            String(
+                usuario.nombreCoro ||
+                ""
+            )
+            .trim();
+
+
+        if (!nombreCoro) {
+
+            return;
+
+        }
+
+
+        tituloVisible =
+            /^coro\s/i.test(
+                nombreCoro
+            )
+                ? nombreCoro
+                : "Coro " + nombreCoro;
+
+    }
+
+
+    const tituloHeader =
+        document.querySelector(
+            ".header-identidad h1"
+        );
+
+
+    if (tituloHeader) {
+
+        tituloHeader.textContent =
+            tituloVisible;
+
+    }
+
+
+    document.title =
+        `${tituloVisible} · AppCorus`;
+
+}
+
+
 let googleLoginInicializado = false;
 
 
@@ -758,6 +838,10 @@ async function manejarLoginGoogle(
             resultado.usuario;
 
 
+        // El caché de esquemas depende del alcance del usuario autenticado.
+        invalidarDatosAdminEsquemas();
+
+
         /*
            Administración nunca debe heredar el coro que estaba
            abierto públicamente. El backend ya validó el idCoro
@@ -807,6 +891,11 @@ async function manejarLoginGoogle(
 function mostrarPanelAdministracion(
     usuario
 ) {
+
+    actualizarIdentidadAdministrador(
+        usuario
+    );
+
 
     const seccion =
         document.getElementById(
@@ -961,6 +1050,11 @@ function mostrarPanelAdministracion(
 async function abrirAdminEventos(
     datosPrecargados = null
 ) {
+
+    actualizarIdentidadAdministrador(
+        adminUsuario
+    );
+
 
     if (
         !adminUsuario ||
@@ -4679,6 +4773,11 @@ async function abrirAdminEsquemas(
     datosPrecargados = null
 ) {
 
+    actualizarIdentidadAdministrador(
+        adminUsuario
+    );
+
+
     if (
         !adminUsuario ||
         !adminCredential
@@ -4733,14 +4832,18 @@ async function abrirAdminEsquemas(
 
                     <p>
 
-                        Administra los esquemas de
-
                         ${
-                            escaparHtml(
-                                adminUsuario.nombreCoro ||
-                                "tu coro"
+                            esAdministradorGeneral(
+                                adminUsuario
                             )
-                        }.
+                                ? "Administra los esquemas globales de AppCorus."
+                                : `Administra los esquemas de ${
+                                    escaparHtml(
+                                        adminUsuario.nombreCoro ||
+                                        "tu coro"
+                                    )
+                                }.`
+                        }
 
                     </p>
 
@@ -5919,10 +6022,11 @@ function renderizarFormularioNuevoEsquema(
                     </label>
 
                     <select
-                        id="nuevoEsquemaCelebracion">
+                        id="nuevoEsquemaCelebracion"
+                        required>
 
                         <option value="">
-                            Sin celebración asignada
+                            Selecciona un evento
                         </option>
 
                         ${opcionesCelebracion}
@@ -6981,10 +7085,11 @@ function abrirFormularioEditarEsquema(
                         </label>
 
                         <select
-                            id="editarEsquemaCelebracion">
+                            id="editarEsquemaCelebracion"
+                            required>
 
                             <option value="">
-                                Sin celebración asignada
+                                Selecciona un evento
                             </option>
 
                             ${opcionesCelebracion}
@@ -7650,6 +7755,23 @@ async function eliminarEsquemaAdmin(
 // ======================================================
 
 function mostrarSeccion(id) {
+
+    /*
+       Al salir de Administración restauramos la identidad
+       del coro público seleccionado en la URL.
+    */
+    if (
+        id !== "administracion" &&
+        appDataCache
+    ) {
+
+        actualizarIdentidadCoro(
+            appDataCache
+        );
+
+    }
+
+
     // ==================================================
     // APAGAR AFINADOR AL SALIR DE SU SECCIÓN
     // ==================================================
