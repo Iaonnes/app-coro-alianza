@@ -1,5 +1,5 @@
 // ======================================================
-// APPCORUS V3.7.6
+// APPCORUS V3.2
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
@@ -16017,7 +16017,21 @@ async function registrarTokenPushEnBackend(
                                 "registrarDispositivoPush",
 
                             token:
-                                tokenLimpio
+                                tokenLimpio,
+
+                            idCoro:
+                                (
+                                    obtenerAccesoCoroGuardado() ||
+                                    {}
+                                ).idCoro ||
+                                "",
+
+                            clave:
+                                (
+                                    obtenerAccesoCoroGuardado() ||
+                                    {}
+                                ).clave ||
+                                ""
 
                         })
                 }
@@ -16044,7 +16058,10 @@ async function registrarTokenPushEnBackend(
             resultado.existente
                 ? "✅ Dispositivo push actualizado"
                 : "✅ Dispositivo push registrado",
-            resultado.idDispositivo || ""
+            resultado.idDispositivo || "",
+            resultado.idCoro
+                ? `→ ${resultado.idCoro}`
+                : ""
         );
 
 
