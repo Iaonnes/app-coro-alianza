@@ -1,5 +1,5 @@
 // ======================================================
-// APPCORUS V3.7
+// APPCORUS V3.2
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
@@ -76,9 +76,47 @@ function obtenerUrlApiLectura() {
 
 
 
+function esAdministradorGeneral(
+    usuario
+) {
+
+    return String(
+        usuario &&
+        usuario.rol ||
+        ""
+    )
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+        /[\u0300-\u036f]/g,
+        ""
+    ) ===
+    "administrador general";
+
+}
+
+
 function sincronizarCoroAdministrador(
     usuario
 ) {
+
+    if (
+        esAdministradorGeneral(
+            usuario
+        )
+    ) {
+
+        /*
+           El Administrador General administra únicamente GLOBAL.
+           No cambiamos el coro público que esté abierto.
+        */
+        invalidarDatosApp();
+
+        return;
+
+    }
+
 
     const idCoro =
         String(
@@ -978,13 +1016,18 @@ async function abrirAdminEventos(
 
                     <p>
 
-                        Administra las actividades de
                         ${
-                            escaparHtml(
-                                adminUsuario.nombreCoro ||
-                                "tu coro"
+                            esAdministradorGeneral(
+                                adminUsuario
                             )
-                        }.
+                                ? "Administra los eventos globales de AppCorus."
+                                : `Administra las actividades de ${
+                                    escaparHtml(
+                                        adminUsuario.nombreCoro ||
+                                        "tu coro"
+                                    )
+                                }.`
+                        }
 
                     </p>
 
@@ -1066,21 +1109,34 @@ async function abrirAdminEventos(
             null;
 
 
+        const esGeneral =
+            esAdministradorGeneral(
+                adminUsuario
+            );
+
+
         const cacheCorrespondeAlAdmin =
-            datosRecibidos &&
-            datosRecibidos.meta &&
-            String(
-                datosRecibidos.meta.idCoro ||
-                ""
-            )
-            .trim()
-            .toUpperCase() ===
-            String(
-                adminUsuario.idCoro ||
-                ""
-            )
-            .trim()
-            .toUpperCase();
+            esGeneral
+                ? Boolean(
+                    datosRecibidos &&
+                    datosRecibidos.meta
+                )
+                : (
+                    datosRecibidos &&
+                    datosRecibidos.meta &&
+                    String(
+                        datosRecibidos.meta.idCoro ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase() ===
+                    String(
+                        adminUsuario.idCoro ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase()
+                );
 
 
         if (
@@ -1103,7 +1159,7 @@ async function abrirAdminEventos(
                 );
 
 
-        const eventos =
+        const eventosTodos =
             Array.isArray(
                 data.eventos
             )
@@ -1111,6 +1167,55 @@ async function abrirAdminEventos(
                 ? [...data.eventos]
 
                 : [];
+
+
+        const eventos =
+            eventosTodos.filter(
+                evento => {
+
+                    const alcance =
+                        String(
+                            evento.alcance ||
+                            ""
+                        )
+                        .trim()
+                        .toUpperCase();
+
+
+                    const idCoroEvento =
+                        String(
+                            evento.idCoro ||
+                            ""
+                        )
+                        .trim()
+                        .toUpperCase();
+
+
+                    if (esGeneral) {
+
+                        return (
+                            alcance ===
+                            "GLOBAL"
+                        );
+
+                    }
+
+
+                    return (
+                        alcance ===
+                            "CORO"
+                        &&
+                        idCoroEvento ===
+                            String(
+                                adminUsuario.idCoro ||
+                                ""
+                            )
+                            .trim()
+                            .toUpperCase()
+                    );
+
+                }
+            );
 
 
         eventos.sort(
@@ -1735,10 +1840,14 @@ async function abrirFormularioNuevoEvento(
 
                     <p>
                         ${
-                            escaparHtml(
-                                adminUsuario.nombreCoro ||
-                                ""
+                            esAdministradorGeneral(
+                                adminUsuario
                             )
+                                ? "Evento global · visible para todos los coros"
+                                : escaparHtml(
+                                    adminUsuario.nombreCoro ||
+                                    ""
+                                )
                         }
                     </p>
 
