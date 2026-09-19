@@ -1,5 +1,5 @@
 // ======================================================
-// APPCORUS V3.2
+// APPCORUS V3.7
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
@@ -9,6 +9,69 @@
 
 const URL_API =
 "https://script.google.com/macros/s/AKfycbx7IkTSR91bHhRS0OL_48OUBM7GNkvBkgZY5casEGFqYUN2vM2W6ylUlYiR-LLxF112/exec";
+
+// ======================================================
+// MULTI-CORO
+// ======================================================
+
+const CORO_PREDETERMINADO =
+    "COR000001";
+
+
+function obtenerIdCoroActual() {
+
+    const parametros =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const idCoro =
+        String(
+            parametros.get("coro") ||
+            CORO_PREDETERMINADO
+        )
+        .trim()
+        .toUpperCase();
+
+
+    /*
+       Evita enviar valores arbitrarios a la API.
+       El formato actual de AppCorus es COR + 6 dígitos.
+    */
+    if (
+        !/^COR\d{6}$/.test(
+            idCoro
+        )
+    ) {
+
+        return CORO_PREDETERMINADO;
+
+    }
+
+
+    return idCoro;
+
+}
+
+
+function obtenerUrlApiLectura() {
+
+    const url =
+        new URL(
+            URL_API
+        );
+
+
+    url.searchParams.set(
+        "coro",
+        obtenerIdCoroActual()
+    );
+
+
+    return url.toString();
+
+}
 
 
 const GOOGLE_CLIENT_ID =
@@ -121,7 +184,7 @@ async function obtenerDatosApp(
     const consulta =
         fetch(
 
-            URL_API,
+            obtenerUrlApiLectura(),
 
             {
                 cache: "no-store"
