@@ -1,5 +1,5 @@
 // ======================================================
-// APPCORUS V3.2
+// APPCORUS V3.7.6
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
@@ -19,7 +19,128 @@ const CORO_PREDETERMINADO =
     "COR000001";
 
 
+const APPCORUS_ACCESO_CORO_STORAGE =
+    "appcorus_acceso_coro_sesion";
+
+
+function obtenerAccesoCoroGuardado() {
+
+    try {
+
+        const texto =
+            sessionStorage.getItem(
+                APPCORUS_ACCESO_CORO_STORAGE
+            );
+
+
+        if (!texto) {
+
+            return null;
+
+        }
+
+
+        const acceso =
+            JSON.parse(
+                texto
+            );
+
+
+        const idCoro =
+            String(
+                acceso &&
+                acceso.idCoro ||
+                ""
+            )
+            .trim()
+            .toUpperCase();
+
+
+        const clave =
+            String(
+                acceso &&
+                acceso.clave ||
+                ""
+            )
+            .trim();
+
+
+        if (
+            !/^COR\d{6}$/.test(
+                idCoro
+            ) ||
+            !clave
+        ) {
+
+            return null;
+
+        }
+
+
+        return {
+            idCoro,
+            clave
+        };
+
+
+    } catch(error) {
+
+        return null;
+
+    }
+
+}
+
+
+function guardarAccesoCoro(
+    idCoro,
+    clave
+) {
+
+    const acceso = {
+
+        idCoro:
+            String(
+                idCoro ||
+                ""
+            )
+            .trim()
+            .toUpperCase(),
+
+        clave:
+            String(
+                clave ||
+                ""
+            )
+            .trim()
+
+    };
+
+
+    sessionStorage.setItem(
+        APPCORUS_ACCESO_CORO_STORAGE,
+        JSON.stringify(
+            acceso
+        )
+    );
+
+}
+
+
+function limpiarAccesoCoro() {
+
+    sessionStorage.removeItem(
+        APPCORUS_ACCESO_CORO_STORAGE
+    );
+
+}
+
+
 function obtenerIdCoroActual() {
+
+    const acceso =
+        obtenerAccesoCoroGuardado();
+
 
     const parametros =
         new URLSearchParams(
@@ -29,6 +150,10 @@ function obtenerIdCoroActual() {
 
     const idCoro =
         String(
+            (
+                acceso &&
+                acceso.idCoro
+            ) ||
             parametros.get("coro") ||
             CORO_PREDETERMINADO
         )
@@ -56,7 +181,7 @@ function obtenerIdCoroActual() {
 }
 
 
-function obtenerUrlApiLectura() {
+function obtenerUrlListaCoros() {
 
     const url =
         new URL(
@@ -65,12 +190,68 @@ function obtenerUrlApiLectura() {
 
 
     url.searchParams.set(
-        "coro",
-        obtenerIdCoroActual()
+        "accion",
+        "listarCoros"
+    );
+
+
+    url.searchParams.set(
+        "_",
+        String(
+            Date.now()
+        )
     );
 
 
     return url.toString();
+
+}
+
+
+async function obtenerCorosDisponibles() {
+
+    const respuesta =
+        await fetch(
+            obtenerUrlListaCoros(),
+            {
+                cache:
+                    "no-store"
+            }
+        );
+
+
+    if (
+        !respuesta.ok
+    ) {
+
+        throw new Error(
+            "No fue posible cargar los coros."
+        );
+
+    }
+
+
+    const resultado =
+        await respuesta.json();
+
+
+    if (
+        !resultado.ok
+    ) {
+
+        throw new Error(
+            resultado.error ||
+            "No fue posible cargar los coros."
+        );
+
+    }
+
+
+    return Array.isArray(
+        resultado.coros
+    )
+        ? resultado.coros
+        : [];
 
 }
 
@@ -196,7 +377,7 @@ const GOOGLE_CLIENT_ID =
 const APPCORUS_VERSION = {
     major: 3,
     minor: 7,
-    patch: 5
+    patch: 6
 };
 
 function obtenerVersionAppCorus() {
@@ -284,6 +465,9 @@ function actualizarIdentidadCoro(
 
     document.title =
         `${tituloVisible} · AppCorus`;
+
+
+    asegurarBotonCambiarCoro();
 
 }
 
@@ -431,13 +615,50 @@ async function obtenerDatosApp(
         ++appDataGeneracion;
 
 
+    const acceso =
+        obtenerAccesoCoroGuardado();
+
+
+    if (!acceso) {
+
+        const error =
+            new Error(
+                "Selecciona tu coro para continuar."
+            );
+
+        error.codigo =
+            "ACCESO_CORO";
+
+        throw error;
+
+    }
+
+
     const consulta =
         fetch(
 
-            obtenerUrlApiLectura(),
+            URL_API,
 
             {
-                cache: "no-store"
+                method:
+                    "POST",
+
+                cache:
+                    "no-store",
+
+                body:
+                    JSON.stringify({
+
+                        accion:
+                            "obtenerDatosCoro",
+
+                        idCoro:
+                            acceso.idCoro,
+
+                        clave:
+                            acceso.clave
+
+                    })
             }
 
         )
@@ -465,10 +686,19 @@ async function obtenerDatosApp(
                     data.meta.ok === false
                 ) {
 
-                    throw new Error(
-                        data.meta.error ||
-                        "La API devolvió un error."
-                    );
+                    const error =
+                        new Error(
+                            data.meta.error ||
+                            "La API devolvió un error."
+                        );
+
+
+                    error.codigo =
+                        data.meta.codigo ||
+                        "";
+
+
+                    throw error;
 
                 }
 
@@ -9930,6 +10160,957 @@ function filtrarCantos() {
 
 
 // ======================================================
+// ACCESO SIMPLE A COROS
+// ======================================================
+
+function escaparAccesoCoro(
+    valor
+) {
+
+    return String(
+        valor == null
+            ? ""
+            : valor
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+function cerrarPantallaAccesoCoro() {
+
+    document
+        .getElementById(
+            "appCorusAccesoCoro"
+        )
+        ?.remove();
+
+}
+
+
+function mostrarErrorAccesoCoro(
+    mensaje
+) {
+
+    const elemento =
+        document.getElementById(
+            "appCorusAccesoError"
+        );
+
+
+    if (!elemento) {
+
+        return;
+
+    }
+
+
+    elemento.textContent =
+        String(
+            mensaje ||
+            ""
+        );
+
+
+    elemento.style.display =
+        mensaje
+            ? "block"
+            : "none";
+
+}
+
+
+async function mostrarPantallaAccesoCoro() {
+
+    if (
+        document.getElementById(
+            "appCorusAccesoCoro"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const overlay =
+        document.createElement(
+            "div"
+        );
+
+
+    overlay.id =
+        "appCorusAccesoCoro";
+
+
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        background: #eef3f9;
+        overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: 'Poppins', sans-serif;
+    `;
+
+
+    overlay.innerHTML = `
+
+        <div
+            style="
+                width:min(430px,100%);
+                background:#fff;
+                border-radius:26px;
+                padding:28px 24px;
+                box-shadow:0 18px 50px rgba(30,70,120,.14);
+            ">
+
+            <div style="text-align:center;margin-bottom:24px;">
+
+                <img
+                    src="assets/logoAppCorus.png"
+                    alt="AppCorus"
+                    style="
+                        width:100px;
+                        height:100px;
+                        object-fit:contain;
+                        margin-bottom:8px;
+                    ">
+
+                <h1
+                    style="
+                        margin:0;
+                        font-size:1.7rem;
+                        color:#0d47a1;
+                    ">
+                    Bienvenido a AppCorus
+                </h1>
+
+                <p
+                    style="
+                        margin:8px 0 0;
+                        color:#607d8b;
+                        line-height:1.45;
+                    ">
+                    Selecciona tu coro e ingresa su clave.
+                </p>
+
+            </div>
+
+
+            <div id="appCorusAccesoFormulario">
+
+                <label
+                    for="appCorusAccesoSelect"
+                    style="
+                        display:block;
+                        font-weight:600;
+                        margin-bottom:7px;
+                    ">
+                    Coro
+                </label>
+
+                <select
+                    id="appCorusAccesoSelect"
+                    style="
+                        width:100%;
+                        min-height:48px;
+                        border:1px solid #cfd8e3;
+                        border-radius:14px;
+                        padding:0 14px;
+                        font:inherit;
+                        background:#fff;
+                        margin-bottom:16px;
+                    ">
+
+                    <option value="">
+                        Cargando coros...
+                    </option>
+
+                </select>
+
+
+                <label
+                    for="appCorusAccesoClave"
+                    style="
+                        display:block;
+                        font-weight:600;
+                        margin-bottom:7px;
+                    ">
+                    Clave del coro
+                </label>
+
+                <input
+                    id="appCorusAccesoClave"
+                    type="password"
+                    inputmode="numeric"
+                    maxlength="6"
+                    autocomplete="off"
+                    placeholder="••••"
+                    style="
+                        width:100%;
+                        min-height:48px;
+                        border:1px solid #cfd8e3;
+                        border-radius:14px;
+                        padding:0 14px;
+                        font:inherit;
+                        box-sizing:border-box;
+                    ">
+
+
+                <div
+                    id="appCorusAccesoError"
+                    style="
+                        display:none;
+                        margin-top:14px;
+                        padding:11px 12px;
+                        border-radius:12px;
+                        background:#ffebee;
+                        color:#c62828;
+                        font-size:.92rem;
+                    ">
+                </div>
+
+
+                <button
+                    id="appCorusAccesoEntrar"
+                    type="button"
+                    style="
+                        width:100%;
+                        min-height:50px;
+                        border:0;
+                        border-radius:15px;
+                        margin-top:18px;
+                        background:#1976d2;
+                        color:#fff;
+                        font:inherit;
+                        font-weight:700;
+                        cursor:pointer;
+                    ">
+                    Entrar
+                </button>
+
+
+                <button
+                    id="appCorusMostrarCrearCoro"
+                    type="button"
+                    style="
+                        width:100%;
+                        border:0;
+                        background:transparent;
+                        color:#1565c0;
+                        font:inherit;
+                        font-weight:600;
+                        margin-top:16px;
+                        cursor:pointer;
+                    ">
+                    ¿Tu coro no aparece? Crear coro
+                </button>
+
+            </div>
+
+
+            <div
+                id="appCorusCrearCoroFormulario"
+                style="display:none;">
+
+                <h2
+                    style="
+                        margin:0 0 6px;
+                        color:#0d47a1;
+                        font-size:1.35rem;
+                    ">
+                    Crear coro
+                </h2>
+
+                <p
+                    style="
+                        margin:0 0 18px;
+                        color:#607d8b;
+                    ">
+                    Solo necesitamos el nombre y una clave.
+                </p>
+
+
+                <label
+                    for="appCorusNuevoCoroNombre"
+                    style="
+                        display:block;
+                        font-weight:600;
+                        margin-bottom:7px;
+                    ">
+                    Nombre del coro
+                </label>
+
+                <input
+                    id="appCorusNuevoCoroNombre"
+                    type="text"
+                    maxlength="80"
+                    placeholder="Ej. Coro San José"
+                    style="
+                        width:100%;
+                        min-height:48px;
+                        border:1px solid #cfd8e3;
+                        border-radius:14px;
+                        padding:0 14px;
+                        font:inherit;
+                        box-sizing:border-box;
+                        margin-bottom:16px;
+                    ">
+
+
+                <label
+                    for="appCorusNuevoCoroClave"
+                    style="
+                        display:block;
+                        font-weight:600;
+                        margin-bottom:7px;
+                    ">
+                    Clave
+                </label>
+
+                <input
+                    id="appCorusNuevoCoroClave"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="6"
+                    autocomplete="off"
+                    placeholder="4 a 6 dígitos"
+                    style="
+                        width:100%;
+                        min-height:48px;
+                        border:1px solid #cfd8e3;
+                        border-radius:14px;
+                        padding:0 14px;
+                        font:inherit;
+                        box-sizing:border-box;
+                    ">
+
+
+                <button
+                    id="appCorusCrearCoro"
+                    type="button"
+                    style="
+                        width:100%;
+                        min-height:50px;
+                        border:0;
+                        border-radius:15px;
+                        margin-top:18px;
+                        background:#1976d2;
+                        color:#fff;
+                        font:inherit;
+                        font-weight:700;
+                        cursor:pointer;
+                    ">
+                    Crear y entrar
+                </button>
+
+
+                <button
+                    id="appCorusCancelarCrearCoro"
+                    type="button"
+                    style="
+                        width:100%;
+                        border:0;
+                        background:transparent;
+                        color:#607d8b;
+                        font:inherit;
+                        font-weight:600;
+                        margin-top:14px;
+                        cursor:pointer;
+                    ">
+                    ← Volver
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+    const select =
+        document.getElementById(
+            "appCorusAccesoSelect"
+        );
+
+
+    try {
+
+        const coros =
+            await obtenerCorosDisponibles();
+
+
+        select.innerHTML =
+            `
+                <option value="">
+                    Selecciona tu coro
+                </option>
+            ` +
+            coros
+                .map(
+                    coro => `
+                        <option
+                            value="${escaparAccesoCoro(
+                                coro.idCoro
+                            )}">
+                            ${escaparAccesoCoro(
+                                coro.nombreCoro
+                            )}
+                        </option>
+                    `
+                )
+                .join("");
+
+
+    } catch(error) {
+
+        select.innerHTML = `
+            <option value="">
+                No fue posible cargar los coros
+            </option>
+        `;
+
+
+        mostrarErrorAccesoCoro(
+            error.message
+        );
+
+    }
+
+
+    document
+        .getElementById(
+            "appCorusAccesoEntrar"
+        )
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                mostrarErrorAccesoCoro(
+                    ""
+                );
+
+
+                const idCoro =
+                    String(
+                        select.value ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                const clave =
+                    String(
+                        document
+                            .getElementById(
+                                "appCorusAccesoClave"
+                            )
+                            ?.value ||
+                        ""
+                    )
+                    .trim();
+
+
+                if (!idCoro) {
+
+                    mostrarErrorAccesoCoro(
+                        "Selecciona tu coro."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!clave) {
+
+                    mostrarErrorAccesoCoro(
+                        "Escribe la clave del coro."
+                    );
+
+                    return;
+
+                }
+
+
+                const boton =
+                    document.getElementById(
+                        "appCorusAccesoEntrar"
+                    );
+
+
+                boton.disabled =
+                    true;
+
+                boton.textContent =
+                    "Entrando...";
+
+
+                try {
+
+                    guardarAccesoCoro(
+                        idCoro,
+                        clave
+                    );
+
+
+                    invalidarDatosApp();
+
+
+                    const data =
+                        await obtenerDatosApp(
+                            true
+                        );
+
+
+                    const url =
+                        new URL(
+                            window.location.href
+                        );
+
+
+                    url.searchParams.set(
+                        "coro",
+                        idCoro
+                    );
+
+
+                    window.history.replaceState(
+                        {},
+                        "",
+                        url.toString()
+                    );
+
+
+                    cerrarPantallaAccesoCoro();
+
+
+                    appCorusInicializada =
+                        false;
+
+                    appCorusInicializando =
+                        false;
+
+
+                    await inicializarAppCorus();
+
+
+                } catch(error) {
+
+                    limpiarAccesoCoro();
+
+                    mostrarErrorAccesoCoro(
+                        error.message ||
+                        "No fue posible entrar al coro."
+                    );
+
+
+                    boton.disabled =
+                        false;
+
+                    boton.textContent =
+                        "Entrar";
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "appCorusAccesoClave"
+        )
+        ?.addEventListener(
+            "keydown",
+            evento => {
+
+                if (
+                    evento.key ===
+                    "Enter"
+                ) {
+
+                    document
+                        .getElementById(
+                            "appCorusAccesoEntrar"
+                        )
+                        ?.click();
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "appCorusMostrarCrearCoro"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                mostrarErrorAccesoCoro(
+                    ""
+                );
+
+
+                document
+                    .getElementById(
+                        "appCorusAccesoFormulario"
+                    )
+                    .style.display =
+                        "none";
+
+
+                document
+                    .getElementById(
+                        "appCorusCrearCoroFormulario"
+                    )
+                    .style.display =
+                        "block";
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "appCorusCancelarCrearCoro"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                mostrarErrorAccesoCoro(
+                    ""
+                );
+
+
+                document
+                    .getElementById(
+                        "appCorusCrearCoroFormulario"
+                    )
+                    .style.display =
+                        "none";
+
+
+                document
+                    .getElementById(
+                        "appCorusAccesoFormulario"
+                    )
+                    .style.display =
+                        "block";
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "appCorusCrearCoro"
+        )
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                mostrarErrorAccesoCoro(
+                    ""
+                );
+
+
+                const nombreCoro =
+                    String(
+                        document
+                            .getElementById(
+                                "appCorusNuevoCoroNombre"
+                            )
+                            ?.value ||
+                        ""
+                    )
+                    .trim();
+
+
+                const clave =
+                    String(
+                        document
+                            .getElementById(
+                                "appCorusNuevoCoroClave"
+                            )
+                            ?.value ||
+                        ""
+                    )
+                    .trim();
+
+
+                if (
+                    nombreCoro.length < 3
+                ) {
+
+                    mostrarErrorAccesoCoro(
+                        "Escribe el nombre del coro."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !/^\d{4,6}$/.test(
+                        clave
+                    )
+                ) {
+
+                    mostrarErrorAccesoCoro(
+                        "La clave debe tener entre 4 y 6 dígitos."
+                    );
+
+                    return;
+
+                }
+
+
+                const boton =
+                    document.getElementById(
+                        "appCorusCrearCoro"
+                    );
+
+
+                boton.disabled =
+                    true;
+
+                boton.textContent =
+                    "Creando...";
+
+
+                try {
+
+                    const respuesta =
+                        await fetch(
+                            URL_API,
+                            {
+                                method:
+                                    "POST",
+
+                                body:
+                                    JSON.stringify({
+
+                                        accion:
+                                            "crearCoro",
+
+                                        nombreCoro:
+                                            nombreCoro,
+
+                                        clave:
+                                            clave
+
+                                    })
+                            }
+                        );
+
+
+                    const resultado =
+                        await respuesta.json();
+
+
+                    if (
+                        !resultado.ok
+                    ) {
+
+                        throw new Error(
+                            resultado.error ||
+                            "No fue posible crear el coro."
+                        );
+
+                    }
+
+
+                    guardarAccesoCoro(
+                        resultado.idCoro,
+                        clave
+                    );
+
+
+                    invalidarDatosApp();
+
+
+                    const url =
+                        new URL(
+                            window.location.href
+                        );
+
+
+                    url.searchParams.set(
+                        "coro",
+                        resultado.idCoro
+                    );
+
+
+                    window.history.replaceState(
+                        {},
+                        "",
+                        url.toString()
+                    );
+
+
+                    cerrarPantallaAccesoCoro();
+
+
+                    appCorusInicializada =
+                        false;
+
+                    appCorusInicializando =
+                        false;
+
+
+                    await inicializarAppCorus();
+
+
+                } catch(error) {
+
+                    mostrarErrorAccesoCoro(
+                        error.message ||
+                        "No fue posible crear el coro."
+                    );
+
+
+                    boton.disabled =
+                        false;
+
+                    boton.textContent =
+                        "Crear y entrar";
+
+                }
+
+            }
+        );
+
+}
+
+
+function asegurarBotonCambiarCoro() {
+
+    if (
+        document.getElementById(
+            "btnCambiarCoroAppCorus"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const identidad =
+        document.querySelector(
+            ".header-identidad"
+        );
+
+
+    if (!identidad) {
+
+        return;
+
+    }
+
+
+    const boton =
+        document.createElement(
+            "button"
+        );
+
+
+    boton.id =
+        "btnCambiarCoroAppCorus";
+
+
+    boton.type =
+        "button";
+
+
+    boton.textContent =
+        "Cambiar coro";
+
+
+    boton.style.cssText = `
+        margin-top:10px;
+        border:1px solid rgba(255,255,255,.55);
+        border-radius:999px;
+        background:rgba(255,255,255,.12);
+        color:#fff;
+        padding:6px 13px;
+        font:inherit;
+        font-size:.78rem;
+        font-weight:600;
+        cursor:pointer;
+    `;
+
+
+    boton.addEventListener(
+        "click",
+        () => {
+
+            limpiarAccesoCoro();
+
+            invalidarDatosApp();
+
+
+            const url =
+                new URL(
+                    window.location.href
+                );
+
+
+            url.searchParams.delete(
+                "coro"
+            );
+
+
+            window.location.href =
+                url.toString();
+
+        }
+    );
+
+
+    identidad.appendChild(
+        boton
+    );
+
+}
+
+
+// ======================================================
 // CARGA INICIAL ROBUSTA Y OPTIMIZADA
 // APPCORUS V3.4
 // ======================================================
@@ -9959,6 +11140,21 @@ async function inicializarAppCorus() {
     }
 
     appCorusInicializando = true;
+
+
+    if (
+        !obtenerAccesoCoroGuardado()
+    ) {
+
+        await mostrarPantallaAccesoCoro();
+
+        appCorusInicializando =
+            false;
+
+        return;
+
+    }
+
 
     const contenedorInicio =
         document.getElementById(
@@ -10046,6 +11242,24 @@ async function inicializarAppCorus() {
             "Error cargando AppCorus:",
             error
         );
+
+
+        if (
+            error &&
+            error.codigo ===
+                "ACCESO_CORO"
+        ) {
+
+            limpiarAccesoCoro();
+
+            cerrarPantallaAccesoCoro();
+
+            await mostrarPantallaAccesoCoro();
+
+            return;
+
+        }
+
 
         if (contenedorInicio) {
 
