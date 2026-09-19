@@ -1,5 +1,5 @@
 // ======================================================
-// APPCORUS V3.7
+// APPCORUS V3.2
 // OPTIMIZACIÓN DE CARGA
 // ======================================================
 
@@ -9,6 +9,7 @@
 
 const URL_API =
 "https://script.google.com/macros/s/AKfycbx7IkTSR91bHhRS0OL_48OUBM7GNkvBkgZY5casEGFqYUN2vM2W6ylUlYiR-LLxF112/exec";
+
 
 // ======================================================
 // MULTI-CORO
@@ -70,6 +71,79 @@ function obtenerUrlApiLectura() {
 
 
     return url.toString();
+
+}
+
+
+
+function sincronizarCoroAdministrador(
+    usuario
+) {
+
+    const idCoro =
+        String(
+            usuario &&
+            usuario.idCoro ||
+            ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+        !/^COR\d{6}$/.test(
+            idCoro
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const urlActual =
+        new URL(
+            window.location.href
+        );
+
+
+    const coroEnUrl =
+        String(
+            urlActual.searchParams.get(
+                "coro"
+            ) ||
+            ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+        coroEnUrl !==
+        idCoro
+    ) {
+
+        urlActual.searchParams.set(
+            "coro",
+            idCoro
+        );
+
+
+        window.history.replaceState(
+            {},
+            "",
+            urlActual.toString()
+        );
+
+    }
+
+
+    /*
+       Los datos públicos pudieron haberse cargado antes
+       con otro coro. Se invalida el caché para que
+       Administración consulte el coro autorizado.
+    */
+    invalidarDatosApp();
 
 }
 
@@ -579,6 +653,16 @@ async function manejarLoginGoogle(
             resultado.usuario;
 
 
+        /*
+           Administración nunca debe heredar el coro que estaba
+           abierto públicamente. El backend ya validó el idCoro
+           del coordinador; usamos ese mismo coro como contexto.
+        */
+        sincronizarCoroAdministrador(
+            adminUsuario
+        );
+
+
         mostrarPanelAdministracion(
             resultado.usuario
         );
@@ -910,9 +994,46 @@ async function abrirAdminEventos(
         // SI LOS DATOS ESTÁN EN CACHÉ
         // ======================================
 
-        const data =
+        const datosRecibidos =
             datosPrecargados ||
-            await obtenerDatosApp();
+            null;
+
+
+        const cacheCorrespondeAlAdmin =
+            datosRecibidos &&
+            datosRecibidos.meta &&
+            String(
+                datosRecibidos.meta.idCoro ||
+                ""
+            )
+            .trim()
+            .toUpperCase() ===
+            String(
+                adminUsuario.idCoro ||
+                ""
+            )
+            .trim()
+            .toUpperCase();
+
+
+        if (
+            datosRecibidos &&
+            !cacheCorrespondeAlAdmin
+        ) {
+
+            sincronizarCoroAdministrador(
+                adminUsuario
+            );
+
+        }
+
+
+        const data =
+            cacheCorrespondeAlAdmin
+                ? datosRecibidos
+                : await obtenerDatosApp(
+                    true
+                );
 
 
         const eventos =
