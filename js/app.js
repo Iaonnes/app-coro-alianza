@@ -318,7 +318,7 @@ function actualizarIdentidadAdministrador(
            Genesis ni cualquier otro coro.
         */
         tituloVisible =
-            "Administración General AppCorus";
+            "Coro Reina de los Martires";
 
     }
     else {
