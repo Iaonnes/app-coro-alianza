@@ -377,7 +377,7 @@ const GOOGLE_CLIENT_ID =
 const APPCORUS_VERSION = {
     major: 3,
     minor: 7,
-    patch: 6
+    patch: 5
 };
 
 function obtenerVersionAppCorus() {
@@ -16017,21 +16017,7 @@ async function registrarTokenPushEnBackend(
                                 "registrarDispositivoPush",
 
                             token:
-                                tokenLimpio,
-
-                            idCoro:
-                                (
-                                    obtenerAccesoCoroGuardado() ||
-                                    {}
-                                ).idCoro ||
-                                "",
-
-                            clave:
-                                (
-                                    obtenerAccesoCoroGuardado() ||
-                                    {}
-                                ).clave ||
-                                ""
+                                tokenLimpio
 
                         })
                 }
@@ -16058,10 +16044,7 @@ async function registrarTokenPushEnBackend(
             resultado.existente
                 ? "✅ Dispositivo push actualizado"
                 : "✅ Dispositivo push registrado",
-            resultado.idDispositivo || "",
-            resultado.idCoro
-                ? `→ ${resultado.idCoro}`
-                : ""
+            resultado.idDispositivo || ""
         );
 
 
