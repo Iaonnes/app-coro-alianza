@@ -11196,6 +11196,35 @@ async function mostrarPantallaAccesoCoro() {
 
                     await inicializarAppCorus();
 
+                    /*
+                       Al entrar/cambiar de coro, el permiso de notificaciones
+                       puede estar concedido desde antes. Firebase se inicializa
+                       globalmente, pero esa inicialización puede ocurrir antes
+                       de que exista el nuevo acceso del coro.
+
+                       Por eso sincronizamos de forma explícita aquí para que
+                       el mismo token quede asociado inmediatamente al coro
+                       que acaba de iniciar sesión.
+                    */
+                    if (
+                        "Notification" in window &&
+                        Notification.permission ===
+                            "granted"
+                    ) {
+
+                        if (
+                            !appCorusFirebaseMessaging
+                        ) {
+
+                            await inicializarFirebaseAppCorus();
+
+                        }
+
+
+                        await sincronizarTokenPushAppCorus();
+
+                    }
+
 
                 } catch(error) {
 
@@ -11467,6 +11496,35 @@ async function mostrarPantallaAccesoCoro() {
 
 
                     await inicializarAppCorus();
+
+                    /*
+                       Al entrar/cambiar de coro, el permiso de notificaciones
+                       puede estar concedido desde antes. Firebase se inicializa
+                       globalmente, pero esa inicialización puede ocurrir antes
+                       de que exista el nuevo acceso del coro.
+
+                       Por eso sincronizamos de forma explícita aquí para que
+                       el mismo token quede asociado inmediatamente al coro
+                       que acaba de iniciar sesión.
+                    */
+                    if (
+                        "Notification" in window &&
+                        Notification.permission ===
+                            "granted"
+                    ) {
+
+                        if (
+                            !appCorusFirebaseMessaging
+                        ) {
+
+                            await inicializarFirebaseAppCorus();
+
+                        }
+
+
+                        await sincronizarTokenPushAppCorus();
+
+                    }
 
 
                 } catch(error) {
@@ -16474,6 +16532,59 @@ async function registrarTokenPushEnBackend(
     }
 
 
+    /*
+       IMPORTANTE:
+       Firebase puede inicializarse antes de que el usuario
+       termine de seleccionar / iniciar sesión en un coro.
+
+       No intentamos registrar el dispositivo hasta tener
+       juntos idCoro + clave válidos en sessionStorage.
+       Esto evita enviar idCoro vacío al backend y evita
+       el error "Selecciona un coro válido." durante el arranque.
+    */
+    const acceso =
+        obtenerAccesoCoroGuardado();
+
+
+    if (
+        !acceso ||
+        !/^COR\d{6}$/.test(
+            String(
+                acceso.idCoro || ""
+            )
+            .trim()
+            .toUpperCase()
+        ) ||
+        !String(
+            acceso.clave || ""
+        )
+        .trim()
+    ) {
+
+        console.log(
+            "ℹ️ Push pendiente: todavía no hay un coro autenticado."
+        );
+
+        return false;
+
+    }
+
+
+    const idCoro =
+        String(
+            acceso.idCoro
+        )
+        .trim()
+        .toUpperCase();
+
+
+    const clave =
+        String(
+            acceso.clave
+        )
+        .trim();
+
+
     try {
 
         const respuesta =
@@ -16493,18 +16604,10 @@ async function registrarTokenPushEnBackend(
                                 tokenLimpio,
 
                             idCoro:
-                                (
-                                    obtenerAccesoCoroGuardado() ||
-                                    {}
-                                ).idCoro ||
-                                "",
+                                idCoro,
 
                             clave:
-                                (
-                                    obtenerAccesoCoroGuardado() ||
-                                    {}
-                                ).clave ||
-                                ""
+                                clave
 
                         })
                 }
@@ -16607,6 +16710,41 @@ async function sincronizarTokenPushAppCorus() {
         Notification.permission !==
             "granted"
     ) {
+
+        return false;
+
+    }
+
+
+    /*
+       No sincronizar mientras la pantalla de selección de coro
+       todavía no haya creado una sesión válida.
+
+       Después de Entrar / Crear y entrar, AppCorus vuelve a llamar
+       explícitamente esta función, ahora sí con idCoro + clave.
+    */
+    const acceso =
+        obtenerAccesoCoroGuardado();
+
+
+    if (
+        !acceso ||
+        !/^COR\d{6}$/.test(
+            String(
+                acceso.idCoro || ""
+            )
+            .trim()
+            .toUpperCase()
+        ) ||
+        !String(
+            acceso.clave || ""
+        )
+        .trim()
+    ) {
+
+        console.log(
+            "ℹ️ Sincronización push aplazada hasta seleccionar un coro."
+        );
 
         return false;
 
@@ -16743,7 +16881,8 @@ async function inicializarFirebaseAppCorus() {
                     if (
                         "Notification" in window &&
                         Notification.permission ===
-                            "granted"
+                            "granted" &&
+                        obtenerAccesoCoroGuardado()
                     ) {
 
                         sincronizarTokenPushAppCorus()
