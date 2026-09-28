@@ -3981,12 +3981,8 @@ header .app-version span,
 
     color:#718096;
 
-    font-size:.9rem;
-    font-weight:800;
-    letter-spacing:.01em;
-
-    transition:
-        color .18s ease;
+    font-size:.88rem;
+    font-weight:700;
 }
 
 .afinador-cents{
@@ -4090,7 +4086,356 @@ header .app-version span,
 
     .afinador-extremos{
         bottom:23px;
-        font-size:.9rem;
-        font-weight:800;
+        font-size:.82rem;
+    }
+}
+
+/* =========================================================
+   APPCORUS V3.7.6 - HEADER COMPACTO
+   Ajuste visual solamente.
+   No cambia estructura, lógica, navegación ni afinador.
+   ========================================================= */
+
+header,
+.app-header{
+    padding:
+        12px
+        54px
+        14px;
+
+    box-shadow:
+        0 5px 18px
+        rgba(13,71,161,.12);
+}
+
+/* Decoración de fondo más discreta */
+header::before,
+.app-header::before{
+    width:220px;
+    height:220px;
+
+    top:-170px;
+    left:-65px;
+
+    background:
+        rgba(255,255,255,.055);
+}
+
+header::after,
+.app-header::after{
+    width:200px;
+    height:200px;
+
+    right:-80px;
+    bottom:-155px;
+
+    background:
+        rgba(0,229,255,.055);
+}
+
+/* Logo: sigue siendo protagonista, pero ocupa menos altura */
+header .logo,
+.app-header .logo{
+    width:76px;
+    height:76px;
+
+    margin:
+        0
+        auto
+        4px;
+
+    padding:3px;
+
+    border-width:2px;
+
+    box-shadow:
+        0 6px 16px
+        rgba(0,0,0,.14);
+}
+
+/* Versión: información secundaria, no una insignia protagonista */
+header .app-version,
+.app-header .app-version{
+    min-height:auto;
+
+    margin:
+        0
+        auto
+        4px;
+
+    padding:
+        2px
+        7px;
+
+    gap:5px;
+
+    border-color:
+        rgba(255,255,255,.10);
+
+    background:
+        rgba(255,255,255,.07);
+
+    color:
+        rgba(255,255,255,.72);
+
+    font-size:.64rem;
+
+    box-shadow:none;
+}
+
+header .app-version strong,
+.app-header .app-version strong{
+    font-weight:600;
+}
+
+header .app-version span,
+.app-header .app-version span{
+    padding:0;
+
+    background:transparent;
+
+    font-size:.62rem;
+    font-weight:600;
+
+    opacity:.86;
+}
+
+/* Nombre del coro: jerarquía principal */
+header h1,
+.app-header h1{
+    margin:
+        3px
+        0
+        0;
+
+    font-size:
+        clamp(
+            1.20rem,
+            3vw,
+            1.55rem
+        );
+
+    line-height:1.08;
+    font-weight:750;
+    letter-spacing:-.2px;
+
+    text-shadow:
+        0 1px 5px
+        rgba(0,0,0,.10);
+}
+
+/* Las notas eran decorativas y competían con el nombre */
+.header-nota{
+    display:none;
+}
+
+.header-titulo-linea{
+    gap:0;
+}
+
+/* Lema más discreto */
+header > p,
+header .header-lema,
+.app-header .header-lema{
+    margin:
+        4px
+        auto
+        0;
+
+    max-width:620px;
+
+    color:
+        rgba(255,255,255,.78);
+
+    font-size:.76rem;
+    font-weight:400;
+    line-height:1.25;
+}
+
+/* Cambiar coro: acción secundaria, estilo tipo enlace */
+#btnCambiarCoroAppCorus{
+    margin-top:6px !important;
+
+    padding:
+        3px
+        8px !important;
+
+    border:
+        1px solid
+        rgba(255,255,255,.16) !important;
+
+    border-radius:999px !important;
+
+    background:
+        rgba(255,255,255,.055) !important;
+
+    color:
+        rgba(255,255,255,.76) !important;
+
+    font-size:.66rem !important;
+    font-weight:500 !important;
+
+    box-shadow:none !important;
+
+    opacity:.90;
+}
+
+#btnCambiarCoroAppCorus:hover{
+    background:
+        rgba(255,255,255,.10) !important;
+
+    color:#fff !important;
+
+    opacity:1;
+}
+
+/* Administración: visible pero sin competir con el contenido */
+.btn-administracion{
+    top:10px;
+    right:10px;
+
+    width:34px;
+    height:34px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.12);
+
+    background:
+        rgba(255,255,255,.08);
+
+    box-shadow:none;
+
+    font-size:.88rem;
+
+    opacity:.72;
+}
+
+.btn-administracion:hover{
+    background:
+        rgba(255,255,255,.14);
+
+    transform:none;
+
+    opacity:.95;
+}
+
+/* Mantiene el contenido centrado y compacto */
+.header-contenido{
+    max-width:760px;
+}
+
+/* =========================================================
+   TABLET / MÓVIL
+   ========================================================= */
+
+@media (max-width:768px){
+
+    header,
+    .app-header{
+        padding:
+            11px
+            48px
+            13px;
+    }
+
+    header .logo,
+    .app-header .logo{
+        width:66px;
+        height:66px;
+    }
+
+    header h1,
+    .app-header h1{
+        font-size:
+            clamp(
+                1.12rem,
+                5vw,
+                1.36rem
+            );
+    }
+
+    header > p,
+    header .header-lema,
+    .app-header .header-lema{
+        font-size:.72rem;
+    }
+
+    .btn-administracion{
+        top:9px;
+        right:9px;
+
+        width:32px;
+        height:32px;
+    }
+}
+
+@media (max-width:420px){
+
+    header,
+    .app-header{
+        padding:
+            10px
+            44px
+            12px;
+    }
+
+    header .logo,
+    .app-header .logo{
+        width:60px;
+        height:60px;
+    }
+
+    header .app-version,
+    .app-header .app-version{
+        min-height:auto;
+
+        padding:
+            2px
+            6px;
+
+        font-size:.60rem;
+    }
+
+    header .app-version span,
+    .app-header .app-version span{
+        font-size:.59rem;
+    }
+
+    header h1,
+    .app-header h1{
+        font-size:
+            clamp(
+                1.06rem,
+                5.4vw,
+                1.26rem
+            );
+    }
+
+    header > p,
+    header .header-lema,
+    .app-header .header-lema{
+        max-width:290px;
+        font-size:.69rem;
+    }
+
+    #btnCambiarCoroAppCorus{
+        margin-top:5px !important;
+
+        padding:
+            3px
+            7px !important;
+
+        font-size:.63rem !important;
+    }
+
+    .btn-administracion{
+        width:30px;
+        height:30px;
+
+        top:8px;
+        right:8px;
+
+        font-size:.82rem;
     }
 }
