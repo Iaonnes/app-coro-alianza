@@ -1748,8 +1748,15 @@ header{
 }
 
 .btn-administracion:hover{
-    background:rgba(255,255,255,.30);
-    transform:scale(1.05);
+    background:
+        rgba(255,255,255,.20);
+
+    border-color:
+        rgba(255,255,255,.32);
+
+    transform:none;
+
+    opacity:1;
 }
 
 
@@ -4254,35 +4261,50 @@ header .header-lema,
 
 /* Cambiar coro: acción secundaria, estilo tipo enlace */
 #btnCambiarCoroAppCorus{
-    margin-top:6px !important;
+    position:absolute !important;
+
+    top:10px !important;
+    left:10px !important;
+
+    z-index:5;
+
+    margin:0 !important;
 
     padding:
-        3px
-        8px !important;
+        4px
+        9px !important;
 
     border:
         1px solid
-        rgba(255,255,255,.16) !important;
+        rgba(255,255,255,.26) !important;
 
     border-radius:999px !important;
 
     background:
-        rgba(255,255,255,.055) !important;
+        rgba(255,255,255,.085) !important;
 
     color:
-        rgba(255,255,255,.76) !important;
+        rgba(255,255,255,.90) !important;
 
     font-size:.66rem !important;
-    font-weight:500 !important;
+    font-weight:600 !important;
 
-    box-shadow:none !important;
+    box-shadow:
+        0 1px 0
+        rgba(255,255,255,.05)
+        inset !important;
 
-    opacity:.90;
+    cursor:pointer;
+
+    opacity:.96;
 }
 
 #btnCambiarCoroAppCorus:hover{
     background:
-        rgba(255,255,255,.10) !important;
+        rgba(255,255,255,.14) !important;
+
+    border-color:
+        rgba(255,255,255,.40) !important;
 
     color:#fff !important;
 
@@ -4299,16 +4321,18 @@ header .header-lema,
 
     border:
         1px solid
-        rgba(255,255,255,.12);
+        rgba(255,255,255,.22);
 
     background:
-        rgba(255,255,255,.08);
+        rgba(255,255,255,.13);
 
-    box-shadow:none;
+    box-shadow:
+        0 4px 12px
+        rgba(0,0,0,.08);
 
-    font-size:.88rem;
+    font-size:.90rem;
 
-    opacity:.72;
+    opacity:.92;
 }
 
 .btn-administracion:hover{
@@ -4437,5 +4461,168 @@ header .header-lema,
         right:8px;
 
         font-size:.82rem;
+    }
+}
+
+@media (max-width:420px){
+
+    #btnCambiarCoroAppCorus{
+        top:8px !important;
+        left:8px !important;
+
+        padding:
+            3px
+            7px !important;
+
+        font-size:.61rem !important;
+    }
+}
+
+/* =========================================================
+   APPCORUS V3.7.6 - PANEL DE NOTIFICACIONES COMPACTO
+   Mantiene visible el estado sin competir con los eventos.
+   ========================================================= */
+
+#appCorusNotificaciones{
+    margin:
+        10px
+        16px !important;
+
+    padding:
+        9px
+        11px !important;
+
+    border:
+        1px solid
+        rgba(25,118,210,.10) !important;
+
+    border-radius:
+        12px !important;
+
+    background:
+        rgba(255,255,255,.88) !important;
+
+    box-shadow:
+        0 2px 8px
+        rgba(15,23,42,.035) !important;
+
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+
+    gap:8px !important;
+
+    flex-wrap:nowrap !important;
+}
+
+/* Bloque de texto */
+#appCorusNotificaciones > div{
+    flex:
+        1
+        1
+        auto !important;
+
+    min-width:0 !important;
+
+    display:flex !important;
+    flex-direction:column !important;
+
+    gap:1px !important;
+}
+
+/* Título */
+#appCorusNotificaciones strong{
+    margin:0 !important;
+
+    color:#32465f !important;
+
+    font-size:.78rem !important;
+    font-weight:650 !important;
+
+    line-height:1.15 !important;
+}
+
+/* Estado / explicación */
+#appCorusEstadoNotificaciones{
+    color:#7a8798 !important;
+
+    font-size:.66rem !important;
+    line-height:1.18 !important;
+
+    white-space:normal;
+}
+
+/* Botón / badge de estado */
+#btnActivarNotificacionesAppCorus{
+    flex:
+        0
+        0
+        auto;
+
+    min-height:26px;
+
+    padding:
+        4px
+        9px !important;
+
+    border-radius:
+        999px !important;
+
+    font-size:
+        .66rem !important;
+
+    font-weight:
+        650 !important;
+
+    line-height:1 !important;
+
+    box-shadow:none !important;
+}
+
+/* Cuando ya está activado se siente como estado, no como CTA */
+#btnActivarNotificacionesAppCorus:disabled{
+    cursor:default !important;
+
+    opacity:.82 !important;
+
+    filter:saturate(.82);
+}
+
+/* En pantallas pequeñas mantenemos una sola fila */
+@media (max-width:420px){
+
+    #appCorusNotificaciones{
+        margin:
+            9px
+            13px !important;
+
+        padding:
+            8px
+            9px !important;
+
+        gap:
+            7px !important;
+    }
+
+    #appCorusNotificaciones strong{
+        font-size:
+            .74rem !important;
+    }
+
+    #appCorusEstadoNotificaciones{
+        font-size:
+            .62rem !important;
+    }
+
+    #btnActivarNotificacionesAppCorus{
+        min-height:
+            24px;
+
+        padding:
+            4px
+            8px !important;
+
+        font-size:
+            .62rem !important;
     }
 }
