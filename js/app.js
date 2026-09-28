@@ -4849,6 +4849,307 @@ let adminEsquemasPromise = null;
 
 
 // ======================================================
+// FILTRO DEFENSIVO DE ESQUEMAS POR ALCANCE ADMINISTRATIVO
+// ======================================================
+//
+// Aunque el backend ya debe filtrar, aquí volvemos a comprobar
+// el alcance para evitar que un coordinador vea esquemas de
+// otros coros por caché, respuesta antigua o datos mezclados.
+//
+// Coordinador:
+//   - solo alcance CORO
+//   - solo su idCoro
+//
+// Administrador General:
+//   - solo alcance GLOBAL
+// ======================================================
+
+function obtenerAlcanceEsquemaAdminFrontend(
+    esquema
+) {
+
+    const celebracion =
+        esquema &&
+        esquema.celebracion &&
+        esquema.celebracion.evento
+            ? esquema.celebracion.evento
+            : null;
+
+
+    const relacionCelebracion =
+        !celebracion &&
+        esquema &&
+        Array.isArray(
+            esquema.relaciones
+        )
+            ? esquema.relaciones.find(
+                relacion =>
+                    String(
+                        relacion &&
+                        relacion.uso ||
+                        ""
+                    )
+                    .trim()
+                    .toLowerCase() ===
+                    "celebracion"
+                    &&
+                    relacion.evento
+            )
+            : null;
+
+
+    const evento =
+        celebracion ||
+        (
+            relacionCelebracion
+                ? relacionCelebracion.evento
+                : null
+        );
+
+
+    const idCoro =
+        String(
+            esquema &&
+            esquema.idCoro ||
+            evento &&
+            (
+                evento.idCoro ||
+                evento.id_coro
+            ) ||
+            ""
+        )
+        .trim();
+
+
+    let alcance =
+        String(
+            esquema &&
+            esquema.alcance ||
+            evento &&
+            evento.alcance ||
+            ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    /*
+       Compatibilidad con respuestas antiguas:
+       si tiene idCoro pero no alcance, se considera CORO.
+    */
+    if (
+        !alcance &&
+        idCoro
+    ) {
+
+        alcance =
+            "CORO";
+
+    }
+
+
+    return {
+        idCoro,
+        alcance
+    };
+
+}
+
+
+function filtrarDatosAdminEsquemasPorUsuario(
+    datos,
+    usuario
+) {
+
+    if (
+        !datos ||
+        !usuario
+    ) {
+
+        return datos;
+
+    }
+
+
+    const esGeneral =
+        usuario.esAdminGeneral === true ||
+        String(
+            usuario.rol || ""
+        )
+        .trim()
+        .toLowerCase() ===
+        "administrador general";
+
+
+    const idCoroUsuario =
+        String(
+            usuario.idCoro || ""
+        )
+        .trim();
+
+
+    const esquemaPermitido =
+        esquema => {
+
+            const contexto =
+                obtenerAlcanceEsquemaAdminFrontend(
+                    esquema
+                );
+
+
+            if (
+                esGeneral
+            ) {
+
+                return (
+                    contexto.alcance ===
+                    "GLOBAL"
+                );
+
+            }
+
+
+            return (
+                contexto.alcance ===
+                    "CORO"
+                &&
+                contexto.idCoro ===
+                    idCoroUsuario
+            );
+
+        };
+
+
+    const eventoPermitido =
+        evento => {
+
+            const idCoro =
+                String(
+                    evento &&
+                    (
+                        evento.idCoro ||
+                        evento.id_coro
+                    ) ||
+                    ""
+                )
+                .trim();
+
+
+            let alcance =
+                String(
+                    evento &&
+                    evento.alcance ||
+                    ""
+                )
+                .trim()
+                .toUpperCase();
+
+
+            if (
+                !alcance &&
+                idCoro
+            ) {
+
+                alcance =
+                    "CORO";
+
+            }
+
+
+            if (
+                esGeneral
+            ) {
+
+                return (
+                    alcance ===
+                    "GLOBAL"
+                );
+
+            }
+
+
+            return (
+                alcance ===
+                    "CORO"
+                &&
+                idCoro ===
+                    idCoroUsuario
+            );
+
+        };
+
+
+    const resultado = {
+        ...datos
+    };
+
+
+    if (
+        Array.isArray(
+            datos.esquemas
+        )
+    ) {
+
+        resultado.esquemas =
+            datos.esquemas.filter(
+                esquemaPermitido
+            );
+
+    }
+
+
+    if (
+        Array.isArray(
+            datos.eventos
+        )
+    ) {
+
+        resultado.eventos =
+            datos.eventos.filter(
+                eventoPermitido
+            );
+
+    }
+
+
+    console.log(
+        "🔒 Esquemas admin filtrados:",
+        {
+            usuario:
+                usuario.email ||
+                usuario.nombre ||
+                "",
+            rol:
+                usuario.rol ||
+                "",
+            idCoro:
+                idCoroUsuario,
+            alcance:
+                esGeneral
+                    ? "GLOBAL"
+                    : "CORO",
+            esquemasRecibidos:
+                Array.isArray(
+                    datos.esquemas
+                )
+                    ? datos.esquemas.length
+                    : 0,
+            esquemasVisibles:
+                Array.isArray(
+                    resultado.esquemas
+                )
+                    ? resultado.esquemas.length
+                    : 0
+        }
+    );
+
+
+    return resultado;
+
+}
+
+
+// ======================================================
 // OBTENER DATOS ADMIN ESQUEMAS
 // ======================================================
 
@@ -4956,11 +5257,18 @@ async function obtenerDatosAdminEsquemas(
             await consulta;
 
 
+        const resultadoFiltrado =
+            filtrarDatosAdminEsquemasPorUsuario(
+                resultado,
+                adminUsuario
+            );
+
+
         adminEsquemasCache =
-            resultado;
+            resultadoFiltrado;
 
 
-        return resultado;
+        return resultadoFiltrado;
 
 
     } finally {
