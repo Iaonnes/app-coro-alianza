@@ -377,7 +377,7 @@ const GOOGLE_CLIENT_ID =
 const APPCORUS_VERSION = {
     major: 3,
     minor: 7,
-    patch: 6
+    patch: 7
 };
 
 function obtenerVersionAppCorus() {
