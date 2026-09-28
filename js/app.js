@@ -4864,15 +4864,14 @@ let adminEsquemasPromise = null;
 //   - solo alcance GLOBAL
 // ======================================================
 
-function obtenerAlcanceEsquemaAdminFrontend(
+function obtenerContextoEsquemaAdminFrontend(
     esquema
 ) {
 
     const celebracion =
         esquema &&
-        esquema.celebracion &&
-        esquema.celebracion.evento
-            ? esquema.celebracion.evento
+        esquema.celebracion
+            ? esquema.celebracion
             : null;
 
 
@@ -4892,25 +4891,47 @@ function obtenerAlcanceEsquemaAdminFrontend(
                     .trim()
                     .toLowerCase() ===
                     "celebracion"
-                    &&
-                    relacion.evento
             )
             : null;
 
 
-    const evento =
+    const relacion =
         celebracion ||
-        (
-            relacionCelebracion
-                ? relacionCelebracion.evento
-                : null
-        );
+        relacionCelebracion ||
+        null;
+
+
+    const evento =
+        relacion &&
+        relacion.evento
+            ? relacion.evento
+            : null;
+
+
+    const idEvento =
+        String(
+            relacion &&
+            (
+                relacion.idEvento ||
+                relacion.id_evento
+            ) ||
+            evento &&
+            (
+                evento.idEvento ||
+                evento.id_evento
+            ) ||
+            ""
+        )
+        .trim();
 
 
     const idCoro =
         String(
             esquema &&
-            esquema.idCoro ||
+            (
+                esquema.idCoro ||
+                esquema.id_coro
+            ) ||
             evento &&
             (
                 evento.idCoro ||
@@ -4933,10 +4954,6 @@ function obtenerAlcanceEsquemaAdminFrontend(
         .toUpperCase();
 
 
-    /*
-       Compatibilidad con respuestas antiguas:
-       si tiene idCoro pero no alcance, se considera CORO.
-    */
     if (
         !alcance &&
         idCoro
@@ -4949,6 +4966,7 @@ function obtenerAlcanceEsquemaAdminFrontend(
 
 
     return {
+        idEvento,
         idCoro,
         alcance
     };
@@ -4988,128 +5006,281 @@ function filtrarDatosAdminEsquemasPorUsuario(
         .trim();
 
 
-    const esquemaPermitido =
-        esquema => {
-
-            const contexto =
-                obtenerAlcanceEsquemaAdminFrontend(
-                    esquema
-                );
+    const alcanceEsperado =
+        esGeneral
+            ? "GLOBAL"
+            : "CORO";
 
 
-            if (
-                esGeneral
-            ) {
+    /*
+       Primero filtramos los EVENTOS.
 
-                return (
-                    contexto.alcance ===
-                    "GLOBAL"
-                );
-
-            }
-
-
-            return (
-                contexto.alcance ===
-                    "CORO"
-                &&
-                contexto.idCoro ===
-                    idCoroUsuario
-            );
-
-        };
-
-
-    const eventoPermitido =
-        evento => {
-
-            const idCoro =
-                String(
-                    evento &&
-                    (
-                        evento.idCoro ||
-                        evento.id_coro
-                    ) ||
-                    ""
-                )
-                .trim();
-
-
-            let alcance =
-                String(
-                    evento &&
-                    evento.alcance ||
-                    ""
-                )
-                .trim()
-                .toUpperCase();
-
-
-            if (
-                !alcance &&
-                idCoro
-            ) {
-
-                alcance =
-                    "CORO";
-
-            }
-
-
-            if (
-                esGeneral
-            ) {
-
-                return (
-                    alcance ===
-                    "GLOBAL"
-                );
-
-            }
-
-
-            return (
-                alcance ===
-                    "CORO"
-                &&
-                idCoro ===
-                    idCoroUsuario
-            );
-
-        };
-
-
-    const resultado = {
-        ...datos
-    };
-
-
-    if (
-        Array.isArray(
-            datos.esquemas
-        )
-    ) {
-
-        resultado.esquemas =
-            datos.esquemas.filter(
-                esquemaPermitido
-            );
-
-    }
-
-
-    if (
+       Esta lista es la referencia más segura porque los esquemas
+       heredan su coro/alcance del evento principal (Celebración).
+    */
+    const eventosOriginales =
         Array.isArray(
             datos.eventos
         )
+            ? datos.eventos
+            : [];
+
+
+    const eventosConMetadatos =
+        eventosOriginales.filter(
+            evento => {
+
+                const idCoro =
+                    String(
+                        evento &&
+                        (
+                            evento.idCoro ||
+                            evento.id_coro
+                        ) ||
+                        ""
+                    )
+                    .trim();
+
+
+                const alcance =
+                    String(
+                        evento &&
+                        evento.alcance ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                return (
+                    Boolean(idCoro) ||
+                    Boolean(alcance)
+                );
+
+            }
+        );
+
+
+    let eventosPermitidos;
+
+
+    if (
+        eventosConMetadatos.length > 0
     ) {
 
-        resultado.eventos =
-            datos.eventos.filter(
-                eventoPermitido
+        eventosPermitidos =
+            eventosOriginales.filter(
+                evento => {
+
+                    const idCoro =
+                        String(
+                            evento &&
+                            (
+                                evento.idCoro ||
+                                evento.id_coro
+                            ) ||
+                            ""
+                        )
+                        .trim();
+
+
+                    let alcance =
+                        String(
+                            evento &&
+                            evento.alcance ||
+                            ""
+                        )
+                        .trim()
+                        .toUpperCase();
+
+
+                    if (
+                        !alcance &&
+                        idCoro
+                    ) {
+
+                        alcance =
+                            "CORO";
+
+                    }
+
+
+                    if (
+                        esGeneral
+                    ) {
+
+                        return (
+                            alcance ===
+                            "GLOBAL"
+                        );
+
+                    }
+
+
+                    return (
+                        alcance ===
+                            "CORO"
+                        &&
+                        idCoro ===
+                            idCoroUsuario
+                    );
+
+                }
             );
 
+    } else {
+
+        /*
+           Compatibilidad con el backend que ya entrega eventos
+           previamente filtrados pero no adjunta idCoro/alcance
+           en cada objeto.
+        */
+        eventosPermitidos =
+            eventosOriginales;
+
     }
+
+
+    const idsEventosPermitidos =
+        new Set(
+            eventosPermitidos
+                .map(
+                    evento =>
+                        String(
+                            evento &&
+                            (
+                                evento.idEvento ||
+                                evento.id_evento
+                            ) ||
+                            ""
+                        )
+                        .trim()
+                )
+                .filter(Boolean)
+        );
+
+
+    const esquemasOriginales =
+        Array.isArray(
+            datos.esquemas
+        )
+            ? datos.esquemas
+            : [];
+
+
+    const esquemasPermitidos =
+        esquemasOriginales.filter(
+            esquema => {
+
+                const contexto =
+                    obtenerContextoEsquemaAdminFrontend(
+                        esquema
+                    );
+
+
+                /*
+                   Caso moderno:
+                   el esquema/evento ya trae idCoro y alcance.
+                */
+                if (
+                    contexto.alcance ||
+                    contexto.idCoro
+                ) {
+
+                    if (
+                        esGeneral
+                    ) {
+
+                        return (
+                            contexto.alcance ===
+                            "GLOBAL"
+                        );
+
+                    }
+
+
+                    return (
+                        contexto.alcance ===
+                            "CORO"
+                        &&
+                        contexto.idCoro ===
+                            idCoroUsuario
+                    );
+
+                }
+
+
+                /*
+                   Compatibilidad:
+                   si el esquema no trae idCoro/alcance,
+                   lo asociamos mediante su evento Celebración.
+                */
+                if (
+                    contexto.idEvento &&
+                    idsEventosPermitidos.size > 0
+                ) {
+
+                    return idsEventosPermitidos.has(
+                        contexto.idEvento
+                    );
+
+                }
+
+
+                /*
+                   Último respaldo:
+                   si el backend declara que toda la respuesta
+                   ya pertenece exactamente al alcance actual,
+                   conservamos el esquema.
+                */
+                const alcanceRespuesta =
+                    String(
+                        datos.alcance || ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                const idCoroRespuesta =
+                    String(
+                        datos.idCoro ||
+                        datos.id_coro ||
+                        ""
+                    )
+                    .trim();
+
+
+                if (
+                    esGeneral
+                ) {
+
+                    return (
+                        alcanceRespuesta ===
+                        "GLOBAL"
+                    );
+
+                }
+
+
+                return (
+                    alcanceRespuesta ===
+                        "CORO"
+                    &&
+                    idCoroRespuesta ===
+                        idCoroUsuario
+                );
+
+            }
+        );
+
+
+    const resultado = {
+        ...datos,
+        eventos:
+            eventosPermitidos,
+        esquemas:
+            esquemasPermitidos
+    };
 
 
     console.log(
@@ -5125,21 +5296,15 @@ function filtrarDatosAdminEsquemasPorUsuario(
             idCoro:
                 idCoroUsuario,
             alcance:
-                esGeneral
-                    ? "GLOBAL"
-                    : "CORO",
+                alcanceEsperado,
             esquemasRecibidos:
-                Array.isArray(
-                    datos.esquemas
-                )
-                    ? datos.esquemas.length
-                    : 0,
+                esquemasOriginales.length,
             esquemasVisibles:
-                Array.isArray(
-                    resultado.esquemas
-                )
-                    ? resultado.esquemas.length
-                    : 0
+                esquemasPermitidos.length,
+            eventosRecibidos:
+                eventosOriginales.length,
+            eventosPermitidos:
+                eventosPermitidos.length
         }
     );
 
