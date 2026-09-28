@@ -4626,3 +4626,154 @@ header .header-lema,
             .62rem !important;
     }
 }
+
+/* =========================================================
+   APPCORUS V3.7.6 - AJUSTE FINAL HEADER V5
+   - Cambiar coro más pegado al borde izquierdo
+   - Engrane de administración más visible y legible
+   ========================================================= */
+
+/* Cambiar coro:
+   el header tiene padding lateral, por eso usamos un offset
+   negativo para llevarlo visualmente hacia la orilla real. */
+#btnCambiarCoroAppCorus{
+    position:absolute !important;
+
+    top:9px !important;
+    left:-44px !important;
+
+    margin:0 !important;
+
+    padding:
+        4px
+        10px !important;
+
+    border:
+        1px solid
+        rgba(255,255,255,.32) !important;
+
+    background:
+        rgba(255,255,255,.10) !important;
+
+    color:
+        rgba(255,255,255,.94) !important;
+
+    font-size:.66rem !important;
+    font-weight:600 !important;
+
+    box-shadow:
+        0 2px 8px
+        rgba(0,0,0,.06) !important;
+
+    opacity:1 !important;
+}
+
+/* Administración:
+   un poco más grande y con contraste suficiente para localizarlo rápido. */
+.btn-administracion{
+    width:40px !important;
+    height:40px !important;
+
+    top:8px !important;
+    right:8px !important;
+
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+
+    border:
+        1px solid
+        rgba(255,255,255,.32) !important;
+
+    background:
+        rgba(255,255,255,.16) !important;
+
+    box-shadow:
+        0 4px 12px
+        rgba(0,0,0,.11) !important;
+
+    color:#fff !important;
+
+    opacity:1 !important;
+
+    /* Oculta el emoji original para dibujar un engrane más limpio. */
+    font-size:0 !important;
+}
+
+/* Engrane blanco, simple y nítido */
+.btn-administracion::before{
+    content:"⚙";
+
+    display:block;
+
+    color:#fff;
+
+    font-family:
+        Arial,
+        "Helvetica Neue",
+        sans-serif;
+
+    font-size:21px;
+    font-weight:400;
+    line-height:1;
+
+    text-shadow:
+        0 1px 3px
+        rgba(0,0,0,.16);
+}
+
+.btn-administracion:hover{
+    background:
+        rgba(255,255,255,.23) !important;
+
+    border-color:
+        rgba(255,255,255,.42) !important;
+}
+
+/* Tablet */
+@media (max-width:768px){
+
+    #btnCambiarCoroAppCorus{
+        left:-40px !important;
+        top:8px !important;
+    }
+
+    .btn-administracion{
+        width:38px !important;
+        height:38px !important;
+
+        top:7px !important;
+        right:7px !important;
+    }
+
+    .btn-administracion::before{
+        font-size:20px;
+    }
+}
+
+/* Móvil */
+@media (max-width:420px){
+
+    #btnCambiarCoroAppCorus{
+        left:-36px !important;
+        top:7px !important;
+
+        padding:
+            3px
+            8px !important;
+
+        font-size:.61rem !important;
+    }
+
+    .btn-administracion{
+        width:36px !important;
+        height:36px !important;
+
+        top:6px !important;
+        right:6px !important;
+    }
+
+    .btn-administracion::before{
+        font-size:19px;
+    }
+}
