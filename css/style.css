@@ -4777,3 +4777,37 @@ header .header-lema,
         font-size:19px;
     }
 }
+
+/* =========================================================
+   APPCORUS V3.7.6 - LOGO HEADER V6
+   Logo un poco más grande sin aumentar demasiado el header.
+   ========================================================= */
+
+header .logo,
+.app-header .logo{
+    width:84px !important;
+    height:84px !important;
+
+    margin:
+        0
+        auto
+        4px !important;
+}
+
+@media (max-width:768px){
+
+    header .logo,
+    .app-header .logo{
+        width:76px !important;
+        height:76px !important;
+    }
+}
+
+@media (max-width:420px){
+
+    header .logo,
+    .app-header .logo{
+        width:70px !important;
+        height:70px !important;
+    }
+}
