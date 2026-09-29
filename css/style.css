@@ -4811,3 +4811,366 @@ header .logo,
         height:70px !important;
     }
 }
+
+
+/* =========================================================
+   APPCORUS V3.7.7 - AFINADOR COMPACTO / REDISEÑO VISUAL
+   ---------------------------------------------------------
+   Ajuste exclusivamente visual.
+   No modifica la lógica del afinador, YIN, micrófono,
+   estabilidad, frecuencia ni cálculo de cents.
+   ========================================================= */
+
+#afinador{
+    max-width:900px;
+    margin:auto;
+}
+
+#afinador .afinador{
+    width:calc(100% - 24px);
+    max-width:460px;
+
+    margin:
+        8px auto
+        24px;
+
+    padding:
+        18px
+        18px
+        20px;
+
+    background:#ffffff;
+
+    border:
+        1px solid
+        rgba(21,101,192,.06);
+
+    border-radius:23px;
+
+    box-shadow:
+        0 9px 26px
+        rgba(15,23,42,.10);
+
+    text-align:center;
+}
+
+#afinador .afinador-titulo{
+    margin:0;
+
+    color:#1565c0;
+
+    font-size:1.58rem;
+    font-weight:800;
+    line-height:1.08;
+}
+
+#afinador .afinador-subtitulo{
+    margin:
+        4px
+        0
+        10px;
+
+    color:#718096;
+
+    font-size:.80rem;
+    font-weight:500;
+}
+
+/* La nota detectada conserva la mayor jerarquía visual. */
+#afinador .afinador-nota{
+    min-height:68px;
+
+    margin:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size:4.55rem;
+    font-weight:850;
+    letter-spacing:-.045em;
+    line-height:1;
+
+    color:#172033;
+}
+
+#afinador .afinador-frecuencia{
+    min-height:24px;
+
+    margin:
+        -1px
+        0
+        1px;
+
+    color:#607086;
+
+    font-size:1.04rem;
+    font-weight:700;
+}
+
+/* Medidor amplio pero compacto para que quepa completo en móvil. */
+#afinador .afinador-medidor{
+    position:relative;
+
+    width:100%;
+    height:171px;
+
+    margin:
+        5px auto
+        0;
+
+    overflow:visible;
+}
+
+/* Conserva el SVG/color actual de la escala. */
+#afinador .afinador-linea{
+    left:50%;
+    bottom:36px;
+
+    width:min(100%, 350px);
+    height:148px;
+
+    transform:translateX(-50%);
+}
+
+/* El centro del arco ya está integrado en el SVG actual. */
+#afinador .afinador-centro{
+    display:none;
+}
+
+/* Misma aguja actual, solo mejor proporcionada a la tarjeta. */
+#afinador .afinador-aguja{
+    left:50%;
+    bottom:38px;
+
+    width:15px;
+    height:92px;
+
+    background:transparent;
+
+    transform-origin:50% 100%;
+
+    transition:
+        transform .14s ease-out;
+}
+
+#afinador .afinador-aguja::before{
+    bottom:0;
+
+    width:10px;
+    height:92px;
+}
+
+#afinador .afinador-aguja::after{
+    bottom:-7px;
+
+    width:12px;
+    height:12px;
+
+    border-width:2px;
+}
+
+#afinador .afinador-extremos{
+    left:0;
+    right:0;
+    bottom:18px;
+
+    padding:
+        0
+        1px;
+
+    color:#66758d;
+
+    font-size:.79rem;
+    font-weight:700;
+}
+
+#afinador .afinador-cents{
+    margin-top:0;
+
+    color:#526273;
+
+    font-size:.98rem;
+    font-weight:800;
+}
+
+#afinador .afinador-estado{
+    margin:
+        7px auto
+        10px;
+
+    min-height:20px;
+
+    color:#66788a;
+
+    font-size:.78rem;
+    font-weight:700;
+    line-height:1.2;
+}
+
+#afinador .afinador-boton{
+    width:100%;
+    min-height:46px;
+
+    border:0;
+    border-radius:13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1976d2,
+            #0788e8
+        );
+
+    color:#ffffff;
+
+    font-family:inherit;
+    font-size:.90rem;
+    font-weight:750;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 5px 14px
+        rgba(25,118,210,.22);
+
+    transition:
+        transform .12s ease,
+        box-shadow .12s ease;
+}
+
+#afinador .afinador-boton:active{
+    transform:scale(.985);
+
+    box-shadow:
+        0 3px 10px
+        rgba(25,118,210,.18);
+}
+
+#afinador .afinador-ayuda{
+    margin-top:9px;
+
+    color:#8291a6;
+
+    font-size:.68rem;
+    line-height:1.38;
+}
+
+#afinador .afinador-ayuda strong{
+    color:#66788a;
+    font-weight:700;
+}
+
+@media(max-width:600px){
+
+    #afinador .afinador{
+        width:calc(100% - 18px);
+
+        margin-top:6px;
+
+        padding:
+            16px
+            13px
+            17px;
+
+        border-radius:20px;
+    }
+
+    #afinador .afinador-titulo{
+        font-size:1.48rem;
+    }
+
+    #afinador .afinador-subtitulo{
+        margin-bottom:8px;
+        font-size:.73rem;
+    }
+
+    #afinador .afinador-nota{
+        min-height:62px;
+        font-size:4.15rem;
+    }
+
+    #afinador .afinador-frecuencia{
+        font-size:.98rem;
+    }
+
+    #afinador .afinador-medidor{
+        height:158px;
+        margin-top:3px;
+    }
+
+    #afinador .afinador-linea{
+        width:min(98%, 330px);
+        height:138px;
+        bottom:33px;
+    }
+
+    #afinador .afinador-aguja{
+        bottom:35px;
+        height:86px;
+        width:15px;
+    }
+
+    #afinador .afinador-aguja::before{
+        width:9px;
+        height:86px;
+    }
+
+    #afinador .afinador-extremos{
+        bottom:16px;
+        font-size:.72rem;
+    }
+
+    #afinador .afinador-cents{
+        font-size:.91rem;
+    }
+
+    #afinador .afinador-estado{
+        margin:
+            6px auto
+            9px;
+
+        font-size:.72rem;
+    }
+
+    #afinador .afinador-boton{
+        min-height:43px;
+        border-radius:12px;
+        font-size:.84rem;
+    }
+
+    #afinador .afinador-ayuda{
+        margin-top:8px;
+        font-size:.63rem;
+    }
+}
+
+@media(max-width:380px){
+
+    #afinador .afinador-nota{
+        font-size:3.8rem;
+    }
+
+    #afinador .afinador-medidor{
+        height:151px;
+    }
+
+    #afinador .afinador-linea{
+        height:132px;
+    }
+
+    #afinador .afinador-aguja{
+        height:82px;
+    }
+
+    #afinador .afinador-aguja::before{
+        height:82px;
+    }
+}
+
