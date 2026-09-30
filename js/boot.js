@@ -1,13 +1,15 @@
 // ======================================================
 // APPCORUS BOOT
-// CARGA AUTOMÁTICA SIN CACHÉ OBSOLETA
+// CARGA VERSIONADA PARA EVITAR CACHÉ OBSOLETA
 // ======================================================
 
 (function iniciarAppCorus() {
 
-    // Identificador automático de esta carga
+    // IMPORTANTE:
+    // Cambiar este valor únicamente cuando se publique
+    // una nueva versión de AppCorus.
     const revision =
-        Date.now();
+        "3.7.7";
 
 
     window.APPCORUS_REVISION =
@@ -57,7 +59,8 @@
         () => {
 
             console.log(
-                "✅ AppCorus actualizado"
+                "✅ AppCorus actualizado - V" +
+                revision
             );
 
         };
