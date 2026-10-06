@@ -377,7 +377,7 @@ const GOOGLE_CLIENT_ID =
 const APPCORUS_VERSION = {
     major: 3,
     minor: 7,
-    patch: 7
+    patch: 6
 };
 
 function obtenerVersionAppCorus() {
@@ -553,6 +553,11 @@ function actualizarIdentidadAdministrador(
 
 
 let googleLoginInicializado = false;
+let googleIdentityInicializada = false;
+let googleLoginContexto = "admin";
+
+let nuevoCoroCredential = "";
+let nuevoCoroGooglePerfil = null;
 
 
 // ======================================================
@@ -835,6 +840,356 @@ function abrirAccesoAdministracion() {
 
 
 // ======================================================
+// GOOGLE IDENTITY COMPARTIDA
+// Administración + alta inicial de coordinador
+// ======================================================
+
+function asegurarGoogleIdentityInicializada() {
+
+    if (
+        window.location.protocol ===
+        "file:"
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        googleIdentityInicializada
+    ) {
+
+        return true;
+
+    }
+
+
+    if (
+        typeof google === "undefined" ||
+        !google.accounts ||
+        !google.accounts.id
+    ) {
+
+        return false;
+
+    }
+
+
+    google.accounts.id.initialize({
+
+        client_id:
+            GOOGLE_CLIENT_ID,
+
+        callback:
+            manejarRespuestaGoogleCompartida
+
+    });
+
+
+    googleIdentityInicializada =
+        true;
+
+
+    return true;
+
+}
+
+
+function manejarRespuestaGoogleCompartida(
+    respuestaGoogle
+) {
+
+    const contexto =
+        googleLoginContexto;
+
+
+    googleLoginContexto =
+        "admin";
+
+
+    if (
+        contexto ===
+        "crearCoro"
+    ) {
+
+        manejarIdentidadGoogleNuevoCoro(
+            respuestaGoogle
+        );
+
+        return;
+
+    }
+
+
+    manejarLoginGoogle(
+        respuestaGoogle
+    );
+
+}
+
+
+async function manejarIdentidadGoogleNuevoCoro(
+    respuestaGoogle
+) {
+
+    const estado =
+        document.getElementById(
+            "appCorusNuevoCoroGoogleEstado"
+        );
+
+
+    nuevoCoroCredential =
+        "";
+
+    nuevoCoroGooglePerfil =
+        null;
+
+
+    if (
+        !respuestaGoogle ||
+        !respuestaGoogle.credential
+    ) {
+
+        if (estado) {
+
+            estado.textContent =
+                "No fue posible obtener tu cuenta de Google.";
+
+            estado.style.color =
+                "#c62828";
+
+        }
+
+
+        return;
+
+    }
+
+
+    if (estado) {
+
+        estado.textContent =
+            "Validando cuenta de Google...";
+
+        estado.style.color =
+            "#607d8b";
+
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                URL_API,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            accion:
+                                "validarCreadorCoro",
+
+                            credential:
+                                respuestaGoogle.credential
+
+                        })
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (
+            !resultado.ok
+        ) {
+
+            throw new Error(
+                resultado.error ||
+                "No fue posible validar la cuenta de Google."
+            );
+
+        }
+
+
+        nuevoCoroCredential =
+            respuestaGoogle.credential;
+
+
+        nuevoCoroGooglePerfil = {
+
+            email:
+                resultado.email ||
+                "",
+
+            nombre:
+                resultado.nombre ||
+                ""
+
+        };
+
+
+        if (estado) {
+
+            estado.textContent =
+                "✓ Coordinador: " +
+                (
+                    resultado.nombre ||
+                    resultado.email ||
+                    "Cuenta Google validada"
+                );
+
+            estado.style.color =
+                "#2e7d32";
+
+        }
+
+
+    } catch(error) {
+
+        nuevoCoroCredential =
+            "";
+
+        nuevoCoroGooglePerfil =
+            null;
+
+
+        if (estado) {
+
+            estado.textContent =
+                error.message ||
+                "No fue posible validar la cuenta de Google.";
+
+            estado.style.color =
+                "#c62828";
+
+        }
+
+    }
+
+}
+
+
+function inicializarGoogleNuevoCoro() {
+
+    const contenedor =
+        document.getElementById(
+            "appCorusNuevoCoroGoogleButton"
+        );
+
+
+    const estado =
+        document.getElementById(
+            "appCorusNuevoCoroGoogleEstado"
+        );
+
+
+    if (
+        !contenedor
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !asegurarGoogleIdentityInicializada()
+    ) {
+
+        if (estado) {
+
+            estado.textContent =
+                "Cargando acceso con Google...";
+
+        }
+
+
+        setTimeout(
+            () => {
+
+                const formulario =
+                    document.getElementById(
+                        "appCorusCrearCoroFormulario"
+                    );
+
+
+                if (
+                    formulario &&
+                    formulario.style.display !==
+                        "none"
+                ) {
+
+                    inicializarGoogleNuevoCoro();
+
+                }
+
+            },
+            500
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        contenedor.dataset.renderizado ===
+        "1"
+    ) {
+
+        return;
+
+    }
+
+
+    google.accounts.id.renderButton(
+
+        contenedor,
+
+        {
+
+            theme:
+                "outline",
+
+            size:
+                "large",
+
+            shape:
+                "pill",
+
+            text:
+                "continue_with",
+
+            width:
+                280,
+
+            click_listener:
+                () => {
+
+                    googleLoginContexto =
+                        "crearCoro";
+
+                }
+
+        }
+
+    );
+
+
+    contenedor.dataset.renderizado =
+        "1";
+
+}
+
+
+// ======================================================
 // GOOGLE LOGIN
 // ======================================================
 
@@ -897,13 +1252,17 @@ function inicializarGoogleLogin() {
 
 
     if (
-        typeof google === "undefined" ||
-        !google.accounts ||
-        !google.accounts.id
+        !asegurarGoogleIdentityInicializada()
     ) {
 
         console.log(
             "Google Identity todavía no está disponible."
+        );
+
+
+        setTimeout(
+            inicializarGoogleLogin,
+            500
         );
 
 
@@ -927,17 +1286,6 @@ function inicializarGoogleLogin() {
     }
 
 
-    google.accounts.id.initialize({
-
-        client_id:
-            GOOGLE_CLIENT_ID,
-
-        callback:
-            manejarLoginGoogle
-
-    });
-
-
     google.accounts.id.renderButton(
 
         contenedor,
@@ -957,7 +1305,15 @@ function inicializarGoogleLogin() {
                 "continue_with",
 
             width:
-                280
+                280,
+
+            click_listener:
+                () => {
+
+                    googleLoginContexto =
+                        "admin";
+
+                }
 
         }
 
@@ -4849,472 +5205,6 @@ let adminEsquemasPromise = null;
 
 
 // ======================================================
-// FILTRO DEFENSIVO DE ESQUEMAS POR ALCANCE ADMINISTRATIVO
-// ======================================================
-//
-// Aunque el backend ya debe filtrar, aquí volvemos a comprobar
-// el alcance para evitar que un coordinador vea esquemas de
-// otros coros por caché, respuesta antigua o datos mezclados.
-//
-// Coordinador:
-//   - solo alcance CORO
-//   - solo su idCoro
-//
-// Administrador General:
-//   - solo alcance GLOBAL
-// ======================================================
-
-function obtenerContextoEsquemaAdminFrontend(
-    esquema
-) {
-
-    const celebracion =
-        esquema &&
-        esquema.celebracion
-            ? esquema.celebracion
-            : null;
-
-
-    const relacionCelebracion =
-        !celebracion &&
-        esquema &&
-        Array.isArray(
-            esquema.relaciones
-        )
-            ? esquema.relaciones.find(
-                relacion =>
-                    String(
-                        relacion &&
-                        relacion.uso ||
-                        ""
-                    )
-                    .trim()
-                    .toLowerCase() ===
-                    "celebracion"
-            )
-            : null;
-
-
-    const relacion =
-        celebracion ||
-        relacionCelebracion ||
-        null;
-
-
-    const evento =
-        relacion &&
-        relacion.evento
-            ? relacion.evento
-            : null;
-
-
-    const idEvento =
-        String(
-            relacion &&
-            (
-                relacion.idEvento ||
-                relacion.id_evento
-            ) ||
-            evento &&
-            (
-                evento.idEvento ||
-                evento.id_evento
-            ) ||
-            ""
-        )
-        .trim();
-
-
-    const idCoro =
-        String(
-            esquema &&
-            (
-                esquema.idCoro ||
-                esquema.id_coro
-            ) ||
-            evento &&
-            (
-                evento.idCoro ||
-                evento.id_coro
-            ) ||
-            ""
-        )
-        .trim();
-
-
-    let alcance =
-        String(
-            esquema &&
-            esquema.alcance ||
-            evento &&
-            evento.alcance ||
-            ""
-        )
-        .trim()
-        .toUpperCase();
-
-
-    if (
-        !alcance &&
-        idCoro
-    ) {
-
-        alcance =
-            "CORO";
-
-    }
-
-
-    return {
-        idEvento,
-        idCoro,
-        alcance
-    };
-
-}
-
-
-function filtrarDatosAdminEsquemasPorUsuario(
-    datos,
-    usuario
-) {
-
-    if (
-        !datos ||
-        !usuario
-    ) {
-
-        return datos;
-
-    }
-
-
-    const esGeneral =
-        usuario.esAdminGeneral === true ||
-        String(
-            usuario.rol || ""
-        )
-        .trim()
-        .toLowerCase() ===
-        "administrador general";
-
-
-    const idCoroUsuario =
-        String(
-            usuario.idCoro || ""
-        )
-        .trim();
-
-
-    const alcanceEsperado =
-        esGeneral
-            ? "GLOBAL"
-            : "CORO";
-
-
-    /*
-       Primero filtramos los EVENTOS.
-
-       Esta lista es la referencia más segura porque los esquemas
-       heredan su coro/alcance del evento principal (Celebración).
-    */
-    const eventosOriginales =
-        Array.isArray(
-            datos.eventos
-        )
-            ? datos.eventos
-            : [];
-
-
-    const eventosConMetadatos =
-        eventosOriginales.filter(
-            evento => {
-
-                const idCoro =
-                    String(
-                        evento &&
-                        (
-                            evento.idCoro ||
-                            evento.id_coro
-                        ) ||
-                        ""
-                    )
-                    .trim();
-
-
-                const alcance =
-                    String(
-                        evento &&
-                        evento.alcance ||
-                        ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-
-                return (
-                    Boolean(idCoro) ||
-                    Boolean(alcance)
-                );
-
-            }
-        );
-
-
-    let eventosPermitidos;
-
-
-    if (
-        eventosConMetadatos.length > 0
-    ) {
-
-        eventosPermitidos =
-            eventosOriginales.filter(
-                evento => {
-
-                    const idCoro =
-                        String(
-                            evento &&
-                            (
-                                evento.idCoro ||
-                                evento.id_coro
-                            ) ||
-                            ""
-                        )
-                        .trim();
-
-
-                    let alcance =
-                        String(
-                            evento &&
-                            evento.alcance ||
-                            ""
-                        )
-                        .trim()
-                        .toUpperCase();
-
-
-                    if (
-                        !alcance &&
-                        idCoro
-                    ) {
-
-                        alcance =
-                            "CORO";
-
-                    }
-
-
-                    if (
-                        esGeneral
-                    ) {
-
-                        return (
-                            alcance ===
-                            "GLOBAL"
-                        );
-
-                    }
-
-
-                    return (
-                        alcance ===
-                            "CORO"
-                        &&
-                        idCoro ===
-                            idCoroUsuario
-                    );
-
-                }
-            );
-
-    } else {
-
-        /*
-           Compatibilidad con el backend que ya entrega eventos
-           previamente filtrados pero no adjunta idCoro/alcance
-           en cada objeto.
-        */
-        eventosPermitidos =
-            eventosOriginales;
-
-    }
-
-
-    const idsEventosPermitidos =
-        new Set(
-            eventosPermitidos
-                .map(
-                    evento =>
-                        String(
-                            evento &&
-                            (
-                                evento.idEvento ||
-                                evento.id_evento
-                            ) ||
-                            ""
-                        )
-                        .trim()
-                )
-                .filter(Boolean)
-        );
-
-
-    const esquemasOriginales =
-        Array.isArray(
-            datos.esquemas
-        )
-            ? datos.esquemas
-            : [];
-
-
-    const esquemasPermitidos =
-        esquemasOriginales.filter(
-            esquema => {
-
-                const contexto =
-                    obtenerContextoEsquemaAdminFrontend(
-                        esquema
-                    );
-
-
-                /*
-                   Caso moderno:
-                   el esquema/evento ya trae idCoro y alcance.
-                */
-                if (
-                    contexto.alcance ||
-                    contexto.idCoro
-                ) {
-
-                    if (
-                        esGeneral
-                    ) {
-
-                        return (
-                            contexto.alcance ===
-                            "GLOBAL"
-                        );
-
-                    }
-
-
-                    return (
-                        contexto.alcance ===
-                            "CORO"
-                        &&
-                        contexto.idCoro ===
-                            idCoroUsuario
-                    );
-
-                }
-
-
-                /*
-                   Compatibilidad:
-                   si el esquema no trae idCoro/alcance,
-                   lo asociamos mediante su evento Celebración.
-                */
-                if (
-                    contexto.idEvento &&
-                    idsEventosPermitidos.size > 0
-                ) {
-
-                    return idsEventosPermitidos.has(
-                        contexto.idEvento
-                    );
-
-                }
-
-
-                /*
-                   Último respaldo:
-                   si el backend declara que toda la respuesta
-                   ya pertenece exactamente al alcance actual,
-                   conservamos el esquema.
-                */
-                const alcanceRespuesta =
-                    String(
-                        datos.alcance || ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-
-                const idCoroRespuesta =
-                    String(
-                        datos.idCoro ||
-                        datos.id_coro ||
-                        ""
-                    )
-                    .trim();
-
-
-                if (
-                    esGeneral
-                ) {
-
-                    return (
-                        alcanceRespuesta ===
-                        "GLOBAL"
-                    );
-
-                }
-
-
-                return (
-                    alcanceRespuesta ===
-                        "CORO"
-                    &&
-                    idCoroRespuesta ===
-                        idCoroUsuario
-                );
-
-            }
-        );
-
-
-    const resultado = {
-        ...datos,
-        eventos:
-            eventosPermitidos,
-        esquemas:
-            esquemasPermitidos
-    };
-
-
-    console.log(
-        "🔒 Esquemas admin filtrados:",
-        {
-            usuario:
-                usuario.email ||
-                usuario.nombre ||
-                "",
-            rol:
-                usuario.rol ||
-                "",
-            idCoro:
-                idCoroUsuario,
-            alcance:
-                alcanceEsperado,
-            esquemasRecibidos:
-                esquemasOriginales.length,
-            esquemasVisibles:
-                esquemasPermitidos.length,
-            eventosRecibidos:
-                eventosOriginales.length,
-            eventosPermitidos:
-                eventosPermitidos.length
-        }
-    );
-
-
-    return resultado;
-
-}
-
-
-// ======================================================
 // OBTENER DATOS ADMIN ESQUEMAS
 // ======================================================
 
@@ -5422,18 +5312,11 @@ async function obtenerDatosAdminEsquemas(
             await consulta;
 
 
-        const resultadoFiltrado =
-            filtrarDatosAdminEsquemasPorUsuario(
-                resultado,
-                adminUsuario
-            );
-
-
         adminEsquemasCache =
-            resultadoFiltrado;
+            resultado;
 
 
-        return resultadoFiltrado;
+        return resultado;
 
 
     } finally {
@@ -10923,7 +10806,8 @@ async function mostrarPantallaAccesoCoro() {
                         margin:0 0 18px;
                         color:#607d8b;
                     ">
-                    Solo necesitamos el nombre y una clave.
+                    Elige el nombre, una clave y confirma tu cuenta de Google.
+                    Esa cuenta quedará como Coordinador del coro.
                 </p>
 
 
@@ -10980,6 +10864,48 @@ async function mostrarPantallaAccesoCoro() {
                         font:inherit;
                         box-sizing:border-box;
                     ">
+
+
+                <div
+                    style="
+                        margin-top:18px;
+                        padding:14px 12px;
+                        border:1px solid #e0e6ed;
+                        border-radius:14px;
+                        background:#f8fbff;
+                        text-align:center;
+                    ">
+
+                    <div
+                        style="
+                            font-weight:700;
+                            color:#37474f;
+                            margin-bottom:8px;
+                        ">
+                        Cuenta del coordinador
+                    </div>
+
+                    <div
+                        id="appCorusNuevoCoroGoogleButton"
+                        style="
+                            display:flex;
+                            justify-content:center;
+                            min-height:44px;
+                        ">
+                    </div>
+
+                    <div
+                        id="appCorusNuevoCoroGoogleEstado"
+                        style="
+                            margin-top:8px;
+                            color:#607d8b;
+                            font-size:.84rem;
+                            line-height:1.35;
+                        ">
+                        Confirma con Google la cuenta que administrará este coro.
+                    </div>
+
+                </div>
 
 
                 <button
@@ -11196,35 +11122,6 @@ async function mostrarPantallaAccesoCoro() {
 
                     await inicializarAppCorus();
 
-                    /*
-                       Al entrar/cambiar de coro, el permiso de notificaciones
-                       puede estar concedido desde antes. Firebase se inicializa
-                       globalmente, pero esa inicialización puede ocurrir antes
-                       de que exista el nuevo acceso del coro.
-
-                       Por eso sincronizamos de forma explícita aquí para que
-                       el mismo token quede asociado inmediatamente al coro
-                       que acaba de iniciar sesión.
-                    */
-                    if (
-                        "Notification" in window &&
-                        Notification.permission ===
-                            "granted"
-                    ) {
-
-                        if (
-                            !appCorusFirebaseMessaging
-                        ) {
-
-                            await inicializarFirebaseAppCorus();
-
-                        }
-
-
-                        await sincronizarTokenPushAppCorus();
-
-                    }
-
 
                 } catch(error) {
 
@@ -11301,6 +11198,33 @@ async function mostrarPantallaAccesoCoro() {
                     .style.display =
                         "block";
 
+
+                nuevoCoroCredential =
+                    "";
+
+                nuevoCoroGooglePerfil =
+                    null;
+
+
+                const estadoGoogle =
+                    document.getElementById(
+                        "appCorusNuevoCoroGoogleEstado"
+                    );
+
+
+                if (estadoGoogle) {
+
+                    estadoGoogle.textContent =
+                        "Confirma con Google la cuenta que administrará este coro.";
+
+                    estadoGoogle.style.color =
+                        "#607d8b";
+
+                }
+
+
+                inicializarGoogleNuevoCoro();
+
             }
         );
 
@@ -11332,6 +11256,13 @@ async function mostrarPantallaAccesoCoro() {
                     )
                     .style.display =
                         "block";
+
+
+                nuevoCoroCredential =
+                    "";
+
+                nuevoCoroGooglePerfil =
+                    null;
 
             }
         );
@@ -11402,6 +11333,19 @@ async function mostrarPantallaAccesoCoro() {
                 }
 
 
+                if (
+                    !nuevoCoroCredential
+                ) {
+
+                    mostrarErrorAccesoCoro(
+                        "Confirma primero tu cuenta de Google. Esa cuenta quedará como Coordinador."
+                    );
+
+                    return;
+
+                }
+
+
                 const boton =
                     document.getElementById(
                         "appCorusCrearCoro"
@@ -11434,7 +11378,10 @@ async function mostrarPantallaAccesoCoro() {
                                             nombreCoro,
 
                                         clave:
-                                            clave
+                                            clave,
+
+                                        credential:
+                                            nuevoCoroCredential
 
                                     })
                             }
@@ -11461,6 +11408,13 @@ async function mostrarPantallaAccesoCoro() {
                         resultado.idCoro,
                         clave
                     );
+
+
+                    nuevoCoroCredential =
+                        "";
+
+                    nuevoCoroGooglePerfil =
+                        null;
 
 
                     invalidarDatosApp();
@@ -11496,35 +11450,6 @@ async function mostrarPantallaAccesoCoro() {
 
 
                     await inicializarAppCorus();
-
-                    /*
-                       Al entrar/cambiar de coro, el permiso de notificaciones
-                       puede estar concedido desde antes. Firebase se inicializa
-                       globalmente, pero esa inicialización puede ocurrir antes
-                       de que exista el nuevo acceso del coro.
-
-                       Por eso sincronizamos de forma explícita aquí para que
-                       el mismo token quede asociado inmediatamente al coro
-                       que acaba de iniciar sesión.
-                    */
-                    if (
-                        "Notification" in window &&
-                        Notification.permission ===
-                            "granted"
-                    ) {
-
-                        if (
-                            !appCorusFirebaseMessaging
-                        ) {
-
-                            await inicializarFirebaseAppCorus();
-
-                        }
-
-
-                        await sincronizarTokenPushAppCorus();
-
-                    }
 
 
                 } catch(error) {
@@ -16532,59 +16457,6 @@ async function registrarTokenPushEnBackend(
     }
 
 
-    /*
-       IMPORTANTE:
-       Firebase puede inicializarse antes de que el usuario
-       termine de seleccionar / iniciar sesión en un coro.
-
-       No intentamos registrar el dispositivo hasta tener
-       juntos idCoro + clave válidos en sessionStorage.
-       Esto evita enviar idCoro vacío al backend y evita
-       el error "Selecciona un coro válido." durante el arranque.
-    */
-    const acceso =
-        obtenerAccesoCoroGuardado();
-
-
-    if (
-        !acceso ||
-        !/^COR\d{6}$/.test(
-            String(
-                acceso.idCoro || ""
-            )
-            .trim()
-            .toUpperCase()
-        ) ||
-        !String(
-            acceso.clave || ""
-        )
-        .trim()
-    ) {
-
-        console.log(
-            "ℹ️ Push pendiente: todavía no hay un coro autenticado."
-        );
-
-        return false;
-
-    }
-
-
-    const idCoro =
-        String(
-            acceso.idCoro
-        )
-        .trim()
-        .toUpperCase();
-
-
-    const clave =
-        String(
-            acceso.clave
-        )
-        .trim();
-
-
     try {
 
         const respuesta =
@@ -16604,10 +16476,18 @@ async function registrarTokenPushEnBackend(
                                 tokenLimpio,
 
                             idCoro:
-                                idCoro,
+                                (
+                                    obtenerAccesoCoroGuardado() ||
+                                    {}
+                                ).idCoro ||
+                                "",
 
                             clave:
-                                clave
+                                (
+                                    obtenerAccesoCoroGuardado() ||
+                                    {}
+                                ).clave ||
+                                ""
 
                         })
                 }
@@ -16710,41 +16590,6 @@ async function sincronizarTokenPushAppCorus() {
         Notification.permission !==
             "granted"
     ) {
-
-        return false;
-
-    }
-
-
-    /*
-       No sincronizar mientras la pantalla de selección de coro
-       todavía no haya creado una sesión válida.
-
-       Después de Entrar / Crear y entrar, AppCorus vuelve a llamar
-       explícitamente esta función, ahora sí con idCoro + clave.
-    */
-    const acceso =
-        obtenerAccesoCoroGuardado();
-
-
-    if (
-        !acceso ||
-        !/^COR\d{6}$/.test(
-            String(
-                acceso.idCoro || ""
-            )
-            .trim()
-            .toUpperCase()
-        ) ||
-        !String(
-            acceso.clave || ""
-        )
-        .trim()
-    ) {
-
-        console.log(
-            "ℹ️ Sincronización push aplazada hasta seleccionar un coro."
-        );
 
         return false;
 
@@ -16881,8 +16726,7 @@ async function inicializarFirebaseAppCorus() {
                     if (
                         "Notification" in window &&
                         Notification.permission ===
-                            "granted" &&
-                        obtenerAccesoCoroGuardado()
+                            "granted"
                     ) {
 
                         sincronizarTokenPushAppCorus()
