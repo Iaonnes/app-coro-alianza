@@ -1,7 +1,7 @@
 // ======================================================
 // APPCORUS - SERVICE WORKER
-// Firebase Cloud Messaging + caché básico de la PWA
-// Versión 3.7.7
+// Firebase Cloud Messaging + caché PWA actualizable
+// AppCorus 3.7.7 - revisión técnica r2
 // ======================================================
 
 importScripts(
@@ -58,7 +58,7 @@ console.log(
 // ======================================================
 
 const APPCORUS_CACHE =
-    "appcorus-shell-v3.7.7";
+    "appcorus-shell-v3.7.7-r2";
 
 
 const APPCORUS_SHELL = [
@@ -76,8 +76,6 @@ const APPCORUS_SHELL = [
 
 // ======================================================
 // INSTALACIÓN
-// Guarda los archivos básicos necesarios para arrancar
-// AppCorus aunque GitHub Pages falle temporalmente.
 // ======================================================
 
 self.addEventListener(
@@ -87,7 +85,9 @@ self.addEventListener(
         event.waitUntil(
 
             caches
-                .open(APPCORUS_CACHE)
+                .open(
+                    APPCORUS_CACHE
+                )
                 .then(
                     cache =>
                         Promise.all(
@@ -99,7 +99,8 @@ self.addEventListener(
                                             new Request(
                                                 archivo,
                                                 {
-                                                    cache: "reload"
+                                                    cache:
+                                                        "reload"
                                                 }
                                             )
                                         )
@@ -131,8 +132,7 @@ self.addEventListener(
 
 // ======================================================
 // ACTIVACIÓN
-// Limpia únicamente cachés antiguos creados por AppCorus.
-// No toca cachés ajenos del navegador.
+// Elimina versiones anteriores del caché de AppCorus.
 // ======================================================
 
 self.addEventListener(
@@ -153,7 +153,8 @@ self.addEventListener(
                                         nombre.startsWith(
                                             "appcorus-shell-"
                                         ) &&
-                                        nombre !== APPCORUS_CACHE
+                                        nombre !==
+                                            APPCORUS_CACHE
                                 )
                                 .map(
                                     nombre =>
@@ -176,17 +177,19 @@ self.addEventListener(
 
 
 // ======================================================
-// AYUDANTE: TIMEOUT DE RED
+// AYUDANTE: RED CON TIMEOUT
 // ======================================================
 
 function fetchConTimeout(
     request,
-    milisegundos = 4500
+    milisegundos = 5000
 ) {
 
     return Promise.race([
 
-        fetch(request),
+        fetch(
+            request
+        ),
 
         new Promise(
             (
@@ -210,11 +213,59 @@ function fetchConTimeout(
 
 
 // ======================================================
-// PETICIONES
-// - Navegación: intenta red primero y cae al index en caché.
-// - Archivos locales: usa caché primero y red como respaldo.
-// - APIs externas (Google Apps Script, Firebase, etc.) NO se
-//   interceptan ni se almacenan aquí.
+// AYUDANTE: GUARDAR RESPUESTA EN CACHÉ
+// ======================================================
+
+function guardarEnCache(
+    request,
+    response
+) {
+
+    if (
+        !response ||
+        !response.ok
+    ) {
+        return;
+    }
+
+
+    const copia =
+        response.clone();
+
+
+    caches
+        .open(
+            APPCORUS_CACHE
+        )
+        .then(
+            cache =>
+                cache.put(
+                    request,
+                    copia
+                )
+        )
+        .catch(
+            () => {}
+        );
+
+}
+
+
+// ======================================================
+// FETCH
+//
+// Navegación:
+//   RED PRIMERO -> caché si falla.
+//
+// JS / CSS / JSON / manifest:
+//   RED PRIMERO -> actualiza caché -> caché si falla.
+//   Así AppCorus recibe los cambios publicados.
+//
+// Imágenes y otros recursos locales:
+//   CACHÉ PRIMERO -> red si no existe.
+//
+// APIs externas:
+//   No se interceptan.
 // ======================================================
 
 self.addEventListener(
@@ -226,7 +277,8 @@ self.addEventListener(
 
 
         if (
-            request.method !== "GET"
+            request.method !==
+            "GET"
         ) {
             return;
         }
@@ -238,20 +290,23 @@ self.addEventListener(
             );
 
 
-        // No intervenir llamadas externas.
+        // No intervenir Google Apps Script, Firebase,
+        // Google Identity ni ningún recurso externo.
         if (
-            url.origin !== self.location.origin
+            url.origin !==
+            self.location.origin
         ) {
             return;
         }
 
 
         // ==============================================
-        // NAVEGACIÓN / APERTURA DE LA PWA
+        // NAVEGACIÓN
         // ==============================================
 
         if (
-            request.mode === "navigate"
+            request.mode ===
+            "navigate"
         ) {
 
             event.respondWith(
@@ -262,27 +317,10 @@ self.addEventListener(
                     .then(
                         response => {
 
-                            if (
-                                response &&
-                                response.ok
-                            ) {
-
-                                const copia =
-                                    response.clone();
-
-                                caches
-                                    .open(
-                                        APPCORUS_CACHE
-                                    )
-                                    .then(
-                                        cache =>
-                                            cache.put(
-                                                "./index.html",
-                                                copia
-                                            )
-                                    );
-
-                            }
+                            guardarEnCache(
+                                request,
+                                response
+                            );
 
                             return response;
 
@@ -291,11 +329,25 @@ self.addEventListener(
                     .catch(
                         async () => {
 
+                            const exacta =
+                                await caches.match(
+                                    request
+                                );
+
+
+                            if (
+                                exacta
+                            ) {
+                                return exacta;
+                            }
+
+
                             const indexCache =
                                 await caches.match(
                                     "./index.html",
                                     {
-                                        ignoreSearch: true
+                                        ignoreSearch:
+                                            true
                                     }
                                 );
 
@@ -311,7 +363,8 @@ self.addEventListener(
                                 await caches.match(
                                     "./",
                                     {
-                                        ignoreSearch: true
+                                        ignoreSearch:
+                                            true
                                     }
                                 );
 
@@ -326,7 +379,8 @@ self.addEventListener(
                             return new Response(
                                 "AppCorus no pudo iniciar. Revisa tu conexión e inténtalo nuevamente.",
                                 {
-                                    status: 503,
+                                    status:
+                                        503,
                                     headers: {
                                         "Content-Type":
                                             "text/plain; charset=UTF-8"
@@ -344,20 +398,114 @@ self.addEventListener(
 
 
         // ==============================================
-        // ARCHIVOS LOCALES
-        // Cache First + actualización cuando haga falta.
-        // ignoreSearch permite resolver ?t=3.7.7 usando
-        // el archivo base previamente guardado.
+        // ARCHIVOS QUE DEBEN ACTUALIZARSE
+        // Red primero para evitar quedar congelados
+        // en una versión vieja.
+        // ==============================================
+
+        const extension =
+            url.pathname
+                .split(
+                    "."
+                )
+                .pop()
+                .toLowerCase();
+
+
+        const esActualizable =
+            extension === "js" ||
+            extension === "css" ||
+            extension === "json" ||
+            url.pathname.endsWith(
+                "/Manifest.json"
+            );
+
+
+        if (
+            esActualizable
+        ) {
+
+            event.respondWith(
+
+                fetchConTimeout(
+                    request
+                )
+                    .then(
+                        response => {
+
+                            guardarEnCache(
+                                request,
+                                response
+                            );
+
+                            return response;
+
+                        }
+                    )
+                    .catch(
+                        async () => {
+
+                            const exacta =
+                                await caches.match(
+                                    request
+                                );
+
+
+                            if (
+                                exacta
+                            ) {
+                                return exacta;
+                            }
+
+
+                            const base =
+                                await caches.match(
+                                    request,
+                                    {
+                                        ignoreSearch:
+                                            true
+                                    }
+                                );
+
+
+                            if (
+                                base
+                            ) {
+                                return base;
+                            }
+
+
+                            return new Response(
+                                "Recurso temporalmente no disponible.",
+                                {
+                                    status:
+                                        503,
+                                    headers: {
+                                        "Content-Type":
+                                            "text/plain; charset=UTF-8"
+                                    }
+                                }
+                            );
+
+                        }
+                    )
+
+            );
+
+            return;
+        }
+
+
+        // ==============================================
+        // OTROS RECURSOS LOCALES
+        // Imágenes, iconos, etc.
         // ==============================================
 
         event.respondWith(
 
             caches
                 .match(
-                    request,
-                    {
-                        ignoreSearch: true
-                    }
+                    request
                 )
                 .then(
                     cacheado => {
@@ -375,30 +523,10 @@ self.addEventListener(
                             .then(
                                 response => {
 
-                                    if (
-                                        !response ||
-                                        !response.ok
-                                    ) {
-                                        return response;
-                                    }
-
-
-                                    const copia =
-                                        response.clone();
-
-
-                                    caches
-                                        .open(
-                                            APPCORUS_CACHE
-                                        )
-                                        .then(
-                                            cache =>
-                                                cache.put(
-                                                    request,
-                                                    copia
-                                                )
-                                        );
-
+                                    guardarEnCache(
+                                        request,
+                                        response
+                                    );
 
                                     return response;
 

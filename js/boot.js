@@ -5,11 +5,10 @@
 
 (function iniciarAppCorus() {
 
-    // IMPORTANTE:
-    // Cambiar este valor únicamente cuando se publique
-    // una nueva versión de AppCorus.
+    // Revisión técnica de archivos del frontend.
+    // No cambia la versión funcional de AppCorus.
     const revision =
-        "3.7.7";
+        "3.7.7-r2";
 
 
     window.APPCORUS_REVISION =
@@ -32,7 +31,9 @@
 
     css.href =
         "./css/style.css?t=" +
-        revision;
+        encodeURIComponent(
+            revision
+        );
 
 
     document.head.appendChild(
@@ -52,14 +53,16 @@
 
     script.src =
         "./js/app.js?t=" +
-        revision;
+        encodeURIComponent(
+            revision
+        );
 
 
     script.onload =
         () => {
 
             console.log(
-                "✅ AppCorus actualizado - V" +
+                "✅ AppCorus actualizado - " +
                 revision
             );
 
